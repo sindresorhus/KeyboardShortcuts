@@ -1,5 +1,5 @@
 <div align="center">
-	<img width="900" src="logo.png" alt="KeyboardShortcuts">
+	<img width="900" src="https://github.com/sindresorhus/KeyboardShortcuts/raw/master/logo.png" alt="KeyboardShortcuts">
 	<br>
 </div>
 
@@ -7,7 +7,7 @@ This package lets you add support for user-customizable global keyboard shortcut
 
 This package is still in its early days. I'm happy to accept more configurability and features. PR welcome! What you see here is just what I needed for my own apps.
 
-<img src="screenshot.png" width="532">
+<img src="https://github.com/sindresorhus/KeyboardShortcuts/raw/master/screenshot.png" width="532">
 
 ## Requirements
 
@@ -18,7 +18,7 @@ macOS 10.11+
 #### Swift Package Manager
 
 ```swift
-.package(url: "https://github.com/sindresorhus/KeyboardShortcuts", from: "0.0.0")
+.package(url: "https://github.com/sindresorhus/KeyboardShortcuts", from: "0.1.0")
 ```
 
 You need to set the build setting “Other Linker Flags” to `-weak_framework Combine` to work around [this Xcode bug](https://github.com/feedback-assistant/reports/issues/44).

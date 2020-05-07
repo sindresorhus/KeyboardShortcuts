@@ -1,4 +1,4 @@
-name: Public docs
+name: Publish docs
 on:
   release:
     types: [published]
