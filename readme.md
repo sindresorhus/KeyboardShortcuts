@@ -118,7 +118,7 @@ final class PreferencesViewController: NSViewController {
 
 ## API
 
-[See the API docs.](https://sindresorhus.com/KeyboardShortcuts)
+[See the API docs.](https://sindresorhus.com/KeyboardShortcuts/Classes/KeyboardShortcuts.html)
 
 ## FAQ
 
@@ -151,6 +151,6 @@ No.
 ## Related
 
 - [Preferences](https://github.com/sindresorhus/Preferences) - Add a preferences window to your macOS app in minutes
-- [Defaults](https://github.com/sindresorhus/Defaults) - Swifty and modern UserDefaults
 - [LaunchAtLogin](https://github.com/sindresorhus/LaunchAtLogin) - Add "Launch at Login" functionality to your macOS app
+- [Defaults](https://github.com/sindresorhus/Defaults) - Swifty and modern UserDefaults
 - [More…](https://github.com/search?q=user%3Asindresorhus+language%3Aswift)

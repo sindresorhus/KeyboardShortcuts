@@ -85,21 +85,21 @@ extension KeyboardShortcuts.Shortcut {
 }
 
 private var keyToCharacterMapping: [KeyboardShortcuts.Key: String] = [
-	.carriageReturn: "↩",
+	.return: "↩",
 	.delete: "⌫",
 	.deleteForward: "⌦",
-	.downArrow: "↓",
 	.end: "↘",
 	.escape: "⎋",
 	.help: "?⃝",
 	.home: "↖",
-	.leftArrow: "←",
-	.pageDown: "⇟",
-	.pageUp: "⇞",
-	.rightArrow: "→",
-	.space: "Space",
+	.space: "⎵",
 	.tab: "⇥",
+	.pageUp: "⇞",
+	.pageDown: "⇟",
 	.upArrow: "↑",
+	.rightArrow: "→",
+	.downArrow: "↓",
+	.leftArrow: "←",
 	.f1: "F1",
 	.f2: "F2",
 	.f3: "F3",
@@ -119,22 +119,7 @@ private var keyToCharacterMapping: [KeyboardShortcuts.Key: String] = [
 	.f17: "F17",
 	.f18: "F18",
 	.f19: "F19",
-	.f20: "F20",
-	.f21: "F21",
-	.f22: "F22",
-	.f23: "F23",
-	.f24: "F24",
-	.f25: "F25",
-	.f26: "F26",
-	.f27: "F27",
-	.f28: "F28",
-	.f29: "F29",
-	.f30: "F30",
-	.f31: "F31",
-	.f32: "F32",
-	.f33: "F33",
-	.f34: "F34",
-	.f35: "F35"
+	.f20: "F20"
 ]
 
 extension KeyboardShortcuts.Shortcut: CustomStringConvertible {

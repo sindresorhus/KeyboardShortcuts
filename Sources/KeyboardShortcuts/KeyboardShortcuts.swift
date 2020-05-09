@@ -44,7 +44,10 @@ public final class KeyboardShortcuts {
 	}
 
 	// TODO: Also add `.isEnabled(_ name: Name)`.
-	static func disable(_ name: Name) {
+	/**
+	Disable a keyboard shortcut.
+	*/
+	public static func disable(_ name: Name) {
 		guard let shortcut = userDefaultsGet(name: name) else {
 			return
 		}
@@ -52,7 +55,10 @@ public final class KeyboardShortcuts {
 		unregister(shortcut)
 	}
 
-	static func enable(_ name: Name) {
+	/**
+	Enable a disabled keyboard shortcut.
+	*/
+	public static func enable(_ name: Name) {
 		guard let shortcut = userDefaultsGet(name: name) else {
 			return
 		}
