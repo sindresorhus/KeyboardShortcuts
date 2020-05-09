@@ -14,12 +14,14 @@ struct ContentView: View {
 		VStack {
 			HStack {
 				KeyboardShortcuts.Recorder(for: .testShortcut1)
-				Text("Is pressed? \(isPressed1 ? "Yes" : "No")")
+					.padding(.trailing, 10)
+				Text("Pressed? \(isPressed1 ? "👍" : "👎")")
 					.frame(width: 100, alignment: .leading)
 			}
 			HStack {
 				KeyboardShortcuts.Recorder(for: .testShortcut2)
-				Text("Is pressed? \(isPressed2 ? "Yes" : "No")")
+					.padding(.trailing, 10)
+				Text("Pressed? \(isPressed2 ? "👍" : "👎")")
 					.frame(width: 100, alignment: .leading)
 			}
 		}

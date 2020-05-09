@@ -40,12 +40,21 @@ extension KeyboardShortcuts {
 			return size
 		}
 
+		private var cancelButton: NSButtonCell?
+
+		private var showsCancelButton: Bool {
+			get { (cell as? NSSearchFieldCell)?.cancelButtonCell != nil }
+			set {
+				(cell as? NSSearchFieldCell)?.cancelButtonCell = newValue ? cancelButton : nil
+			}
+		}
+
 		public required init(for name: Name) {
 			self.shortcutName = name
 
 			super.init(frame: .zero)
 			self.delegate = self
-			self.placeholderString = "Click to Record"
+			self.placeholderString = "Record Shortcut"
 			self.centersPlaceholder = true
 			self.alignment = .center
 			(self.cell as? NSSearchFieldCell)?.searchButtonCell = nil
@@ -59,6 +68,10 @@ extension KeyboardShortcuts {
 			self.setContentHuggingPriority(.defaultHigh, for: .vertical)
 			self.setContentHuggingPriority(.defaultHigh, for: .horizontal)
 			self.widthAnchor.constraint(greaterThanOrEqualToConstant: CGFloat(minimumWidth)).isActive = true
+
+			// Hide the cancel button when not showing the shortcut so the placeholder text is properly centered. Must be last.
+			self.cancelButton = (self.cell as? NSSearchFieldCell)?.cancelButtonCell
+			self.showsCancelButton = !stringValue.isEmpty
 		}
 
 		@available(*, unavailable)
@@ -71,12 +84,20 @@ extension KeyboardShortcuts {
 			if stringValue.isEmpty {
 				userDefaultsRemove(name: shortcutName)
 			}
+
+			showsCancelButton = !stringValue.isEmpty
+
+			if stringValue.isEmpty {
+				// Hack to ensure that the placeholder centers after the above `showsCancelButton` setter.
+				focus()
+			}
 		}
 
 		/// :nodoc:
 		public func controlTextDidEndEditing(_ object: Notification) {
 			eventMonitor = nil
-			placeholderString = "Click to Record"
+			placeholderString = "Record Shortcut"
+			showsCancelButton = !stringValue.isEmpty
 		}
 
 		/// :nodoc:
@@ -88,10 +109,26 @@ extension KeyboardShortcuts {
 			}
 
 			placeholderString = "Press Shortcut"
+			showsCancelButton = !stringValue.isEmpty
 			hideCaret()
 
-			eventMonitor = LocalEventMonitor(events: [.keyDown]) { [weak self] event in
+			eventMonitor = LocalEventMonitor(events: [.keyDown, .leftMouseUp, .rightMouseUp]) { [weak self] event in
 				guard let self = self else {
+					return nil
+				}
+
+				let clickPoint = self.convert(event.locationInWindow, from: nil)
+				let clickMargin: CGFloat = 3
+
+				if
+					(event.type == .leftMouseUp || event.type == .rightMouseUp),
+					!self.frame.insetBy(dx: -clickMargin, dy: -clickMargin).contains(clickPoint)
+				{
+					self.blur()
+					return nil
+				}
+
+				guard event.isKeyEvent else {
 					return nil
 				}
 
@@ -99,6 +136,9 @@ extension KeyboardShortcuts {
 					event.modifiers.isEmpty,
 					event.specialKey == .tab
 				{
+					self.blur()
+
+					// We intentionally bubble up the event so it can focus the next responder.
 					return event
 				}
 
@@ -134,24 +174,37 @@ extension KeyboardShortcuts {
 				}
 
 				if let menuItem = shortcut.takenByMainMenu {
+					// TODO: Find a better way to make it possible to dismiss the alert by pressing "Enter". How can we make the input automatically temporarily lose focus while the alert is open?
+					self.blur()
+
 					NSAlert.showModal(
 						for: self.window,
 						message: "This keyboard shortcut cannot be used as it's already used by the “\(menuItem.title)” menu item."
 					)
+
+					self.focus()
+
 					return nil
 				}
 
 				guard !shortcut.isTakenBySystem else {
+					self.blur()
+
 					NSAlert.showModal(
 						for: self.window,
 						message: "This keyboard shortcut cannot be used as it's already a system-wide keyboard shortcut.",
 						// TODO: Add button to offer to open the relevant system preference pane for the user.
 						informativeText: "Most system-wide keyboard shortcuts can be changed in “System Preferences › Keyboard › Shortcuts“."
 					)
+
+					self.focus()
+
 					return nil
 				}
 
 				self.stringValue = "\(shortcut)"
+				self.showsCancelButton = true
+
 				userDefaultsSet(name: self.shortcutName, shortcut: shortcut)
 				self.blur()
 
@@ -159,6 +212,10 @@ extension KeyboardShortcuts {
 			}.start()
 
 			return shouldBecomeFirstResponder
+		}
+
+		private func focus() {
+			window?.makeFirstResponder(self)
 		}
 
 		private func blur() {
