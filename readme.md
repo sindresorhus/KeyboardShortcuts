@@ -18,7 +18,7 @@ macOS 10.11+
 #### Swift Package Manager
 
 ```swift
-.package(url: "https://github.com/sindresorhus/KeyboardShortcuts", from: "0.1.0")
+.package(url: "https://github.com/sindresorhus/KeyboardShortcuts", from: "0.1.1")
 ```
 
 You need to set the build setting “Other Linker Flags” to `-weak_framework Combine` to work around [this Xcode bug](https://github.com/feedback-assistant/reports/issues/44).
