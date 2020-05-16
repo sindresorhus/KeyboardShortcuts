@@ -16,13 +16,13 @@ extension KeyboardShortcuts {
 		public var key: Key? { Key(rawValue: carbonKeyCode) }
 		public var modifiers: NSEvent.ModifierFlags { NSEvent.ModifierFlags(carbon: carbonModifiers) }
 
-		/// Create a shortcut from a key code number and modifier code.
+		/// Initialize from a key code number and modifier code.
 		public init(carbonKeyCode: Int, carbonModifiers: Int = 0) {
 			self.carbonKeyCode = carbonKeyCode
 			self.carbonModifiers = Self.normalizeModifiers(carbonModifiers)
 		}
 
-		/// Create a keyboard shortcut from a strongly-typed key and modifiers.
+		/// Initialize from a strongly-typed key and modifiers.
 		public init(_ key: Key, modifiers: NSEvent.ModifierFlags = []) {
 			self.init(
 				carbonKeyCode: key.rawValue,
@@ -30,7 +30,7 @@ extension KeyboardShortcuts {
 			)
 		}
 
-		/// Create a keyboard shortcut from a key event.
+		/// Initialize from a key event.
 		public init?(event: NSEvent) {
 			guard event.isKeyEvent else {
 				return nil
@@ -40,6 +40,15 @@ extension KeyboardShortcuts {
 				carbonKeyCode: Int(event.keyCode),
 				carbonModifiers: event.modifierFlags.carbon
 			)
+		}
+
+		/// Initialize from a keyboard shortcut stored by `Recorder` or `RecorderCocoa`.
+		public init?(name: Name) {
+			guard let shortcut = userDefaultsGet(name: name) else {
+				return nil
+			}
+
+			self = shortcut
 		}
 	}
 }
@@ -122,7 +131,35 @@ private var keyToCharacterMapping: [KeyboardShortcuts.Key: String] = [
 	.f20: "F20"
 ]
 
-extension KeyboardShortcuts.Shortcut: CustomStringConvertible {
+private func stringFromKeyCode(_ keyCode: Int) -> String {
+	String(format: "%C", keyCode)
+}
+
+private var keyToKeyEquivalentString: [KeyboardShortcuts.Key: String] = [
+	.space: stringFromKeyCode(0x20),
+	.f1: stringFromKeyCode(NSF1FunctionKey),
+	.f2: stringFromKeyCode(NSF2FunctionKey),
+	.f3: stringFromKeyCode(NSF3FunctionKey),
+	.f4: stringFromKeyCode(NSF4FunctionKey),
+	.f5: stringFromKeyCode(NSF5FunctionKey),
+	.f6: stringFromKeyCode(NSF6FunctionKey),
+	.f7: stringFromKeyCode(NSF7FunctionKey),
+	.f8: stringFromKeyCode(NSF8FunctionKey),
+	.f9: stringFromKeyCode(NSF9FunctionKey),
+	.f10: stringFromKeyCode(NSF10FunctionKey),
+	.f11: stringFromKeyCode(NSF11FunctionKey),
+	.f12: stringFromKeyCode(NSF12FunctionKey),
+	.f13: stringFromKeyCode(NSF13FunctionKey),
+	.f14: stringFromKeyCode(NSF14FunctionKey),
+	.f15: stringFromKeyCode(NSF15FunctionKey),
+	.f16: stringFromKeyCode(NSF16FunctionKey),
+	.f17: stringFromKeyCode(NSF17FunctionKey),
+	.f18: stringFromKeyCode(NSF18FunctionKey),
+	.f19: stringFromKeyCode(NSF19FunctionKey),
+	.f20: stringFromKeyCode(NSF20FunctionKey)
+]
+
+extension KeyboardShortcuts.Shortcut {
 	fileprivate func keyToCharacter() -> String? {
 		// Some characters cannot be automatically translated.
 		if
@@ -161,6 +198,31 @@ extension KeyboardShortcuts.Shortcut: CustomStringConvertible {
 		return String(utf16CodeUnits: characters, count: length)
 	}
 
+	// This can be exposed if anyone needs it, but I prefer to keep the API surface small for now.
+	/**
+	This can be used to show the keyboard shortcut in a `NSMenuItem` by assigning it to `NSMenuItem#keyEquivalent`.
+
+	- Note: Don't forget to also pass `.modifiers` to `NSMenuItem#keyEquivalentModifierMask`.
+	*/
+	var keyEquivalent: String {
+		let keyString = keyToCharacter() ?? ""
+
+		guard keyString.count <= 1 else {
+			guard
+				let key = self.key,
+				let string = keyToKeyEquivalentString[key]
+			else {
+				return ""
+			}
+
+			return string
+		}
+
+		return keyString
+	}
+}
+
+extension KeyboardShortcuts.Shortcut: CustomStringConvertible {
 	/**
 	The string representation of the keyboard shortcut.
 

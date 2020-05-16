@@ -175,6 +175,11 @@ public final class KeyboardShortcuts {
 	private static func userDefaultsKey(for shortcutName: Name) -> String { "\(userDefaultsPrefix)\(shortcutName.rawValue)"
 	}
 
+	static func userDefaultsDidChange(name: Name) {
+		// TODO: Use proper UserDefaults observation instead of this.
+		NotificationCenter.default.post(name: .shortcutByNameDidChange, object: nil, userInfo: ["name": name])
+	}
+
 	// TODO: Should these be on `Shortcut` instead?
 	static func userDefaultsGet(name: Name) -> Shortcut? {
 		guard
@@ -194,6 +199,7 @@ public final class KeyboardShortcuts {
 
 		UserDefaults.standard.set(encoded, forKey: userDefaultsKey(for: name))
 		register(shortcut)
+		userDefaultsDidChange(name: name)
 	}
 
 	static func userDefaultsRemove(name: Name) {
@@ -203,5 +209,10 @@ public final class KeyboardShortcuts {
 
 		UserDefaults.standard.removeObject(forKey: userDefaultsKey(for: name))
 		unregister(shortcut)
+		userDefaultsDidChange(name: name)
 	}
+}
+
+extension Notification.Name {
+	static let shortcutByNameDidChange = Self("KeyboardShortcuts_shortcutByNameDidChange")
 }
