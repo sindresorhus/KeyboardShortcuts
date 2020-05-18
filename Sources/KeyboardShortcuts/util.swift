@@ -19,6 +19,17 @@ extension NSTextField {
 }
 
 
+extension NSView {
+	func focus() {
+		window?.makeFirstResponder(self)
+	}
+
+	func blur() {
+		window?.makeFirstResponder(nil)
+	}
+}
+
+
 /**
 Listen to local events.
 
