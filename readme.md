@@ -17,11 +17,9 @@ macOS 10.11+
 
 #### Swift Package Manager
 
-```swift
-.package(url: "https://github.com/sindresorhus/KeyboardShortcuts", from: "0.1.1")
-```
+Add `https://github.com/sindresorhus/KeyboardShortcuts` in the [“Swift Package Manager” tab in Xcode](https://developer.apple.com/documentation/xcode/adding_package_dependencies_to_your_app).
 
-You need to set the build setting “Other Linker Flags” to `-weak_framework Combine` to work around [this Xcode bug](https://github.com/feedback-assistant/reports/issues/44).
+You also need to set the build setting “Other Linker Flags” to `-weak_framework Combine` to work around [this Xcode bug](https://github.com/feedback-assistant/reports/issues/44).
 
 #### Carthage
 
@@ -98,6 +96,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
 You can find a complete example by opening `KeyboardShortcuts.xcodeproj` and then running the `KeyboardShortcutsExample` target.
 
+You can also find a [real-world example](https://github.com/sindresorhus/Plash/blob/b348a62645a873abba8dc11ff0fb8fe423419411/Plash/PreferencesView.swift#L121-L130) in my Plash app.
+
 #### Cocoa
 
 Use [`KeyboardShortcuts.RecorderCocoa`](Sources/KeyboardShortcuts/RecorderCocoa.swift) instead of `KeyboardShortcuts.Recorder`.
@@ -119,6 +119,12 @@ final class PreferencesViewController: NSViewController {
 ## API
 
 [See the API docs.](https://sindresorhus.com/KeyboardShortcuts/Classes/KeyboardShortcuts.html)
+
+## Tips
+
+#### Show a recorded keyboard shortcut in a `NSMenuItem`
+
+See [`NSMenuItem#setShortcut`](https://sindresorhus.com/KeyboardShortcuts/Extensions/NSMenuItem.html).
 
 ## FAQ
 

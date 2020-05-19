@@ -213,13 +213,5 @@ extension KeyboardShortcuts {
 
 			return shouldBecomeFirstResponder
 		}
-
-		private func focus() {
-			window?.makeFirstResponder(self)
-		}
-
-		private func blur() {
-			window?.makeFirstResponder(nil)
-		}
 	}
 }

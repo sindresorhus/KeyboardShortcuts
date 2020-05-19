@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		E38103FE246449180023E9A8 /* Name.swift in Sources */ = {isa = PBXBuildFile; fileRef = E38103FD246449180023E9A8 /* Name.swift */; };
+		E3AD497024705C7600F51C0D /* NSMenuItem++.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3AD496F24705C7600F51C0D /* NSMenuItem++.swift */; };
 		E3BF5627245C23840024D9BF /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3BF5626245C23840024D9BF /* Recorder.swift */; };
 		E3BF5629245C24450024D9BF /* RecorderCocoa.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3BF5628245C24450024D9BF /* RecorderCocoa.swift */; };
 		E3BF562B245C28BD0024D9BF /* Shortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3BF562A245C28BD0024D9BF /* Shortcut.swift */; };
@@ -50,6 +51,7 @@
 
 /* Begin PBXFileReference section */
 		E38103FD246449180023E9A8 /* Name.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = Name.swift; sourceTree = "<group>"; usesTabs = 1; };
+		E3AD496F24705C7600F51C0D /* NSMenuItem++.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = "NSMenuItem++.swift"; sourceTree = "<group>"; usesTabs = 1; };
 		E3BF5626245C23840024D9BF /* Recorder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = Recorder.swift; sourceTree = "<group>"; usesTabs = 1; };
 		E3BF5628245C24450024D9BF /* RecorderCocoa.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = RecorderCocoa.swift; sourceTree = "<group>"; usesTabs = 1; };
 		E3BF562A245C28BD0024D9BF /* Shortcut.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = Shortcut.swift; sourceTree = "<group>"; usesTabs = 1; };
@@ -155,6 +157,7 @@
 				E3BF562A245C28BD0024D9BF /* Shortcut.swift */,
 				E3BF5628245C24450024D9BF /* RecorderCocoa.swift */,
 				E3BF5626245C23840024D9BF /* Recorder.swift */,
+				E3AD496F24705C7600F51C0D /* NSMenuItem++.swift */,
 				OBJ_10 /* util.swift */,
 			);
 			name = KeyboardShortcuts;
@@ -318,6 +321,7 @@
 				OBJ_23 /* KeyboardShortcuts.swift in Sources */,
 				E3BF562D245C29C30024D9BF /* CarbonKeyboardShortcuts.swift in Sources */,
 				OBJ_24 /* util.swift in Sources */,
+				E3AD497024705C7600F51C0D /* NSMenuItem++.swift in Sources */,
 				E3BF5629245C24450024D9BF /* RecorderCocoa.swift in Sources */,
 				E3BF564C245C34B30024D9BF /* Key.swift in Sources */,
 				E3BF5627245C23840024D9BF /* Recorder.swift in Sources */,
