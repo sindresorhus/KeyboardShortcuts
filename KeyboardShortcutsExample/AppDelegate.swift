@@ -40,12 +40,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
 		let shortcut1 = NSMenuItem()
 		shortcut1.title = "Shortcut 1"
+		shortcut1.action = #selector(shortcutAction1)
 		shortcut1.setShortcut(for: .testShortcut1)
 		testMenu.addItem(shortcut1)
 
 		let shortcut2 = NSMenuItem()
 		shortcut2.title = "Shortcut 2"
+		shortcut2.action = #selector(shortcutAction2)
 		shortcut2.setShortcut(for: .testShortcut2)
 		testMenu.addItem(shortcut2)
+	}
+
+	@objc
+	func shortcutAction1(_ sender: NSMenuItem) {
+		let alert = NSAlert()
+		alert.messageText = "Shortcut 1 menu item action triggered!"
+		alert.runModal()
+	}
+
+	@objc
+	func shortcutAction2(_ sender: NSMenuItem) {
+		let alert = NSAlert()
+		alert.messageText = "Shortcut 2 menu item action triggered!"
+		alert.runModal()
 	}
 }
