@@ -3,7 +3,7 @@ import Cocoa
 /**
 Global keyboard shortcuts for your macOS app.
 */
-public final class KeyboardShortcuts {
+public enum KeyboardShortcuts {
 	/// :nodoc:
 	public typealias KeyAction = () -> Void
 
