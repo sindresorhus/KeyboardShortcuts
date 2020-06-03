@@ -10,10 +10,3 @@ build_tool_arguments:
   - '5'
 theme: fullwidth
 hide_documentation_coverage: true
-head: "
-  <script>
-  window.addEventListener('DOMContentLoaded', () => {
-    document.querySelector('.header-link[href^=dash-feed]').remove();
-  });
-  </script>
-"

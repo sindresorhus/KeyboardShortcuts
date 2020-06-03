@@ -10,17 +10,19 @@ extension KeyboardShortcuts {
 			NSEvent.ModifierFlags(carbon: carbonModifiers).carbon
 		}
 
-		public let carbonKeyCode: Int
-		public let carbonModifiers: Int
-
+		/// The keyboard key of the shortcut.
 		public var key: Key? { Key(rawValue: carbonKeyCode) }
+
+		/// The modifier keys of the shortcut.
 		public var modifiers: NSEvent.ModifierFlags { NSEvent.ModifierFlags(carbon: carbonModifiers) }
 
-		/// Initialize from a key code number and modifier code.
-		public init(carbonKeyCode: Int, carbonModifiers: Int = 0) {
-			self.carbonKeyCode = carbonKeyCode
-			self.carbonModifiers = Self.normalizeModifiers(carbonModifiers)
-		}
+		/// Low-level represetation of the key.
+		/// You most likely don't need this.
+		public let carbonKeyCode: Int
+
+		/// Low-level representation of the modifier keys.
+		/// You most likely don't need this.
+		public let carbonModifiers: Int
 
 		/// Initialize from a strongly-typed key and modifiers.
 		public init(_ key: Key, modifiers: NSEvent.ModifierFlags = []) {
@@ -49,6 +51,13 @@ extension KeyboardShortcuts {
 			}
 
 			self = shortcut
+		}
+
+		/// Initialize from a key code number and modifier code.
+		/// You most likely don't need this.
+		public init(carbonKeyCode: Int, carbonModifiers: Int = 0) {
+			self.carbonKeyCode = carbonKeyCode
+			self.carbonModifiers = Self.normalizeModifiers(carbonModifiers)
 		}
 	}
 }
