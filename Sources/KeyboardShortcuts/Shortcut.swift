@@ -178,14 +178,19 @@ extension KeyboardShortcuts.Shortcut {
 			return character
 		}
 
-		let source = TISCopyCurrentASCIICapableKeyboardLayoutInputSource().takeUnretainedValue()
-		let layoutData = TISGetInputSourceProperty(source, kTISPropertyUnicodeKeyLayoutData)
-		let dataRef = unsafeBitCast(layoutData, to: CFData.self)
+		guard
+			let source = TISCopyCurrentASCIICapableKeyboardLayoutInputSource()?.takeRetainedValue(),
+			let layoutDataPointer = TISGetInputSourceProperty(source, kTISPropertyUnicodeKeyLayoutData)
+		else {
+			return nil
+		}
+
+		let dataRef = unsafeBitCast(layoutDataPointer, to: CFData.self)
 		let keyLayout = unsafeBitCast(CFDataGetBytePtr(dataRef), to: UnsafePointer<CoreServices.UCKeyboardLayout>.self)
 		var deadKeyState: UInt32 = 0
-		let maxCharacters = 256
+		let maxLength = 4
 		var length = 0
-		var characters = [UniChar](repeating: 0, count: maxCharacters)
+		var characters = [UniChar](repeating: 0, count: maxLength)
 
 		let error = CoreServices.UCKeyTranslate(
 			keyLayout,
@@ -195,7 +200,7 @@ extension KeyboardShortcuts.Shortcut {
 			UInt32(LMGetKbdType()),
 			OptionBits(CoreServices.kUCKeyTranslateNoDeadKeysBit),
 			&deadKeyState,
-			maxCharacters,
+			maxLength,
 			&length,
 			&characters
 		)
