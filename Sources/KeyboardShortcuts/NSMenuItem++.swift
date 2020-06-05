@@ -56,7 +56,14 @@ extension NSMenuItem {
 			keyEquivalentModifierMask = shortcut.modifiers
 		}
 
-		set()
+		// `TISCopyCurrentASCIICapableKeyboardLayoutInputSource` works on a background thread, but crashes when used in a `NSBackgroundActivityScheduler` task, so we ensure it's not run in that queue.
+		if DispatchQueue.isCurrentQueueNSBackgroundActivitySchedulerQueue {
+			DispatchQueue.main.async {
+				set()
+			}
+		} else {
+			set()
+		}
 
 		AssociatedKeys.observer[self] = NotificationCenter.default.addObserver(forName: .shortcutByNameDidChange, object: nil, queue: nil) { notification in
 			guard
