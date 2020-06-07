@@ -197,8 +197,12 @@ public enum KeyboardShortcuts {
 			return
 		}
 
-		UserDefaults.standard.set(encoded, forKey: userDefaultsKey(for: name))
+		if let oldShortcut = userDefaultsGet(name: name) {
+			unregister(oldShortcut)
+		}
+
 		register(shortcut)
+		UserDefaults.standard.set(encoded, forKey: userDefaultsKey(for: name))
 		userDefaultsDidChange(name: name)
 	}
 
