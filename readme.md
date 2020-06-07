@@ -3,7 +3,7 @@
 	<br>
 </div>
 
-This package lets you add support for user-customizable global keyboard shortcuts to your macOS app in minutes. It's fully sandbox and Mac App Store compatible. And it's used in production by [Dato](https://sindresorhus.com/dato), [Jiffy](https://sindresorhus.com/jiffy), and [Lungo](https://sindresorhus.com/lungo).
+This package lets you add support for user-customizable global keyboard shortcuts to your macOS app in minutes. It's fully sandbox and Mac App Store compatible. And it's used in production by [Dato](https://sindresorhus.com/dato), [Jiffy](https://sindresorhus.com/jiffy), [Plash](https://github.com/sindresorhus/Plash), and [Lungo](https://sindresorhus.com/lungo).
 
 This package is still in its early days. I'm happy to accept more configurability and features. PR welcome! What you see here is just what I needed for my own apps.
 
@@ -118,11 +118,11 @@ final class PreferencesViewController: NSViewController {
 
 ## API
 
-[See the API docs.](https://sindresorhus.com/KeyboardShortcuts/Classes/KeyboardShortcuts.html)
+[See the API docs.](https://sindresorhus.com/KeyboardShortcuts/Enums/KeyboardShortcuts.html)
 
 ## Tips
 
-#### Show a recorded keyboard shortcut in a `NSMenuItem`
+#### Show a recorded keyboard shortcut in an `NSMenuItem`
 
 See [`NSMenuItem#setShortcut`](https://sindresorhus.com/KeyboardShortcuts/Extensions/NSMenuItem.html).
 
@@ -136,6 +136,7 @@ This package:
 - SwiftUI component included.
 - Support for listening to key down, not just key up.
 - Swift Package Manager support.
+- Connect a shortcut to an `NSMenuItem`.
 
 `MASShortcut`:
 - More mature.
