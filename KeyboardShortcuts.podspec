@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
 	s.name = 'KeyboardShortcuts'
-	s.version = '0.2.1'
+	s.version = '0.2.2'
 	s.summary = 'Add user-customizable global keyboard shortcuts to your macOS app in minutes'
 	s.license = 'MIT'
 	s.homepage = 'https://github.com/sindresorhus/KeyboardShortcuts'
