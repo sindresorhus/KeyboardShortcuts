@@ -30,13 +30,15 @@ extension KeyboardShortcuts {
 		public typealias NSViewType = RecorderCocoa
 
 		private let name: Name
+		private let onChange: ((_ shortcut: Shortcut?) -> Void)?
 
-		public init(for name: Name) {
+		public init(for name: Name, onChange: ((_ shortcut: Shortcut?) -> Void)? = nil) {
 			self.name = name
+			self.onChange = onChange
 		}
 
 		/// :nodoc:
-		public func makeNSView(context: Context) -> NSViewType { .init(for: name) }
+		public func makeNSView(context: Context) -> NSViewType { .init(for: name, onChange: onChange) }
 
 		/// :nodoc:
 		public func updateNSView(_ nsView: NSViewType, context: Context) {}

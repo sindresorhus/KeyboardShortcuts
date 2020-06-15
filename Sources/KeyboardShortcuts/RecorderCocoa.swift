@@ -29,6 +29,7 @@ extension KeyboardShortcuts {
 		private let minimumWidth: Double = 130
 		private var eventMonitor: LocalEventMonitor?
 		private let shortcutName: Name
+		private let onChange: ((_ shortcut: Shortcut?) -> Void)?
 
 		/// :nodoc:
 		override public var canBecomeKeyView: Bool { false }
@@ -49,8 +50,9 @@ extension KeyboardShortcuts {
 			}
 		}
 
-		public required init(for name: Name) {
+		public required init(for name: Name, onChange: ((_ shortcut: Shortcut?) -> Void)? = nil) {
 			self.shortcutName = name
+			self.onChange = onChange
 
 			super.init(frame: .zero)
 			self.delegate = self
@@ -82,7 +84,7 @@ extension KeyboardShortcuts {
 		/// :nodoc:
 		public func controlTextDidChange(_ object: Notification) {
 			if stringValue.isEmpty {
-				userDefaultsRemove(name: shortcutName)
+				self.saveShortcut(nil)
 			}
 
 			showsCancelButton = !stringValue.isEmpty
@@ -205,13 +207,26 @@ extension KeyboardShortcuts {
 				self.stringValue = "\(shortcut)"
 				self.showsCancelButton = true
 
-				userDefaultsSet(name: self.shortcutName, shortcut: shortcut)
+				self.saveShortcut(shortcut)
 				self.blur()
 
 				return nil
 			}.start()
 
 			return shouldBecomeFirstResponder
+		}
+
+		/// :nodoc:
+		private func saveShortcut(_ shortcut: Shortcut?) {
+			if let shortcut = shortcut {
+				userDefaultsSet(name: shortcutName, shortcut: shortcut)
+			} else {
+				userDefaultsRemove(name: shortcutName)
+			}
+
+			if let onChange = self.onChange {
+				onChange(shortcut)
+			}
 		}
 	}
 }
