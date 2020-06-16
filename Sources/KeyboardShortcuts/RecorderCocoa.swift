@@ -24,16 +24,6 @@ extension KeyboardShortcuts {
 		}
 	}
 	```
-	
-	An optional onChange callback can be set on the Recorder which will be called when the shortcut is sucessfully changed/removed.
-	
-	This could be useful if you would like to store the keyboard shortcut somewhere yourself instead of rely on the build-in `UserDefaults` storage.
-	
-	```
-	KeyboardShortcuts.RecorderCocoa(for: .toggleUnicornMode, onChange: { (shortcut: KeyboardShortcuts.Shortcut?) in
-	  print("Changed shortcut to:", shortcut)
-	})
-	```
 	*/
 	public final class RecorderCocoa: NSSearchField, NSSearchFieldDelegate {
 		private let minimumWidth: Double = 130
@@ -60,6 +50,16 @@ extension KeyboardShortcuts {
 			}
 		}
 
+		/**
+		  Creates a new RecorderCocoa view
+		  - Parameter name: strongly typed `KeyboardShortcuts.Name`
+		  - Parameter onChange: optional callback which will be called when the shortcut is successfully changed/removed. This could be useful if you would like to store the keyboard shortcut somewhere yourself instead of rely on the build-in `UserDefaults` storage.
+		  ```
+		  KeyboardShortcuts.RecorderCocoa(for: .toggleUnicornMode, onChange: { (shortcut: KeyboardShortcuts.Shortcut?) in
+		    print("Changed shortcut to:", shortcut)
+		  })
+		  ```
+		**/
 		public required init(for name: Name, onChange: ((_ shortcut: Shortcut?) -> Void)? = nil) {
 			self.shortcutName = name
 			self.onChange = onChange
