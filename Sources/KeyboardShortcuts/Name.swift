@@ -13,14 +13,26 @@ extension KeyboardShortcuts {
 	```
 	*/
 	public struct Name: Hashable {
-		// This is to allow `extension KeyboardShortcuts.Name { static let x = Name("x") }`.
+		// These are to allow using the types without the namespace
+		// `extension KeyboardShortcuts.Name { static let x = Name("x") }`.
 		/// :nodoc:
 		public typealias Name = KeyboardShortcuts.Name
+		/// :nodoc:
+		public typealias Shortcut = KeyboardShortcuts.Shortcut
 
 		public let rawValue: String
 
-		public init(_ name: String) {
+		/**
+		Creates a strongly-typed name of the keyboard shortcut.
+		- Parameter name: name of shortcut
+		- Parameter default: optional default key combination for the shortcut
+		*/
+		public init(_ name: String, default defaultShortcut: Shortcut? = nil) {
 			self.rawValue = name
+
+			if let defaultShortcut = defaultShortcut {
+				KeyboardShortcuts.userDefaultsSet(name: self, shortcut: defaultShortcut)
+			}
 		}
 	}
 }
