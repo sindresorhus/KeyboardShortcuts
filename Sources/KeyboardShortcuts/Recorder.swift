@@ -24,6 +24,16 @@ extension KeyboardShortcuts {
 		}
 	}
 	```
+	
+	An optional onChange callback can be set on the Recorder which will be called when the shortcut is sucessfully changed/removed.
+	
+	This could be useful if you would like to store the keyboard shortcut somewhere yourself instead of rely on the build-in `UserDefaults` storage.
+	
+	```
+	KeyboardShortcuts.Recorder(for: .toggleUnicornMode, onChange: { (shortcut: KeyboardShortcuts.Shortcut?) in
+	  print("Changed shortcut to:", shortcut)
+	})
+	```
 	*/
 	public struct Recorder: NSViewRepresentable { // swiftlint:disable:this type_name
 		/// :nodoc:

@@ -24,6 +24,16 @@ extension KeyboardShortcuts {
 		}
 	}
 	```
+	
+	An optional onChange callback can be set on the Recorder which will be called when the shortcut is sucessfully changed/removed.
+	
+	This could be useful if you would like to store the keyboard shortcut somewhere yourself instead of rely on the build-in `UserDefaults` storage.
+	
+	```
+	KeyboardShortcuts.RecorderCocoa(for: .toggleUnicornMode, onChange: { (shortcut: KeyboardShortcuts.Shortcut?) in
+	  print("Changed shortcut to:", shortcut)
+	})
+	```
 	*/
 	public final class RecorderCocoa: NSSearchField, NSSearchFieldDelegate {
 		private let minimumWidth: Double = 130
@@ -224,9 +234,7 @@ extension KeyboardShortcuts {
 				userDefaultsRemove(name: shortcutName)
 			}
 
-			if let onChange = self.onChange {
-				onChange(shortcut)
-			}
+			onChange?(shortcut)
 		}
 	}
 }
