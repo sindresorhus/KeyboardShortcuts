@@ -30,8 +30,8 @@ extension KeyboardShortcuts {
 		public init(_ name: String, default defaultShortcut: Shortcut? = nil) {
 			self.rawValue = name
 
-			if let defaultShortcut = defaultShortcut {
-				KeyboardShortcuts.userDefaultsSet(name: self, shortcut: defaultShortcut)
+			if let defaultShortcut = defaultShortcut, userDefaultsGet(name: self) == nil {
+				userDefaultsSet(name: self, shortcut: defaultShortcut)
 			}
 		}
 	}
