@@ -226,7 +226,6 @@ extension KeyboardShortcuts {
 			return shouldBecomeFirstResponder
 		}
 
-		/// :nodoc:
 		private func saveShortcut(_ shortcut: Shortcut?) {
 			if let shortcut = shortcut {
 				userDefaultsSet(name: shortcutName, shortcut: shortcut)
