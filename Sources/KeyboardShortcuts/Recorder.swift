@@ -33,16 +33,13 @@ extension KeyboardShortcuts {
 		private let onChange: ((_ shortcut: Shortcut?) -> Void)?
 
 		/**
-		  Creates a new Recorder view
-		  - Parameter name: strongly typed `KeyboardShortcuts.Name`
-		  - Parameter onChange: optional callback which will be called when the shortcut is successfully changed/removed. This could be useful if you would like to store the keyboard shortcut somewhere yourself instead of rely on the build-in `UserDefaults` storage.
-		  ```
-		  KeyboardShortcuts.Recorder(for: .toggleUnicornMode, onChange: { (shortcut: KeyboardShortcuts.Shortcut?) in
-		    print("Changed shortcut to:", shortcut)
-		  })
-		  ```
-		**/
-		public init(for name: Name, onChange: ((_ shortcut: Shortcut?) -> Void)? = nil) {
+		- Parameter name: Strongly-typed keyboard shortcut name.
+		- Parameter onChange: Callback which will be called when the keyboard shortcut is changed/removed by the user. This can be useful when you need more control. For example, when migrating from a different keyboard shortcut solution and you need to store the keyboard shortcut somewhere yourself instead of relying on the built-in storage. However, it's strongly recommended to just rely on the built-in storage when possible.
+		*/
+		public init(
+			for name: Name,
+			onChange: ((_ shortcut: Shortcut?) -> Void)? = nil
+		) {
 			self.name = name
 			self.onChange = onChange
 		}
@@ -57,7 +54,7 @@ extension KeyboardShortcuts {
 
 @available(macOS 10.15, *)
 struct SwiftUI_Previews: PreviewProvider {
-    static var previews: some View {
+	static var previews: some View {
 		KeyboardShortcuts.Recorder(for: .Name("xcodePreview"))
-    }
+	}
 }

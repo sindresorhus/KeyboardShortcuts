@@ -10,7 +10,7 @@ struct ContentView: View {
 	@State private var isPressed1 = false
 	@State private var isPressed2 = false
 
-    var body: some View {
+	var body: some View {
 		VStack {
 			HStack {
 				KeyboardShortcuts.Recorder(for: .testShortcut1)
@@ -44,11 +44,11 @@ struct ContentView: View {
 					self.isPressed2 = false
 				}
 			}
-    }
+	}
 }
 
 struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
+	static var previews: some View {
+		ContentView()
+	}
 }

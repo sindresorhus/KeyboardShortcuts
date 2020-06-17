@@ -4,7 +4,7 @@ import KeyboardShortcuts
 
 @NSApplicationMain
 final class AppDelegate: NSObject, NSApplicationDelegate {
-	var window: NSWindow!
+	private var window: NSWindow!
 
 	func applicationDidFinishLaunching(_ notification: Notification) {
 		let contentView = ContentView()
