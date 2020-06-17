@@ -13,7 +13,7 @@ extension KeyboardShortcuts {
 	```
 	*/
 	public struct Name: Hashable {
-		// These are to allow using the types without the namespace
+		// These make it possible to use the types without the namespace.
 		// `extension KeyboardShortcuts.Name { static let x = Name("x") }`.
 		/// :nodoc:
 		public typealias Name = KeyboardShortcuts.Name
@@ -23,14 +23,16 @@ extension KeyboardShortcuts {
 		public let rawValue: String
 
 		/**
-		Creates a strongly-typed name of the keyboard shortcut.
-		- Parameter name: name of shortcut
-		- Parameter default: optional default key combination for the shortcut
+		- Parameter name: Name of the shortcut.
+		- Parameter default: Optional default key combination for the shortcut. Do not set this unless it's essential. Users find it annoying when random apps steal their existing keyboard shortcuts. It's generally better to show a welcome screen on the first app launch that lets the user set the shortcut.
 		*/
 		public init(_ name: String, default defaultShortcut: Shortcut? = nil) {
 			self.rawValue = name
 
-			if let defaultShortcut = defaultShortcut, userDefaultsGet(name: self) == nil {
+			if
+				let defaultShortcut = defaultShortcut,
+				userDefaultsGet(name: self) == nil
+			{
 				userDefaultsSet(name: self, shortcut: defaultShortcut)
 			}
 		}
