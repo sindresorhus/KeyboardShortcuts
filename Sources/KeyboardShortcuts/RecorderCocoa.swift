@@ -94,7 +94,7 @@ extension KeyboardShortcuts {
 		/// :nodoc:
 		public func controlTextDidChange(_ object: Notification) {
 			if stringValue.isEmpty {
-				self.saveShortcut(nil)
+				saveShortcut(nil)
 			}
 
 			showsCancelButton = !stringValue.isEmpty
