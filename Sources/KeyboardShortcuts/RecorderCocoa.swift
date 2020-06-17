@@ -29,6 +29,7 @@ extension KeyboardShortcuts {
 		private let minimumWidth: Double = 130
 		private var eventMonitor: LocalEventMonitor?
 		private let shortcutName: Name
+		private let onChange: ((_ shortcut: Shortcut?) -> Void)?
 
 		/// :nodoc:
 		override public var canBecomeKeyView: Bool { false }
@@ -49,8 +50,19 @@ extension KeyboardShortcuts {
 			}
 		}
 
-		public required init(for name: Name) {
+		/**
+		  Creates a new RecorderCocoa view
+		  - Parameter name: strongly typed `KeyboardShortcuts.Name`
+		  - Parameter onChange: optional callback which will be called when the shortcut is successfully changed/removed. This could be useful if you would like to store the keyboard shortcut somewhere yourself instead of rely on the build-in `UserDefaults` storage.
+		  ```
+		  KeyboardShortcuts.RecorderCocoa(for: .toggleUnicornMode, onChange: { (shortcut: KeyboardShortcuts.Shortcut?) in
+		    print("Changed shortcut to:", shortcut)
+		  })
+		  ```
+		**/
+		public required init(for name: Name, onChange: ((_ shortcut: Shortcut?) -> Void)? = nil) {
 			self.shortcutName = name
+			self.onChange = onChange
 
 			super.init(frame: .zero)
 			self.delegate = self
@@ -82,7 +94,7 @@ extension KeyboardShortcuts {
 		/// :nodoc:
 		public func controlTextDidChange(_ object: Notification) {
 			if stringValue.isEmpty {
-				userDefaultsRemove(name: shortcutName)
+				saveShortcut(nil)
 			}
 
 			showsCancelButton = !stringValue.isEmpty
@@ -205,13 +217,23 @@ extension KeyboardShortcuts {
 				self.stringValue = "\(shortcut)"
 				self.showsCancelButton = true
 
-				userDefaultsSet(name: self.shortcutName, shortcut: shortcut)
+				self.saveShortcut(shortcut)
 				self.blur()
 
 				return nil
 			}.start()
 
 			return shouldBecomeFirstResponder
+		}
+
+		private func saveShortcut(_ shortcut: Shortcut?) {
+			if let shortcut = shortcut {
+				userDefaultsSet(name: shortcutName, shortcut: shortcut)
+			} else {
+				userDefaultsRemove(name: shortcutName)
+			}
+
+			onChange?(shortcut)
 		}
 	}
 }

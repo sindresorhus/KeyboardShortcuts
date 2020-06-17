@@ -30,13 +30,25 @@ extension KeyboardShortcuts {
 		public typealias NSViewType = RecorderCocoa
 
 		private let name: Name
+		private let onChange: ((_ shortcut: Shortcut?) -> Void)?
 
-		public init(for name: Name) {
+		/**
+		  Creates a new Recorder view
+		  - Parameter name: strongly typed `KeyboardShortcuts.Name`
+		  - Parameter onChange: optional callback which will be called when the shortcut is successfully changed/removed. This could be useful if you would like to store the keyboard shortcut somewhere yourself instead of rely on the build-in `UserDefaults` storage.
+		  ```
+		  KeyboardShortcuts.Recorder(for: .toggleUnicornMode, onChange: { (shortcut: KeyboardShortcuts.Shortcut?) in
+		    print("Changed shortcut to:", shortcut)
+		  })
+		  ```
+		**/
+		public init(for name: Name, onChange: ((_ shortcut: Shortcut?) -> Void)? = nil) {
 			self.name = name
+			self.onChange = onChange
 		}
 
 		/// :nodoc:
-		public func makeNSView(context: Context) -> NSViewType { .init(for: name) }
+		public func makeNSView(context: Context) -> NSViewType { .init(for: name, onChange: onChange) }
 
 		/// :nodoc:
 		public func updateNSView(_ nsView: NSViewType, context: Context) {}
