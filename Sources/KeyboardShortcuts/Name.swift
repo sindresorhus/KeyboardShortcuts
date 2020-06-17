@@ -31,7 +31,7 @@ extension KeyboardShortcuts {
 
 			if
 				let defaultShortcut = defaultShortcut,
-				userDefaultsGet(name: self) == nil
+				!userDefaultsContains(name: self)
 			{
 				userDefaultsSet(name: self, shortcut: defaultShortcut)
 			}
