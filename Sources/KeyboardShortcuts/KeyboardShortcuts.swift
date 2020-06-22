@@ -211,9 +211,13 @@ public enum KeyboardShortcuts {
 			return
 		}
 
-		UserDefaults.standard.removeObject(forKey: userDefaultsKey(for: name))
+		UserDefaults.standard.set(false, forKey: userDefaultsKey(for: name))
 		unregister(shortcut)
 		userDefaultsDidChange(name: name)
+	}
+
+	static func userDefaultsContains(name: Name) -> Bool {
+		UserDefaults.standard.object(forKey: userDefaultsKey(for: name)) != nil
 	}
 }
 
