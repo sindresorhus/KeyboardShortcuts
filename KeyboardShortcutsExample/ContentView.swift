@@ -2,8 +2,8 @@ import SwiftUI
 import KeyboardShortcuts
 
 extension KeyboardShortcuts.Name {
-	static let testShortcut1 = Name("testShortcut1")
-	static let testShortcut2 = Name("testShortcut2")
+	static let testShortcut1 = Self("testShortcut1")
+	static let testShortcut2 = Self("testShortcut2")
 }
 
 struct ContentView: View {

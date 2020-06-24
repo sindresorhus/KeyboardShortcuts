@@ -8,15 +8,12 @@ extension KeyboardShortcuts {
 	import KeyboardShortcuts
 
 	extension KeyboardShortcuts.Name {
-		static let toggleUnicornMode = Name("toggleUnicornMode")
+		static let toggleUnicornMode = Self("toggleUnicornMode")
 	}
 	```
 	*/
 	public struct Name: Hashable {
-		// These make it possible to use the types without the namespace.
-		// `extension KeyboardShortcuts.Name { static let x = Name("x") }`.
-		/// :nodoc:
-		public typealias Name = KeyboardShortcuts.Name
+		// This makes it possible to use `Shortcut` without the namespace.
 		/// :nodoc:
 		public typealias Shortcut = KeyboardShortcuts.Shortcut
 

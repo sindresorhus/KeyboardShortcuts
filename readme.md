@@ -43,7 +43,7 @@ First, register a name for the keyboard shortcut.
 import KeyboardShortcuts
 
 extension KeyboardShortcuts.Name {
-	static let toggleUnicornMode = Name("toggleUnicornMode")
+	static let toggleUnicornMode = Self("toggleUnicornMode")
 }
 ```
 

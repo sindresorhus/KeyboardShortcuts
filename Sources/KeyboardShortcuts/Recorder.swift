@@ -55,6 +55,6 @@ extension KeyboardShortcuts {
 @available(macOS 10.15, *)
 struct SwiftUI_Previews: PreviewProvider {
 	static var previews: some View {
-		KeyboardShortcuts.Recorder(for: .Name("xcodePreview"))
+		KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
 	}
 }

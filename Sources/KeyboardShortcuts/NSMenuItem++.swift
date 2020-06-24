@@ -20,7 +20,7 @@ extension NSMenuItem {
 	import KeyboardShortcuts
 
 	extension KeyboardShortcuts.Name {
-		static let toggleUnicornMode = Name("toggleUnicornMode")
+		static let toggleUnicornMode = Self("toggleUnicornMode")
 	}
 
 	// … `Recorder` logic for recording the keyboard shortcut …
@@ -65,6 +65,7 @@ extension NSMenuItem {
 			set()
 		}
 
+		// TODO: Use Combine when targeting macOS 10.15.
 		AssociatedKeys.observer[self] = NotificationCenter.default.addObserver(forName: .shortcutByNameDidChange, object: nil, queue: nil) { notification in
 			guard
 				let nameInNotification = notification.userInfo?["name"] as? KeyboardShortcuts.Name,
