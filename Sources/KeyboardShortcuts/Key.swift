@@ -4,601 +4,151 @@ import Carbon.HIToolbox
 extension KeyboardShortcuts {
 	// swiftlint:disable identifier_name
 	/// Represents a key on the keyboard.
-	public enum Key: RawRepresentable {
-		// MARK: Letters
-		case a
-		case b
-		case c
-		case d
-		case e
-		case f
-		case g
-		case h
-		case i
-		case j
-		case k
-		case l
-		case m
-		case n
-		case o
-		case p
-		case q
-		case r
-		case s
-		case t
-		case u
-		case v
-		case w
-		case x
-		case y
-		case z
+	public struct Key: Hashable, RawRepresentable {
+		static let a = Self(kVK_ANSI_A)
+		static let b = Self(kVK_ANSI_B)
+		static let c = Self(kVK_ANSI_C)
+		static let d = Self(kVK_ANSI_D)
+		static let e = Self(kVK_ANSI_E)
+		static let f = Self(kVK_ANSI_F)
+		static let g = Self(kVK_ANSI_G)
+		static let h = Self(kVK_ANSI_H)
+		static let i = Self(kVK_ANSI_I)
+		static let j = Self(kVK_ANSI_J)
+		static let k = Self(kVK_ANSI_K)
+		static let l = Self(kVK_ANSI_L)
+		static let m = Self(kVK_ANSI_M)
+		static let n = Self(kVK_ANSI_N)
+		static let o = Self(kVK_ANSI_O)
+		static let p = Self(kVK_ANSI_P)
+		static let q = Self(kVK_ANSI_Q)
+		static let r = Self(kVK_ANSI_R)
+		static let s = Self(kVK_ANSI_S)
+		static let t = Self(kVK_ANSI_T)
+		static let u = Self(kVK_ANSI_U)
+		static let v = Self(kVK_ANSI_V)
+		static let w = Self(kVK_ANSI_W)
+		static let x = Self(kVK_ANSI_X)
+		static let y = Self(kVK_ANSI_Y)
+		static let z = Self(kVK_ANSI_Z)
 		// swiftlint:enable identifier_name
 
 		// MARK: Numbers
-		case zero
-		case one
-		case two
-		case three
-		case four
-		case five
-		case six
-		case seven
-		case eight
-		case nine
+
+		static let zero = Self(kVK_ANSI_0)
+		static let one = Self(kVK_ANSI_1)
+		static let two = Self(kVK_ANSI_2)
+		static let three = Self(kVK_ANSI_3)
+		static let four = Self(kVK_ANSI_4)
+		static let five = Self(kVK_ANSI_5)
+		static let six = Self(kVK_ANSI_6)
+		static let seven = Self(kVK_ANSI_7)
+		static let eight = Self(kVK_ANSI_8)
+		static let nine = Self(kVK_ANSI_9)
 
 		// MARK: Modifiers
-		case capsLock
-		case shift
-		case function
-		case control
-		case option
-		case command
-		case rightCommand
-		case rightOption
-		case rightControl
-		case rightShift
+
+		static let capsLock = Self(kVK_CapsLock)
+		static let shift = Self(kVK_Shift)
+		static let function = Self(kVK_Function)
+		static let control = Self(kVK_Control)
+		static let option = Self(kVK_Option)
+		static let command = Self(kVK_Command)
+		static let rightCommand = Self(kVK_RightCommand)
+		static let rightOption = Self(kVK_RightOption)
+		static let rightControl = Self(kVK_RightControl)
+		static let rightShift = Self(kVK_RightShift)
 
 		// MARK: Miscellaneous
-		case `return`
-		case backslash
-		case backtick
-		case comma
-		case equal
-		case minus
-		case period
-		case quote
-		case semicolon
-		case slash
-		case space
-		case tab
-		case leftBracket
-		case rightBracket
-		case pageUp
-		case pageDown
-		case home
-		case end
-		case upArrow
-		case rightArrow
-		case downArrow
-		case leftArrow
-		case escape
-		case delete
-		case deleteForward
-		case help
-		case mute
-		case volumeUp
-		case volumeDown
+
+		static let `return` = Self(kVK_Return)
+		static let backslash = Self(kVK_ANSI_Backslash)
+		static let backtick = Self(kVK_ANSI_Grave)
+		static let comma = Self(kVK_ANSI_Comma)
+		static let equal = Self(kVK_ANSI_Equal)
+		static let minus = Self(kVK_ANSI_Minus)
+		static let period = Self(kVK_ANSI_Period)
+		static let quote = Self(kVK_ANSI_Quote)
+		static let semicolon = Self(kVK_ANSI_Semicolon)
+		static let slash = Self(kVK_ANSI_Slash)
+		static let space = Self(kVK_Space)
+		static let tab = Self(kVK_Tab)
+		static let leftBracket = Self(kVK_ANSI_LeftBracket)
+		static let rightBracket = Self(kVK_ANSI_RightBracket)
+		static let pageUp = Self(kVK_PageUp)
+		static let pageDown = Self(kVK_PageDown)
+		static let home = Self(kVK_Home)
+		static let end = Self(kVK_End)
+		static let upArrow = Self(kVK_UpArrow)
+		static let rightArrow = Self(kVK_RightArrow)
+		static let downArrow = Self(kVK_DownArrow)
+		static let leftArrow = Self(kVK_LeftArrow)
+		static let escape = Self(kVK_Escape)
+		static let delete = Self(kVK_Delete)
+		static let deleteForward = Self(kVK_ForwardDelete)
+		static let help = Self(kVK_Help)
+		static let mute = Self(kVK_Mute)
+		static let volumeUp = Self(kVK_VolumeUp)
+		static let volumeDown = Self(kVK_VolumeDown)
 
 		// MARK: Function
-		case f1
-		case f2
-		case f3
-		case f4
-		case f5
-		case f6
-		case f7
-		case f8
-		case f9
-		case f10
-		case f11
-		case f12
-		case f13
-		case f14
-		case f15
-		case f16
-		case f17
-		case f18
-		case f19
-		case f20
+
+		static let f1 = Self(kVK_F1)
+		static let f2 = Self(kVK_F2)
+		static let f3 = Self(kVK_F3)
+		static let f4 = Self(kVK_F4)
+		static let f5 = Self(kVK_F5)
+		static let f6 = Self(kVK_F6)
+		static let f7 = Self(kVK_F7)
+		static let f8 = Self(kVK_F8)
+		static let f9 = Self(kVK_F9)
+		static let f10 = Self(kVK_F10)
+		static let f11 = Self(kVK_F11)
+		static let f12 = Self(kVK_F12)
+		static let f13 = Self(kVK_F13)
+		static let f14 = Self(kVK_F14)
+		static let f15 = Self(kVK_F15)
+		static let f16 = Self(kVK_F16)
+		static let f17 = Self(kVK_F17)
+		static let f18 = Self(kVK_F18)
+		static let f19 = Self(kVK_F19)
+		static let f20 = Self(kVK_F20)
 
 		// MARK: Keypad
-		case keypad0
-		case keypad1
-		case keypad2
-		case keypad3
-		case keypad4
-		case keypad5
-		case keypad6
-		case keypad7
-		case keypad8
-		case keypad9
-		case keypadClear
-		case keypadDecimal
-		case keypadDivide
-		case keypadEnter
-		case keypadEquals
-		case keypadMinus
-		case keypadMultiply
-		case keypadPlus
 
-		// MARK: Initializers
-
-		/// Create a `Key` from a key code.
-		public init?(rawValue: Int) {
-			switch rawValue {
-			case kVK_ANSI_A:
-				self = .a
-			case kVK_ANSI_B:
-				self = .b
-			case kVK_ANSI_C:
-				self = .c
-			case kVK_ANSI_D:
-				self = .d
-			case kVK_ANSI_E:
-				self = .e
-			case kVK_ANSI_F:
-				self = .f
-			case kVK_ANSI_G:
-				self = .g
-			case kVK_ANSI_H:
-				self = .h
-			case kVK_ANSI_I:
-				self = .i
-			case kVK_ANSI_J:
-				self = .j
-			case kVK_ANSI_K:
-				self = .k
-			case kVK_ANSI_L:
-				self = .l
-			case kVK_ANSI_M:
-				self = .m
-			case kVK_ANSI_N:
-				self = .n
-			case kVK_ANSI_O:
-				self = .o
-			case kVK_ANSI_P:
-				self = .p
-			case kVK_ANSI_Q:
-				self = .q
-			case kVK_ANSI_R:
-				self = .r
-			case kVK_ANSI_S:
-				self = .s
-			case kVK_ANSI_T:
-				self = .t
-			case kVK_ANSI_U:
-				self = .u
-			case kVK_ANSI_V:
-				self = .v
-			case kVK_ANSI_W:
-				self = .w
-			case kVK_ANSI_X:
-				self = .x
-			case kVK_ANSI_Y:
-				self = .y
-			case kVK_ANSI_Z:
-				self = .z
-			case kVK_ANSI_0:
-				self = .zero
-			case kVK_ANSI_1:
-				self = .one
-			case kVK_ANSI_2:
-				self = .two
-			case kVK_ANSI_3:
-				self = .three
-			case kVK_ANSI_4:
-				self = .four
-			case kVK_ANSI_5:
-				self = .five
-			case kVK_ANSI_6:
-				self = .six
-			case kVK_ANSI_7:
-				self = .seven
-			case kVK_ANSI_8:
-				self = .eight
-			case kVK_ANSI_9:
-				self = .nine
-			case kVK_CapsLock:
-				self = .capsLock
-			case kVK_Shift:
-				self = .shift
-			case kVK_Function:
-				self = .function
-			case kVK_Control:
-				self = .control
-			case kVK_Option:
-				self = .option
-			case kVK_Command:
-				self = .command
-			case kVK_RightCommand:
-				self = .rightCommand
-			case kVK_RightOption:
-				self = .rightOption
-			case kVK_RightControl:
-				self = .rightControl
-			case kVK_RightShift:
-				self = .rightShift
-			case kVK_Return:
-				self = .return
-			case kVK_ANSI_Backslash:
-				self = .backslash
-			case kVK_ANSI_Grave:
-				self = .backtick
-			case kVK_ANSI_Comma:
-				self = .comma
-			case kVK_ANSI_Equal:
-				self = .equal
-			case kVK_ANSI_Minus:
-				self = .minus
-			case kVK_ANSI_Period:
-				self = .period
-			case kVK_ANSI_Quote:
-				self = .quote
-			case kVK_ANSI_Semicolon:
-				self = .semicolon
-			case kVK_ANSI_Slash:
-				self = .slash
-			case kVK_Space:
-				self = .space
-			case kVK_Tab:
-				self = .tab
-			case kVK_ANSI_LeftBracket:
-				self = .leftBracket
-			case kVK_ANSI_RightBracket:
-				self = .rightBracket
-			case kVK_PageUp:
-				self = .pageUp
-			case kVK_PageDown:
-				self = .pageDown
-			case kVK_Home:
-				self = .home
-			case kVK_End:
-				self = .end
-			case kVK_UpArrow:
-				self = .upArrow
-			case kVK_RightArrow:
-				self = .rightArrow
-			case kVK_DownArrow:
-				self = .downArrow
-			case kVK_LeftArrow:
-				self = .leftArrow
-			case kVK_Escape:
-				self = .escape
-			case kVK_Delete:
-				self = .delete
-			case kVK_ForwardDelete:
-				self = .deleteForward
-			case kVK_Help:
-				self = .help
-			case kVK_Mute:
-				self = .mute
-			case kVK_VolumeUp:
-				self = .volumeUp
-			case kVK_VolumeDown:
-				self = .volumeDown
-			case kVK_F1:
-				self = .f1
-			case kVK_F2:
-				self = .f2
-			case kVK_F3:
-				self = .f3
-			case kVK_F4:
-				self = .f4
-			case kVK_F5:
-				self = .f5
-			case kVK_F6:
-				self = .f6
-			case kVK_F7:
-				self = .f7
-			case kVK_F8:
-				self = .f8
-			case kVK_F9:
-				self = .f9
-			case kVK_F10:
-				self = .f10
-			case kVK_F11:
-				self = .f11
-			case kVK_F12:
-				self = .f12
-			case kVK_F13:
-				self = .f13
-			case kVK_F14:
-				self = .f14
-			case kVK_F15:
-				self = .f15
-			case kVK_F16:
-				self = .f16
-			case kVK_F17:
-				self = .f17
-			case kVK_F18:
-				self = .f18
-			case kVK_F19:
-				self = .f19
-			case kVK_F20:
-				self = .f20
-			case kVK_ANSI_Keypad0:
-				self = .keypad0
-			case kVK_ANSI_Keypad1:
-				self = .keypad1
-			case kVK_ANSI_Keypad2:
-				self = .keypad2
-			case kVK_ANSI_Keypad3:
-				self = .keypad3
-			case kVK_ANSI_Keypad4:
-				self = .keypad4
-			case kVK_ANSI_Keypad5:
-				self = .keypad5
-			case kVK_ANSI_Keypad6:
-				self = .keypad6
-			case kVK_ANSI_Keypad7:
-				self = .keypad7
-			case kVK_ANSI_Keypad8:
-				self = .keypad8
-			case kVK_ANSI_Keypad9:
-				self = .keypad9
-			case kVK_ANSI_KeypadClear:
-				self = .keypadClear
-			case kVK_ANSI_KeypadDecimal:
-				self = .keypadDecimal
-			case kVK_ANSI_KeypadDivide:
-				self = .keypadDivide
-			case kVK_ANSI_KeypadEnter:
-				self = .keypadEnter
-			case kVK_ANSI_KeypadEquals:
-				self = .keypadEquals
-			case kVK_ANSI_KeypadMinus:
-				self = .keypadMinus
-			case kVK_ANSI_KeypadMultiply:
-				self = .keypadMultiply
-			case kVK_ANSI_KeypadPlus:
-				self = .keypadPlus
-			default:
-				return nil
-			}
-		}
+		static let keypad0 = Self(kVK_ANSI_Keypad0)
+		static let keypad1 = Self(kVK_ANSI_Keypad1)
+		static let keypad2 = Self(kVK_ANSI_Keypad2)
+		static let keypad3 = Self(kVK_ANSI_Keypad3)
+		static let keypad4 = Self(kVK_ANSI_Keypad4)
+		static let keypad5 = Self(kVK_ANSI_Keypad5)
+		static let keypad6 = Self(kVK_ANSI_Keypad6)
+		static let keypad7 = Self(kVK_ANSI_Keypad7)
+		static let keypad8 = Self(kVK_ANSI_Keypad8)
+		static let keypad9 = Self(kVK_ANSI_Keypad9)
+		static let keypadClear = Self(kVK_ANSI_KeypadClear)
+		static let keypadDecimal = Self(kVK_ANSI_KeypadDecimal)
+		static let keypadDivide = Self(kVK_ANSI_KeypadDivide)
+		static let keypadEnter = Self(kVK_ANSI_KeypadEnter)
+		static let keypadEquals = Self(kVK_ANSI_KeypadEquals)
+		static let keypadMinus = Self(kVK_ANSI_KeypadMinus)
+		static let keypadMultiply = Self(kVK_ANSI_KeypadMultiply)
+		static let keypadPlus = Self(kVK_ANSI_KeypadPlus)
 
 		// MARK: Properties
 
 		/// The raw key code.
-		public var rawValue: Int {
-			switch self {
-			case .a:
-				return kVK_ANSI_A
-			case .b:
-				return kVK_ANSI_B
-			case .c:
-				return kVK_ANSI_C
-			case .d:
-				return kVK_ANSI_D
-			case .e:
-				return kVK_ANSI_E
-			case .f:
-				return kVK_ANSI_F
-			case .g:
-				return kVK_ANSI_G
-			case .h:
-				return kVK_ANSI_H
-			case .i:
-				return kVK_ANSI_I
-			case .j:
-				return kVK_ANSI_J
-			case .k:
-				return kVK_ANSI_K
-			case .l:
-				return kVK_ANSI_L
-			case .m:
-				return kVK_ANSI_M
-			case .n:
-				return kVK_ANSI_N
-			case .o:
-				return kVK_ANSI_O
-			case .p:
-				return kVK_ANSI_P
-			case .q:
-				return kVK_ANSI_Q
-			case .r:
-				return kVK_ANSI_R
-			case .s:
-				return kVK_ANSI_S
-			case .t:
-				return kVK_ANSI_T
-			case .u:
-				return kVK_ANSI_U
-			case .v:
-				return kVK_ANSI_V
-			case .w:
-				return kVK_ANSI_W
-			case .x:
-				return kVK_ANSI_X
-			case .y:
-				return kVK_ANSI_Y
-			case .z:
-				return kVK_ANSI_Z
-			case .zero:
-				return kVK_ANSI_0
-			case .one:
-				return kVK_ANSI_1
-			case .two:
-				return kVK_ANSI_2
-			case .three:
-				return kVK_ANSI_3
-			case .four:
-				return kVK_ANSI_4
-			case .five:
-				return kVK_ANSI_5
-			case .six:
-				return kVK_ANSI_6
-			case .seven:
-				return kVK_ANSI_7
-			case .eight:
-				return kVK_ANSI_8
-			case .nine:
-				return kVK_ANSI_9
-			case .capsLock:
-				return kVK_CapsLock
-			case .shift:
-				return kVK_Shift
-			case .function:
-				return kVK_Function
-			case .control:
-				return kVK_Control
-			case .option:
-				return kVK_Option
-			case .command:
-				return kVK_Command
-			case .rightCommand:
-				return kVK_RightCommand
-			case .rightOption:
-				return kVK_RightOption
-			case .rightControl:
-				return kVK_RightControl
-			case .rightShift:
-				return kVK_RightShift
-			case .return:
-				return kVK_Return
-			case .backslash:
-				return kVK_ANSI_Backslash
-			case .backtick:
-				return kVK_ANSI_Grave
-			case .comma:
-				return kVK_ANSI_Comma
-			case .equal:
-				return kVK_ANSI_Equal
-			case .minus:
-				return kVK_ANSI_Minus
-			case .period:
-				return kVK_ANSI_Period
-			case .quote:
-				return kVK_ANSI_Quote
-			case .semicolon:
-				return kVK_ANSI_Semicolon
-			case .slash:
-				return kVK_ANSI_Slash
-			case .space:
-				return kVK_Space
-			case .tab:
-				return kVK_Tab
-			case .leftBracket:
-				return kVK_ANSI_LeftBracket
-			case .rightBracket:
-				return kVK_ANSI_RightBracket
-			case .pageUp:
-				return kVK_PageUp
-			case .pageDown:
-				return kVK_PageDown
-			case .home:
-				return kVK_Home
-			case .end:
-				return kVK_End
-			case .upArrow:
-				return kVK_UpArrow
-			case .rightArrow:
-				return kVK_RightArrow
-			case .downArrow:
-				return kVK_DownArrow
-			case .leftArrow:
-				return kVK_LeftArrow
-			case .escape:
-				return kVK_Escape
-			case .delete:
-				return kVK_Delete
-			case .deleteForward:
-				return kVK_ForwardDelete
-			case .help:
-				return kVK_Help
-			case .mute:
-				return kVK_Mute
-			case .volumeUp:
-				return kVK_VolumeUp
-			case .volumeDown:
-				return kVK_VolumeDown
-			case .f1:
-				return kVK_F1
-			case .f2:
-				return kVK_F2
-			case .f3:
-				return kVK_F3
-			case .f4:
-				return kVK_F4
-			case .f5:
-				return kVK_F5
-			case .f6:
-				return kVK_F6
-			case .f7:
-				return kVK_F7
-			case .f8:
-				return kVK_F8
-			case .f9:
-				return kVK_F9
-			case .f10:
-				return kVK_F10
-			case .f11:
-				return kVK_F11
-			case .f12:
-				return kVK_F12
-			case .f13:
-				return kVK_F13
-			case .f14:
-				return kVK_F14
-			case .f15:
-				return kVK_F15
-			case .f16:
-				return kVK_F16
-			case .f17:
-				return kVK_F17
-			case .f18:
-				return kVK_F18
-			case .f19:
-				return kVK_F19
-			case .f20:
-				return kVK_F20
-			case .keypad0:
-				return kVK_ANSI_Keypad0
-			case .keypad1:
-				return kVK_ANSI_Keypad1
-			case .keypad2:
-				return kVK_ANSI_Keypad2
-			case .keypad3:
-				return kVK_ANSI_Keypad3
-			case .keypad4:
-				return kVK_ANSI_Keypad4
-			case .keypad5:
-				return kVK_ANSI_Keypad5
-			case .keypad6:
-				return kVK_ANSI_Keypad6
-			case .keypad7:
-				return kVK_ANSI_Keypad7
-			case .keypad8:
-				return kVK_ANSI_Keypad8
-			case .keypad9:
-				return kVK_ANSI_Keypad9
-			case .keypadClear:
-				return kVK_ANSI_KeypadClear
-			case .keypadDecimal:
-				return kVK_ANSI_KeypadDecimal
-			case .keypadDivide:
-				return kVK_ANSI_KeypadDivide
-			case .keypadEnter:
-				return kVK_ANSI_KeypadEnter
-			case .keypadEquals:
-				return kVK_ANSI_KeypadEquals
-			case .keypadMinus:
-				return kVK_ANSI_KeypadMinus
-			case .keypadMultiply:
-				return kVK_ANSI_KeypadMultiply
-			case .keypadPlus:
-				return kVK_ANSI_KeypadPlus
-			}
+		public let rawValue: Int
+
+		// MARK: Initializers
+
+		/// Create a `Key` from a key code.
+		public init(rawValue: Int) {
+			self.rawValue = rawValue
+		}
+
+		private init(_ value: Int) {
+			self.init(rawValue: value)
 		}
 	}
 }
