@@ -643,7 +643,6 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) SWIFT_PACKAGE DEBUG";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				USE_HEADERMAP = NO;
-				VALID_ARCHS = x86_64;
 			};
 			name = Debug;
 		};
@@ -698,7 +697,6 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				USE_HEADERMAP = NO;
-				VALID_ARCHS = x86_64;
 			};
 			name = Release;
 		};
