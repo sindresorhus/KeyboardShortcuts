@@ -30,7 +30,7 @@ extension KeyboardShortcuts {
 				let defaultShortcut = defaultShortcut,
 				!userDefaultsContains(name: self)
 			{
-				userDefaultsSet(name: self, shortcut: defaultShortcut)
+				setShortcut(defaultShortcut, for: self)
 			}
 		}
 	}

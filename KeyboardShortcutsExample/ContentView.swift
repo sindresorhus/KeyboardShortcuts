@@ -24,6 +24,11 @@ struct ContentView: View {
 				Text("Pressed? \(isPressed2 ? "👍" : "👎")")
 					.frame(width: 100, alignment: .leading)
 			}
+			Spacer()
+			Divider()
+			Button("Reset All") {
+				KeyboardShortcuts.reset(.testShortcut1, .testShortcut2)
+			}
 		}
 			.frame(maxWidth: 300)
 			.padding(60)
