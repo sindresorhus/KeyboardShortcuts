@@ -107,6 +107,7 @@ extension KeyboardShortcuts {
 			eventMonitor = nil
 			placeholderString = "Record Shortcut"
 			showsCancelButton = !stringValue.isEmpty
+			KeyboardShortcuts.isPaused = false
 		}
 
 		/// :nodoc:
@@ -120,6 +121,7 @@ extension KeyboardShortcuts {
 			placeholderString = "Press Shortcut"
 			showsCancelButton = !stringValue.isEmpty
 			hideCaret()
+			KeyboardShortcuts.isPaused = true // The position here matters.
 
 			eventMonitor = LocalEventMonitor(events: [.keyDown, .leftMouseUp, .rightMouseUp]) { [weak self] event in
 				guard let self = self else {
