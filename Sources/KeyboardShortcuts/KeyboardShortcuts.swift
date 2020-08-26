@@ -54,7 +54,8 @@ public enum KeyboardShortcuts {
 		guard let shortcut = userDefaultsGet(name: name) else {
 			return
 		}
-
+		userDefaultsKeyDownHandlers.removeValue(forKey: name)
+		userDefaultsKeyUpHandlers.removeValue(forKey: name)
 		unregister(shortcut)
 	}
 
