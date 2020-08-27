@@ -1,0 +1,5 @@
+"Record Shortcut" = "记录快捷键";
+"Press Shortcut" = "键入快捷键";
+"This keyboard shortcut cannot be used as it's already used by the “\(menuItem.title)” menu item." = "此快捷键无法被使用, 因为它已经被菜单项 “\(menuItem.title)” 所使用.";
+"This keyboard shortcut cannot be used as it's already a system-wide keyboard shortcut." = "此快捷键无法被使用, 因为它已经是系统快捷键.";
+"Most system-wide keyboard shortcuts can be changed in “System Preferences › Keyboard › Shortcuts“." = "可以在 ”系统偏好设置 › 键盘 › 快捷键” 中更改大多数系统快捷键.";
