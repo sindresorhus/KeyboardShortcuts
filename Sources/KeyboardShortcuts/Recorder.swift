@@ -48,7 +48,9 @@ extension KeyboardShortcuts {
 		public func makeNSView(context: Context) -> NSViewType { .init(for: name, onChange: onChange) }
 
 		/// :nodoc:
-		public func updateNSView(_ nsView: NSViewType, context: Context) { nsView.updateShortCutName(self.name) }
+		public func updateNSView(_ nsView: NSViewType, context: Context) {
+			nsView.updateShortCutName(self.name)
+		}
 	}
 }
 
