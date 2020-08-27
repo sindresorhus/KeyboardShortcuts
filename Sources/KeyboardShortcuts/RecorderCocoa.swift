@@ -186,7 +186,7 @@ extension KeyboardShortcuts {
 
 					NSAlert.showModal(
 						for: self.window,
-                        message: "This keyboard shortcut cannot be used as it's already used by the “\(menuItem.title)” menu item.".localized
+                        message: "This keyboard shortcut cannot be used as it's already used by the".localized + " “\(menuItem.title)” " + "menu item.".localized
 					)
 
 					self.focus()
