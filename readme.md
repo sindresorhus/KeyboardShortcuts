@@ -123,7 +123,7 @@ This package supports localization but still in early development, so PRs are we
 1. Fork the repo.
 2. Create a directory that has a name that uses an ISO 639 language code and optional designators, followed by the `.lproj` suffix, and doesn’t contain subdirectories, you can find more [here](https://developer.apple.com/documentation/swift_packages/localizing_package_resources).
 3. Create a file named `Localizable.strings` under the new language directory, and copy all text from `KeyboardShortcuts/Localization/en.lproj/Localizable.strings` to the new file that you created.
-4. Localize!
+4. Localize! And review your localization multiple times. Check for typos.
 5. Submit a PR.
 
 ## API
