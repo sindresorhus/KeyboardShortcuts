@@ -38,6 +38,7 @@ extension KeyboardShortcuts {
 			}
 		}
 		private let onChange: ((_ shortcut: Shortcut?) -> Void)?
+		private var observer: NSObjectProtocol?
 
 		/// :nodoc:
 		override public var canBecomeKeyView: Bool { false }
@@ -76,6 +77,10 @@ extension KeyboardShortcuts {
 			self.alignment = .center
 			(self.cell as? NSSearchFieldCell)?.searchButtonCell = nil
 
+			if let shortcut = getShortcut(for: shortcutName) {
+				self.stringValue = "\(shortcut)"
+			}
+
 			self.wantsLayer = true
 			self.translatesAutoresizingMaskIntoConstraints = false
 			self.setContentHuggingPriority(.defaultHigh, for: .vertical)
@@ -85,11 +90,28 @@ extension KeyboardShortcuts {
 			// Hide the cancel button when not showing the shortcut so the placeholder text is properly centered. Must be last.
 			self.cancelButton = (self.cell as? NSSearchFieldCell)?.cancelButtonCell
 			self.showsCancelButton = !stringValue.isEmpty
+
+			setUpEvents()
 		}
 
 		@available(*, unavailable)
 		public required init?(coder: NSCoder) {
 			fatalError("init(coder:) has not been implemented")
+		}
+
+		private func setUpEvents() {
+			observer = NotificationCenter.default.addObserver(forName: .shortcutByNameDidChange, object: nil, queue: nil) { [weak self] notification in
+				guard
+					let self = self,
+					let nameInNotification = notification.userInfo?["name"] as? KeyboardShortcuts.Name,
+					nameInNotification == self.shortcutName
+				else {
+					return
+				}
+
+				self.stringValue = getShortcut(for: nameInNotification).map { "\($0)" } ?? ""
+				self.showsCancelButton = !self.stringValue.isEmpty
+			}
 		}
 
 		/// :nodoc:
@@ -226,12 +248,7 @@ extension KeyboardShortcuts {
 		}
 
 		private func saveShortcut(_ shortcut: Shortcut?) {
-			if let shortcut = shortcut {
-				userDefaultsSet(name: shortcutName, shortcut: shortcut)
-			} else {
-				userDefaultsRemove(name: shortcutName)
-			}
-
+			setShortcut(shortcut, for: shortcutName)
 			onChange?(shortcut)
 		}
 	}

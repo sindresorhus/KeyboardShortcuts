@@ -5,7 +5,7 @@
 
 This package lets you add support for user-customizable global keyboard shortcuts to your macOS app in minutes. It's fully sandbox and Mac App Store compatible. And it's used in production by [Dato](https://sindresorhus.com/dato), [Jiffy](https://sindresorhus.com/jiffy), [Plash](https://github.com/sindresorhus/Plash), and [Lungo](https://sindresorhus.com/lungo).
 
-This package is still in its early days. I'm happy to accept more configurability and features. PR welcome! What you see here is just what I needed for my own apps.
+I'm happy to accept more configurability and features. PR welcome! What you see here is just what I needed for my own apps.
 
 <img src="https://github.com/sindresorhus/KeyboardShortcuts/raw/master/screenshot.png" width="532">
 
