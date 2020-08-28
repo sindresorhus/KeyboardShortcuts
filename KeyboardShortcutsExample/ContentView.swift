@@ -13,7 +13,7 @@ struct Shortcut {
 	let label: String
 }
 
-class PickerShortcutViewModel: ObservableObject {
+final class PickerShortcutViewModel: ObservableObject {
 	@Published var isPressed = false
 	@Published var selectedState = 0 {
 		didSet {
@@ -23,26 +23,30 @@ class PickerShortcutViewModel: ObservableObject {
 	}
 
 	var selectedLabel: Binding<String> {
-		Binding(get: {
-			self.shortcuts[self.selectedState].label
-		}, set: { label in
-			self.selectedState = self.shortcuts.firstIndex { $0.label == label } ?? 0
-		})
+		Binding(
+			get: {
+				self.shortcuts[self.selectedState].label
+			},
+			set: { label in
+				self.selectedState = self.shortcuts.firstIndex { $0.label == label } ?? 0
+			}
+		)
 	}
-
-	init() {
-		setShortcutEvent(name: shortcuts[selectedState].name)
-	}
-
+	
 	var shortcuts = [
 		Shortcut(name: .testShortcut3, label: "Shortcut3"),
 		Shortcut(name: .testShortcut4, label: "Shortcut4")
 	]
 
-	func setShortcutEvent (name: KeyboardShortcuts.Name) {
+	init() {
+		setShortcutEvent(name: shortcuts[selectedState].name)
+	}
+
+	func setShortcutEvent(name: KeyboardShortcuts.Name) {
 		KeyboardShortcuts.onKeyDown(for: name) {
 			self.isPressed = true
 		}
+
 		KeyboardShortcuts.onKeyUp(for: name) {
 			self.isPressed = false
 		}
@@ -52,10 +56,9 @@ class PickerShortcutViewModel: ObservableObject {
 struct PickerShortcut: View {
 	@ObservedObject private var viewModel = PickerShortcutViewModel()
 
-
 	var body: some View {
 		VStack {
-			Picker(selection: viewModel.selectedLabel, label: Text("Select shortcut:")) {
+			Picker("Select shortcut:", selection: viewModel.selectedLabel) {
 				ForEach(viewModel.shortcuts, id: \.label) {
 					Text($0.label)
 				}
@@ -65,7 +68,8 @@ struct PickerShortcut: View {
 					.padding(.trailing, 10)
 				Text("Pressed? \(viewModel.isPressed ? "👍" : "👎")")
 					.frame(width: 100, alignment: .leading)
-			}.padding(.top, 8)
+			}
+				.padding(.top, 8)
 		}
 			.frame(maxWidth: 300)
 			.padding(60)
