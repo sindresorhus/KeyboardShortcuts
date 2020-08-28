@@ -18,19 +18,21 @@ extension KeyboardShortcuts {
 		public typealias Shortcut = KeyboardShortcuts.Shortcut
 
 		public let rawValue: String
+		public let defaultShortcut: Shortcut?
 
 		/**
 		- Parameter name: Name of the shortcut.
-		- Parameter default: Optional default key combination for the shortcut. Do not set this unless it's essential. Users find it annoying when random apps steal their existing keyboard shortcuts. It's generally better to show a welcome screen on the first app launch that lets the user set the shortcut.
+		- Parameter default: Optional default key combination. Do not set this unless it's essential. Users find it annoying when random apps steal their existing keyboard shortcuts. It's generally better to show a welcome screen on the first app launch that lets the user set the shortcut.
 		*/
 		public init(_ name: String, default defaultShortcut: Shortcut? = nil) {
 			self.rawValue = name
+			self.defaultShortcut = defaultShortcut
 
 			if
 				let defaultShortcut = defaultShortcut,
 				!userDefaultsContains(name: self)
 			{
-				userDefaultsSet(name: self, shortcut: defaultShortcut)
+				setShortcut(defaultShortcut, for: self)
 			}
 		}
 	}
