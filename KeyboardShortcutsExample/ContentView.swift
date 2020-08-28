@@ -4,61 +4,122 @@ import KeyboardShortcuts
 extension KeyboardShortcuts.Name {
 	static let testShortcut1 = Self("testShortcut1")
 	static let testShortcut2 = Self("testShortcut2")
+	static let testShortcut3 = Self("testShortcut3")
+	static let testShortcut4 = Self("testShortcut4")
 }
 
-struct ShortCut {
+struct Shortcut {
 	let name: KeyboardShortcuts.Name
-	let id: Int8
 	let label: String
 }
 
-struct ContentView: View {
-	@State private var isPressed = false
-	@State private var selectedState = 0
-	var shortCuts = [
-		ShortCut(name: .testShortcut1, id: 0, label: "ShortCut1"),
-		ShortCut(name: .testShortcut2, id: 1, label: "ShortCut2")
-	]
+class PickerShortcutViewModel: ObservableObject {
+	@Published var isPressed = false
+	@Published var selectedState = 0 {
+		didSet {
+			KeyboardShortcuts.disable(shortcuts[oldValue].name)
+			setShortcutEvent(name: shortcuts[selectedState].name)
+		}
+	}
 
-	private var selectedShortCut: Binding<Int> {
+	var selectedLabel: Binding<String> {
 		Binding(get: {
-			self.selectedState
-		}, set: {
-			KeyboardShortcuts.disable(self.shortCuts[self.selectedState].name)
-			KeyboardShortcuts.onKeyDown(for: self.shortCuts[$0].name) {
-				self.isPressed = true
-			}
-			KeyboardShortcuts.onKeyUp(for: self.shortCuts[$0].name) {
-				self.isPressed = false
-			}
-			self.selectedState = $0
+			self.shortcuts[self.selectedState].label
+		}, set: { label in
+			self.selectedState = self.shortcuts.firstIndex { $0.label == label } ?? 0
 		})
 	}
 
+	init() {
+		setShortcutEvent(name: shortcuts[selectedState].name)
+	}
+
+	var shortcuts = [
+		Shortcut(name: .testShortcut3, label: "Shortcut3"),
+		Shortcut(name: .testShortcut4, label: "Shortcut4")
+	]
+
+	func setShortcutEvent (name: KeyboardShortcuts.Name) {
+		KeyboardShortcuts.onKeyDown(for: name) {
+			self.isPressed = true
+		}
+		KeyboardShortcuts.onKeyUp(for: name) {
+			self.isPressed = false
+		}
+	}
+}
+
+struct PickerShortcut: View {
+	@ObservedObject private var viewModel = PickerShortcutViewModel()
+
+
 	var body: some View {
 		VStack {
-			Picker(selection: selectedShortCut, label: Text("Select shortcut :")) {
-				ForEach(0 ..< shortCuts.count) {
-					Text(self.shortCuts[$0].label)
+			Picker(selection: viewModel.selectedLabel, label: Text("Select shortcut:")) {
+				ForEach(viewModel.shortcuts, id: \.label) {
+					Text($0.label)
 				}
 			}
 			HStack {
-				KeyboardShortcuts.Recorder(for: self.shortCuts[selectedState].name)
+				KeyboardShortcuts.Recorder(for: viewModel.shortcuts[viewModel.selectedState].name)
 					.padding(.trailing, 10)
-				Text("Pressed? \(self.isPressed ? "👍" : "👎")")
+				Text("Pressed? \(viewModel.isPressed ? "👍" : "👎")")
 					.frame(width: 100, alignment: .leading)
 			}.padding(.top, 8)
 		}
 			.frame(maxWidth: 300)
 			.padding(60)
+	}
+}
+
+struct DoubleShortcut: View {
+	@State private var isPressed1 = false
+	@State private var isPressed2 = false
+
+	var body: some View {
+		VStack {
+			HStack {
+				KeyboardShortcuts.Recorder(for: .testShortcut1)
+					.padding(.trailing, 10)
+				Text("Pressed? \(isPressed1 ? "👍" : "👎")")
+					.frame(width: 100, alignment: .leading)
+			}
+			HStack {
+				KeyboardShortcuts.Recorder(for: .testShortcut2)
+					.padding(.trailing, 10)
+				Text("Pressed? \(isPressed2 ? "👍" : "👎")")
+					.frame(width: 100, alignment: .leading)
+			}
+		}
+			.frame(maxWidth: 300)
+			.padding(60)
 			.onAppear {
-				KeyboardShortcuts.onKeyDown(for: self.shortCuts[self.selectedState].name) {
-					self.isPressed = true
+				KeyboardShortcuts.onKeyDown(for: .testShortcut1) {
+					self.isPressed1 = true
 				}
-				KeyboardShortcuts.onKeyUp(for: self.shortCuts[self.selectedState].name) {
-					self.isPressed = false
+
+				KeyboardShortcuts.onKeyUp(for: .testShortcut1) {
+					self.isPressed1 = false
+				}
+
+				KeyboardShortcuts.onKeyDown(for: .testShortcut2) {
+					self.isPressed2 = true
+				}
+
+				KeyboardShortcuts.onKeyUp(for: .testShortcut2) {
+					self.isPressed2 = false
 				}
 			}
+	}
+}
+
+struct ContentView: View {
+	var body: some View {
+		VStack {
+			DoubleShortcut()
+			Divider()
+			PickerShortcut()
+		}
 	}
 }
 

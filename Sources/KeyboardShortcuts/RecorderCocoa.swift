@@ -28,7 +28,15 @@ extension KeyboardShortcuts {
 	public final class RecorderCocoa: NSSearchField, NSSearchFieldDelegate {
 		private let minimumWidth: Double = 130
 		private var eventMonitor: LocalEventMonitor?
-		private var shortcutName: Name
+		public var shortcutName: Name {
+			didSet {
+				if let shortcut = userDefaultsGet(name: shortcutName) {
+					self.stringValue = "\(shortcut)"
+				} else {
+					self.stringValue = ""
+				}
+			}
+		}
 		private let onChange: ((_ shortcut: Shortcut?) -> Void)?
 
 		/// :nodoc:
@@ -68,10 +76,6 @@ extension KeyboardShortcuts {
 			self.alignment = .center
 			(self.cell as? NSSearchFieldCell)?.searchButtonCell = nil
 
-			if let shortcut = userDefaultsGet(name: shortcutName) {
-				self.stringValue = "\(shortcut)"
-			}
-
 			self.wantsLayer = true
 			self.translatesAutoresizingMaskIntoConstraints = false
 			self.setContentHuggingPriority(.defaultHigh, for: .vertical)
@@ -99,19 +103,6 @@ extension KeyboardShortcuts {
 			if stringValue.isEmpty {
 				// Hack to ensure that the placeholder centers after the above `showsCancelButton` setter.
 				focus()
-			}
-		}
-
-		/// :nodoc:
-		public func updateShortCutName(_ name: Name) {
-			if self.shortcutName == name {
-				return
-			}
-			self.shortcutName = name
-			if let shortcut = userDefaultsGet(name: shortcutName) {
-				self.stringValue = "\(shortcut)"
-			} else {
-				self.stringValue = ""
 			}
 		}
 
