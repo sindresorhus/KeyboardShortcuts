@@ -3,10 +3,10 @@ import Carbon.HIToolbox
 
 
 extension String {
-    /// localization
-    var localized: String {
-        NSLocalizedString(self, bundle: .module, comment: self)
-    }
+	/// localization
+	var localized: String {
+		NSLocalizedString(self, bundle: .module, comment: self)
+	}
 }
 
 
