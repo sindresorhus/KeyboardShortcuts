@@ -69,6 +69,8 @@ public enum KeyboardShortcuts {
 	/**
 	Reset the keyboard shortcut for one or more names.
 
+	If the `Name` has a default shortcut, it will reset to that.
+
 	```
 	import SwiftUI
 	import KeyboardShortcuts
@@ -95,6 +97,8 @@ public enum KeyboardShortcuts {
 	/**
 	Reset the keyboard shortcut for one or more names.
 
+	If the `Name` has a default shortcut, it will reset to that.
+
 	- Note: This overload exists as Swift doesn't support splatting.
 
 	```
@@ -118,12 +122,14 @@ public enum KeyboardShortcuts {
 	*/
 	public static func reset(_ names: [Name]) {
 		for name in names {
-			setShortcut(nil, for: name)
+			setShortcut(name.defaultShortcut, for: name)
 		}
 	}
 
 	/**
 	Set the keyboard shortcut for a name.
+
+	Setting it to `nil` removes the shortcut, even if the `Name` has a default shortcut defined. Use `.reset()` if you want it to respect the default shortcut.
 
 	You would usually not need this as the user would be the one setting the shortcut in a preferences user-interface, but it can be useful when, for example, migrating from a different keyboard shortcuts package.
 	*/
