@@ -119,7 +119,7 @@ final class PreferencesViewController: NSViewController {
 ## Localization
 
 This package supports localization but still in early development, so PRs are welcome!
-You can find what localizations we currently support (here)[/Sources/KeyboardShortcuts/Localization/]
+You can find what localizations we currently support [here](/Sources/KeyboardShortcuts/Localization/)
 
 1. Fork the repo.
 2. Create a directory that has a name that uses an ISO 639 language code and optional designators, followed by the `.lproj` suffix, and doesn’t contain subdirectories, you can find more [here](https://developer.apple.com/documentation/swift_packages/localizing_package_resources).
