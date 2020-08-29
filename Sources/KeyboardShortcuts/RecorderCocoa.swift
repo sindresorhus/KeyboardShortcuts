@@ -28,13 +28,10 @@ extension KeyboardShortcuts {
 	public final class RecorderCocoa: NSSearchField, NSSearchFieldDelegate {
 		private let minimumWidth: Double = 130
 		private var eventMonitor: LocalEventMonitor?
+		/// shortcutName should be updated by NSViewRepresentable.updateView from Recorder and same as stringValue
 		public var shortcutName: Name {
 			didSet {
-				if let shortcut = userDefaultsGet(name: shortcutName) {
-					self.stringValue = "\(shortcut)"
-				} else {
-					self.stringValue = ""
-				}
+				setStringValue(name: shortcutName)
 			}
 		}
 		private let onChange: ((_ shortcut: Shortcut?) -> Void)?
@@ -77,9 +74,7 @@ extension KeyboardShortcuts {
 			self.alignment = .center
 			(self.cell as? NSSearchFieldCell)?.searchButtonCell = nil
 
-			if let shortcut = getShortcut(for: shortcutName) {
-				self.stringValue = "\(shortcut)"
-			}
+			self.setStringValue(name: name)
 
 			self.wantsLayer = true
 			self.translatesAutoresizingMaskIntoConstraints = false
@@ -99,6 +94,10 @@ extension KeyboardShortcuts {
 			fatalError("init(coder:) has not been implemented")
 		}
 
+		private func setStringValue(name: KeyboardShortcuts.Name) {
+			stringValue = getShortcut(for: shortcutName).map { "\($0)" } ?? ""
+		}
+
 		private func setUpEvents() {
 			observer = NotificationCenter.default.addObserver(forName: .shortcutByNameDidChange, object: nil, queue: nil) { [weak self] notification in
 				guard
@@ -109,7 +108,7 @@ extension KeyboardShortcuts {
 					return
 				}
 
-				self.stringValue = getShortcut(for: nameInNotification).map { "\($0)" } ?? ""
+				self.setStringValue(name: nameInNotification)
 				self.showsCancelButton = !self.stringValue.isEmpty
 			}
 		}

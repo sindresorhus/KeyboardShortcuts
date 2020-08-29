@@ -13,7 +13,7 @@ struct Shortcut {
 	let label: String
 }
 
-final class PickerShortcutViewModel: ObservableObject {
+final class DynamicShortcutViewModel: ObservableObject {
 	@Published var isPressed = false
 	@Published var selectedState = 0 {
 		didSet {
@@ -32,7 +32,7 @@ final class PickerShortcutViewModel: ObservableObject {
 			}
 		)
 	}
-	
+
 	var shortcuts = [
 		Shortcut(name: .testShortcut3, label: "Shortcut3"),
 		Shortcut(name: .testShortcut4, label: "Shortcut4")
@@ -53,26 +53,27 @@ final class PickerShortcutViewModel: ObservableObject {
 	}
 }
 
-struct PickerShortcut: View {
-	@ObservedObject private var viewModel = PickerShortcutViewModel()
+struct DynamicShortcut: View {
+	@ObservedObject private var viewModel = DynamicShortcutViewModel()
 
 	var body: some View {
 		VStack {
-			Picker("Select shortcut:", selection: viewModel.selectedLabel) {
-				ForEach(viewModel.shortcuts, id: \.label) {
-					Text($0.label)
+			Text("Dynamic recorder").frame(maxWidth: .infinity, alignment: .leading)
+			VStack {
+				Picker("Select shortcut:", selection: viewModel.selectedLabel) {
+					ForEach(viewModel.shortcuts, id: \.label) {
+						Text($0.label)
+					}
 				}
-			}
-			HStack {
-				KeyboardShortcuts.Recorder(for: viewModel.shortcuts[viewModel.selectedState].name)
-					.padding(.trailing, 10)
-				Text("Pressed? \(viewModel.isPressed ? "👍" : "👎")")
-					.frame(width: 100, alignment: .leading)
-			}
-				.padding(.top, 8)
+				HStack {
+					KeyboardShortcuts.Recorder(for: viewModel.shortcuts[viewModel.selectedState].name)
+						.padding(.trailing, 10)
+					Text("Pressed? \(viewModel.isPressed ? "👍" : "👎")")
+						.frame(width: 100, alignment: .leading)
+				}
+			}.padding(60)
 		}
-			.frame(maxWidth: 300)
-			.padding(60)
+		.frame(maxWidth: 300)
 	}
 }
 
@@ -127,7 +128,7 @@ struct ContentView: View {
 		VStack {
 			DoubleShortcut()
 			Divider()
-			PickerShortcut()
+			DynamicShortcut()
 		}
 	}
 }
