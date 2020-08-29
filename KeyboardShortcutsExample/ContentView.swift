@@ -9,8 +9,21 @@ extension KeyboardShortcuts.Name {
 }
 
 struct Shortcut {
-	let name: KeyboardShortcuts.Name
+	var name: KeyboardShortcuts.Name
 	let label: String
+}
+
+struct DynamicShortcutRecorder: View {
+	@Binding var name: KeyboardShortcuts.Name
+	@Binding var isPressed: Bool
+	var body: some View {
+		HStack {
+			KeyboardShortcuts.Recorder(for: name)
+				.padding(.trailing, 10)
+			Text("Pressed? \(isPressed ? "👍" : "👎")")
+				.frame(width: 100, alignment: .leading)
+		}
+	}
 }
 
 final class DynamicShortcutViewModel: ObservableObject {
@@ -29,6 +42,17 @@ final class DynamicShortcutViewModel: ObservableObject {
 			},
 			set: { label in
 				self.selectedState = self.shortcuts.firstIndex { $0.label == label } ?? 0
+			}
+		)
+	}
+
+	var selectedName: Binding<KeyboardShortcuts.Name> {
+		Binding(
+			get: {
+				self.shortcuts[self.selectedState].name
+			},
+			set: { name in
+				self.selectedState = self.shortcuts.firstIndex { $0.name == name } ?? 0
 			}
 		)
 	}
@@ -55,6 +79,7 @@ final class DynamicShortcutViewModel: ObservableObject {
 
 struct DynamicShortcut: View {
 	@ObservedObject private var viewModel = DynamicShortcutViewModel()
+	@State private var shortcutName: KeyboardShortcuts.Name = .testShortcut3
 
 	var body: some View {
 		VStack {
@@ -66,10 +91,7 @@ struct DynamicShortcut: View {
 					}
 				}
 				HStack {
-					KeyboardShortcuts.Recorder(for: viewModel.shortcuts[viewModel.selectedState].name)
-						.padding(.trailing, 10)
-					Text("Pressed? \(viewModel.isPressed ? "👍" : "👎")")
-						.frame(width: 100, alignment: .leading)
+					DynamicShortcutRecorder(name: viewModel.selectedName, isPressed: $viewModel.isPressed)
 				}
 			}.padding(60)
 		}
