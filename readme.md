@@ -119,6 +119,7 @@ final class PreferencesViewController: NSViewController {
 ## Localization
 
 This package supports localization but still in early development, so PRs are welcome!
+
 You can find what localizations we currently support [here](/Sources/KeyboardShortcuts/Localization/)
 
 1. Fork the repo.
