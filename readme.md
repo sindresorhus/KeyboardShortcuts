@@ -118,13 +118,11 @@ final class PreferencesViewController: NSViewController {
 
 ## Localization
 
-This package supports localization but still in early development, so PRs are welcome!
-
-You can find what localizations we currently support [here](/Sources/KeyboardShortcuts/Localization/)
+This package supports [localizations](/Sources/KeyboardShortcuts/Localization). PR welcome for more!
 
 1. Fork the repo.
-2. Create a directory that has a name that uses an ISO 639 language code and optional designators, followed by the `.lproj` suffix, and doesn’t contain subdirectories, you can find more [here](https://developer.apple.com/documentation/swift_packages/localizing_package_resources).
-3. Create a file named `Localizable.strings` under the new language directory, and copy all text from `KeyboardShortcuts/Localization/zh-Hans.lproj/Localizable.strings` to the new file that you created.
+2. Create a directory that has a name that uses an ISO 639 language code and optional designators, followed by the `.lproj` suffix. [More here.](https://developer.apple.com/documentation/swift_packages/localizing_package_resources)
+3. Create a file named `Localizable.strings` under the new language directory and then copy the contents of `KeyboardShortcuts/Localization/zh-Hans.lproj/Localizable.strings` to the new file that you just created.
 4. Localize and make sure to review your localization multiple times. Check for typos.
 5. Try to find someone that speaks your language to review the translation.
 6. Submit a PR.
