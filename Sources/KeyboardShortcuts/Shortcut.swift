@@ -226,7 +226,7 @@ extension KeyboardShortcuts.Shortcut {
 
 		guard keyString.count <= 1 else {
 			guard
-				let key = self.key,
+				let key = key,
 				let string = keyToKeyEquivalentString[key]
 			else {
 				return ""
