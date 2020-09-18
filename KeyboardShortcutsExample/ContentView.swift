@@ -127,19 +127,19 @@ struct DoubleShortcut: View {
 			.padding(60)
 			.onAppear {
 				KeyboardShortcuts.onKeyDown(for: .testShortcut1) {
-					self.isPressed1 = true
+					isPressed1 = true
 				}
 
 				KeyboardShortcuts.onKeyUp(for: .testShortcut1) {
-					self.isPressed1 = false
+					isPressed1 = false
 				}
 
 				KeyboardShortcuts.onKeyDown(for: .testShortcut2) {
-					self.isPressed2 = true
+					isPressed2 = true
 				}
 
 				KeyboardShortcuts.onKeyUp(for: .testShortcut2) {
-					self.isPressed2 = false
+					isPressed2 = false
 				}
 			}
 	}
