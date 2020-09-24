@@ -37,22 +37,22 @@ final class DynamicShortcutViewModel: ObservableObject {
 
 	var selectedLabel: Binding<String> {
 		Binding(
-			get: {
-				self.shortcuts[self.selectedState].label
+			get: { [self] in
+				shortcuts[selectedState].label
 			},
-			set: { label in
-				self.selectedState = self.shortcuts.firstIndex { $0.label == label } ?? 0
+			set: { [self] label in
+				selectedState = shortcuts.firstIndex { $0.label == label } ?? 0
 			}
 		)
 	}
 
 	var selectedName: Binding<KeyboardShortcuts.Name> {
 		Binding(
-			get: {
-				self.shortcuts[self.selectedState].name
+			get: { [self] in
+				shortcuts[selectedState].name
 			},
-			set: { name in
-				self.selectedState = self.shortcuts.firstIndex { $0.name == name } ?? 0
+			set: { [self] name in
+				selectedState = shortcuts.firstIndex { $0.name == name } ?? 0
 			}
 		)
 	}
@@ -67,12 +67,12 @@ final class DynamicShortcutViewModel: ObservableObject {
 	}
 
 	func setShortcutEvent(name: KeyboardShortcuts.Name) {
-		KeyboardShortcuts.onKeyDown(for: name) {
-			self.isPressed = true
+		KeyboardShortcuts.onKeyDown(for: name) { [self] in
+			isPressed = true
 		}
 
-		KeyboardShortcuts.onKeyUp(for: name) {
-			self.isPressed = false
+		KeyboardShortcuts.onKeyUp(for: name) { [self] in
+			isPressed = false
 		}
 	}
 }
