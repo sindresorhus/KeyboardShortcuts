@@ -8,14 +8,20 @@ extension KeyboardShortcuts.Name {
 	static let testShortcut4 = Self("testShortcut4")
 }
 
-struct Shortcut {
+struct Shortcut: Identifiable, Hashable {
+	var id: String
 	var name: KeyboardShortcuts.Name
-	let label: String
 }
+
+let shortcuts = [
+	Shortcut(id: "Shortcut3", name: .testShortcut3),
+	Shortcut(id: "Shortcut4", name: .testShortcut4)
+]
 
 struct DynamicShortcutRecorder: View {
 	@Binding var name: KeyboardShortcuts.Name
 	@Binding var isPressed: Bool
+
 	var body: some View {
 		HStack {
 			KeyboardShortcuts.Recorder(for: name)
@@ -26,44 +32,18 @@ struct DynamicShortcutRecorder: View {
 	}
 }
 
-final class DynamicShortcutViewModel: ObservableObject {
-	@Published var isPressed = false
-	@Published var selectedState = 0 {
-		didSet {
-			KeyboardShortcuts.disable(shortcuts[oldValue].name)
-			setShortcutEvent(name: shortcuts[selectedState].name)
-		}
-	}
+struct DynamicShortcut: View {
+	@State private var shortcut: Shortcut = shortcuts[0]
+	@State private var isPressed: Bool = false
 
-	var selectedLabel: Binding<String> {
-		Binding(
-			get: { [self] in
-				shortcuts[selectedState].label
-			},
-			set: { [self] label in
-				selectedState = shortcuts.firstIndex { $0.label == label } ?? 0
-			}
-		)
-	}
-
-	var selectedName: Binding<KeyboardShortcuts.Name> {
-		Binding(
-			get: { [self] in
-				shortcuts[selectedState].name
-			},
-			set: { [self] name in
-				selectedState = shortcuts.firstIndex { $0.name == name } ?? 0
-			}
-		)
-	}
-
-	var shortcuts = [
-		Shortcut(name: .testShortcut3, label: "Shortcut3"),
-		Shortcut(name: .testShortcut4, label: "Shortcut4")
-	]
-
-	init() {
-		setShortcutEvent(name: shortcuts[selectedState].name)
+	private var selectedShortcut: Binding<Shortcut> {
+		Binding(get: {
+			shortcut
+		}, set: {
+			KeyboardShortcuts.disable(shortcut.name)
+			setShortcutEvent(name: $0.name)
+			shortcut = $0
+		})
 	}
 
 	func setShortcutEvent(name: KeyboardShortcuts.Name) {
@@ -75,27 +55,25 @@ final class DynamicShortcutViewModel: ObservableObject {
 			isPressed = false
 		}
 	}
-}
-
-struct DynamicShortcut: View {
-	@ObservedObject private var viewModel = DynamicShortcutViewModel()
-	@State private var shortcutName: KeyboardShortcuts.Name = .testShortcut3
 
 	var body: some View {
 		VStack {
 			Text("Dynamic recorder").frame(maxWidth: .infinity, alignment: .leading)
 			VStack {
-				Picker("Select shortcut:", selection: viewModel.selectedLabel) {
-					ForEach(viewModel.shortcuts, id: \.label) {
-						Text($0.label)
+				Picker("Select shortcut:", selection: selectedShortcut) {
+					ForEach(shortcuts) {
+						Text($0.id).tag($0)
 					}
 				}
 				HStack {
-					DynamicShortcutRecorder(name: viewModel.selectedName, isPressed: $viewModel.isPressed)
+					DynamicShortcutRecorder(name: $shortcut.name, isPressed: $isPressed)
 				}
 			}.padding(60)
 		}
 		.frame(maxWidth: 300)
+		.onAppear {
+			setShortcutEvent(name: shortcut.name)
+		}
 	}
 }
 

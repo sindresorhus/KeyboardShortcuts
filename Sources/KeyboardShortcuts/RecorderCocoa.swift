@@ -28,10 +28,13 @@ extension KeyboardShortcuts {
 	public final class RecorderCocoa: NSSearchField, NSSearchFieldDelegate {
 		private let minimumWidth: Double = 130
 		private var eventMonitor: LocalEventMonitor?
-		/// shortcutName should be updated by NSViewRepresentable.updateView from Recorder and same as stringValue
+		/// Changing shortcutName will always change the stringValue of the field.
 		public var shortcutName: Name {
 			didSet {
-				setStringValue(name: shortcutName)
+				if oldValue != shortcutName {
+					setStringValue(name: shortcutName)
+					blur()
+				}
 			}
 		}
 		private let onChange: ((_ shortcut: Shortcut?) -> Void)?
@@ -74,8 +77,6 @@ extension KeyboardShortcuts {
 			self.alignment = .center
 			(self.cell as? NSSearchFieldCell)?.searchButtonCell = nil
 
-			self.setStringValue(name: name)
-
 			self.wantsLayer = true
 			self.translatesAutoresizingMaskIntoConstraints = false
 			self.setContentHuggingPriority(.defaultHigh, for: .vertical)
@@ -84,7 +85,8 @@ extension KeyboardShortcuts {
 
 			// Hide the cancel button when not showing the shortcut so the placeholder text is properly centered. Must be last.
 			self.cancelButton = (self.cell as? NSSearchFieldCell)?.cancelButtonCell
-			self.showsCancelButton = !stringValue.isEmpty
+
+			self.setStringValue(name: name)
 
 			setUpEvents()
 		}
@@ -96,6 +98,8 @@ extension KeyboardShortcuts {
 
 		private func setStringValue(name: KeyboardShortcuts.Name) {
 			stringValue = getShortcut(for: shortcutName).map { "\($0)" } ?? ""
+			// If stringValue is empty dismiss cancelButton to let the placeholder centers.
+			showsCancelButton = !stringValue.isEmpty
 		}
 
 		private func setUpEvents() {
@@ -109,7 +113,6 @@ extension KeyboardShortcuts {
 				}
 
 				self.setStringValue(name: nameInNotification)
-				self.showsCancelButton = !self.stringValue.isEmpty
 			}
 		}
 
