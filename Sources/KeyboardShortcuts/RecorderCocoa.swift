@@ -31,10 +31,7 @@ extension KeyboardShortcuts {
 		/// Changing shortcutName will always change the stringValue of the field.
 		public var shortcutName: Name {
 			didSet {
-				if oldValue != shortcutName {
-					setStringValue(name: shortcutName)
-					blur()
-				}
+				setStringValue(name: shortcutName)
 			}
 		}
 		private let onChange: ((_ shortcut: Shortcut?) -> Void)?

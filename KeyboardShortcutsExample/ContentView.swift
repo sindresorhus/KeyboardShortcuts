@@ -8,6 +8,21 @@ extension KeyboardShortcuts.Name {
 	static let testShortcut4 = Self("testShortcut4")
 }
 
+extension Binding {
+	func onChange(_ handler: @escaping (Value, Value) -> Void) -> Binding<Value> {
+				Binding(
+						get: { [self] in
+							wrappedValue
+						},
+						set: { [self] selection in
+								let oldValue = wrappedValue
+								wrappedValue = selection
+								handler(oldValue, wrappedValue)
+						}
+				)
+		}
+}
+
 struct Shortcut: Identifiable, Hashable {
 	var id: String
 	var name: KeyboardShortcuts.Name
@@ -36,43 +51,41 @@ struct DynamicShortcut: View {
 	@State private var shortcut: Shortcut = shortcuts[0]
 	@State private var isPressed: Bool = false
 
-	private var selectedShortcut: Binding<Shortcut> {
-		Binding(get: {
-			shortcut
-		}, set: {
-			KeyboardShortcuts.disable(shortcut.name)
-			setShortcutEvent(name: $0.name)
-			shortcut = $0
-		})
-	}
+	func onShortcutChange(oldValue: Shortcut, newValue: Shortcut) {
+		KeyboardShortcuts.disable(oldValue.name)
 
-	func setShortcutEvent(name: KeyboardShortcuts.Name) {
-		KeyboardShortcuts.onKeyDown(for: name) { [self] in
+		KeyboardShortcuts.onKeyDown(for: newValue.name) { [self] in
 			isPressed = true
 		}
 
-		KeyboardShortcuts.onKeyUp(for: name) { [self] in
+		KeyboardShortcuts.onKeyUp(for: newValue.name) { [self] in
 			isPressed = false
 		}
 	}
 
 	var body: some View {
-		VStack {
-			Text("Dynamic recorder").frame(maxWidth: .infinity, alignment: .leading)
+		VStack(alignment: .leading) {
+			Text("Dynamic recorder")
 			VStack {
-				Picker("Select shortcut:", selection: selectedShortcut) {
+				Picker("Select shortcut:", selection: $shortcut.onChange(onShortcutChange)) {
 					ForEach(shortcuts) {
 						Text($0.id).tag($0)
 					}
 				}
-				HStack {
-					DynamicShortcutRecorder(name: $shortcut.name, isPressed: $isPressed)
-				}
-			}.padding(60)
+				Spacer()
+				Divider()
+				DynamicShortcutRecorder(name: $shortcut.name, isPressed: $isPressed)
+			}.padding([.top, .bottom], 60)
 		}
 		.frame(maxWidth: 300)
 		.onAppear {
-			setShortcutEvent(name: shortcut.name)
+			KeyboardShortcuts.onKeyDown(for: shortcut.name) { [self] in
+				isPressed = true
+			}
+
+			KeyboardShortcuts.onKeyUp(for: shortcut.name) { [self] in
+				isPressed = false
+			}
 		}
 	}
 }
