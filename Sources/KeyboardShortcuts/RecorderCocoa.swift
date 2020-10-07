@@ -31,7 +31,14 @@ extension KeyboardShortcuts {
 		/// Changing shortcutName will always change the stringValue of the field.
 		public var shortcutName: Name {
 			didSet {
+				guard oldValue != shortcutName else {
+					return
+				}
 				setStringValue(name: shortcutName)
+				DispatchQueue.main.async { [self] in
+					// When change from empty stringValue to some stringValue, text will cut off by placeholder. So we need to call blur to prevent this situation
+					blur()
+				}
 			}
 		}
 		private let onChange: ((_ shortcut: Shortcut?) -> Void)?

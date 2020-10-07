@@ -49,14 +49,7 @@ extension KeyboardShortcuts {
 
 		/// :nodoc:
 		public func updateNSView(_ nsView: NSViewType, context: Context) {
-			guard nsView.shortcutName != name else {
-				return
-			}
 			nsView.shortcutName = name
-			DispatchQueue.main.async {
-				// Wait for next cycle, so field be already in window
-				nsView.blur()
-			}
 		}
 	}
 }
