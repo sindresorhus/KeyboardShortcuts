@@ -28,7 +28,19 @@ extension KeyboardShortcuts {
 	public final class RecorderCocoa: NSSearchField, NSSearchFieldDelegate {
 		private let minimumWidth: Double = 130
 		private var eventMonitor: LocalEventMonitor?
-		private let shortcutName: Name
+		/// Changing shortcutName will always change the stringValue of the field.
+		public var shortcutName: Name {
+			didSet {
+				guard oldValue != shortcutName else {
+					return
+				}
+				setStringValue(name: shortcutName)
+				DispatchQueue.main.async { [self] in
+					// When change from empty stringValue to some stringValue, text will cut off by placeholder. So we need to call blur to prevent this situation
+					blur()
+				}
+			}
+		}
 		private let onChange: ((_ shortcut: Shortcut?) -> Void)?
 		private var observer: NSObjectProtocol?
 
@@ -69,10 +81,6 @@ extension KeyboardShortcuts {
 			self.alignment = .center
 			(self.cell as? NSSearchFieldCell)?.searchButtonCell = nil
 
-			if let shortcut = getShortcut(for: shortcutName) {
-				self.stringValue = "\(shortcut)"
-			}
-
 			self.wantsLayer = true
 			self.translatesAutoresizingMaskIntoConstraints = false
 			self.setContentHuggingPriority(.defaultHigh, for: .vertical)
@@ -81,7 +89,8 @@ extension KeyboardShortcuts {
 
 			// Hide the cancel button when not showing the shortcut so the placeholder text is properly centered. Must be last.
 			self.cancelButton = (self.cell as? NSSearchFieldCell)?.cancelButtonCell
-			self.showsCancelButton = !stringValue.isEmpty
+
+			self.setStringValue(name: name)
 
 			setUpEvents()
 		}
@@ -89,6 +98,12 @@ extension KeyboardShortcuts {
 		@available(*, unavailable)
 		public required init?(coder: NSCoder) {
 			fatalError("init(coder:) has not been implemented")
+		}
+
+		private func setStringValue(name: KeyboardShortcuts.Name) {
+			stringValue = getShortcut(for: shortcutName).map { "\($0)" } ?? ""
+			// If stringValue is empty dismiss cancelButton to let the placeholder centers.
+			showsCancelButton = !stringValue.isEmpty
 		}
 
 		private func setUpEvents() {
@@ -101,8 +116,7 @@ extension KeyboardShortcuts {
 					return
 				}
 
-				self.stringValue = getShortcut(for: nameInNotification).map { "\($0)" } ?? ""
-				self.showsCancelButton = !self.stringValue.isEmpty
+				self.setStringValue(name: nameInNotification)
 			}
 		}
 

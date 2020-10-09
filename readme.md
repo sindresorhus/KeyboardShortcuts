@@ -130,6 +130,11 @@ See [`NSMenuItem#setShortcut`](https://sindresorhus.com/KeyboardShortcuts/Extens
 
 Your app might need to support keyboard shortcuts for user-defined actions. Normally, you would statically register the keyboard shortcuts upfront in `extension KeyboardShortcuts.Name {}`. However, this is not a requirement. It's only for convenience so that you can use dot-syntax when calling various APIs (for example, `.onKeyDown(.unicornMode) {}`). You can create `KeyboardShortcut.Name`'s dynamically and store them yourself.
 
+#### KeyboardShortcuts.Recorder also support SwiftUI dynamic name.
+
+See [`KeyboardShortcuts.Recorder`](https://sindresorhus.com/KeyboardShortcuts/Enums/KeyboardShortcuts/Recorder.html).
+
+
 ## FAQ
 
 #### How is it different from [`MASShortcut`](https://github.com/shpakovski/MASShortcut)?
