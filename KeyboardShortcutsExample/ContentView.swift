@@ -8,32 +8,23 @@ extension KeyboardShortcuts.Name {
 	static let testShortcut4 = Self("testShortcut4")
 }
 
+// TODO: Replace this with `View#onChange` when macOS 11 is out.
 extension Binding {
 	func onChange(_ handler: @escaping (Value, Value) -> Void) -> Binding<Value> {
-				Binding(
-						get: { [self] in
-							wrappedValue
-						},
-						set: { [self] selection in
-								let oldValue = wrappedValue
-								wrappedValue = selection
-								handler(oldValue, wrappedValue)
-						}
-				)
-		}
+		.init(
+			get: {
+				wrappedValue
+			},
+			set: {
+				let oldValue = wrappedValue
+				wrappedValue = $0
+				handler(oldValue, wrappedValue)
+			}
+		)
+	}
 }
 
-struct Shortcut: Identifiable, Hashable {
-	var id: String
-	var name: KeyboardShortcuts.Name
-}
-
-let shortcuts = [
-	Shortcut(id: "Shortcut3", name: .testShortcut3),
-	Shortcut(id: "Shortcut4", name: .testShortcut4)
-]
-
-struct DynamicShortcutRecorder: View {
+private struct DynamicShortcutRecorder: View {
 	@Binding var name: KeyboardShortcuts.Name
 	@Binding var isPressed: Bool
 
@@ -47,50 +38,54 @@ struct DynamicShortcutRecorder: View {
 	}
 }
 
-struct DynamicShortcut: View {
-	@State private var shortcut: Shortcut = shortcuts[0]
-	@State private var isPressed: Bool = false
-
-	func onShortcutChange(oldValue: Shortcut, newValue: Shortcut) {
-		KeyboardShortcuts.disable(oldValue.name)
-
-		KeyboardShortcuts.onKeyDown(for: newValue.name) { [self] in
-			isPressed = true
-		}
-
-		KeyboardShortcuts.onKeyUp(for: newValue.name) { [self] in
-			isPressed = false
-		}
+private struct DynamicShortcut: View {
+	private struct Shortcut: Hashable, Identifiable {
+		var id: String
+		var name: KeyboardShortcuts.Name
 	}
 
+	private static let shortcuts = [
+		Shortcut(id: "Shortcut3", name: .testShortcut3),
+		Shortcut(id: "Shortcut4", name: .testShortcut4)
+	]
+
+	@State private var shortcut = Self.shortcuts[0]
+	@State private var isPressed = false
+
 	var body: some View {
-		VStack(alignment: .leading) {
-			Text("Dynamic recorder")
+		VStack {
+			Text("Dynamic Recorder")
+				.bold()
+				.padding(.bottom, 10)
 			VStack {
 				Picker("Select shortcut:", selection: $shortcut.onChange(onShortcutChange)) {
-					ForEach(shortcuts) {
+					ForEach(Self.shortcuts) {
 						Text($0.id).tag($0)
 					}
 				}
-				Spacer()
 				Divider()
 				DynamicShortcutRecorder(name: $shortcut.name, isPressed: $isPressed)
-			}.padding([.top, .bottom], 60)
+			}
 		}
-		.frame(maxWidth: 300)
-		.onAppear {
-			KeyboardShortcuts.onKeyDown(for: shortcut.name) { [self] in
-				isPressed = true
-			}
+			.frame(maxWidth: 300)
+			.padding()
+			.padding(.bottom, 20)
+	}
 
-			KeyboardShortcuts.onKeyUp(for: shortcut.name) { [self] in
-				isPressed = false
-			}
+	private func onShortcutChange(oldValue: Shortcut, newValue: Shortcut) {
+		KeyboardShortcuts.disable(oldValue.name)
+
+		KeyboardShortcuts.onKeyDown(for: newValue.name) {
+			isPressed = true
+		}
+
+		KeyboardShortcuts.onKeyUp(for: newValue.name) {
+			isPressed = false
 		}
 	}
 }
 
-struct DoubleShortcut: View {
+private struct DoubleShortcut: View {
 	@State private var isPressed1 = false
 	@State private var isPressed2 = false
 
@@ -115,7 +110,8 @@ struct DoubleShortcut: View {
 			}
 		}
 			.frame(maxWidth: 300)
-			.padding(60)
+			.padding()
+			.padding()
 			.onAppear {
 				KeyboardShortcuts.onKeyDown(for: .testShortcut1) {
 					isPressed1 = true

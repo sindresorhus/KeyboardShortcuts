@@ -28,21 +28,25 @@ extension KeyboardShortcuts {
 	public final class RecorderCocoa: NSSearchField, NSSearchFieldDelegate {
 		private let minimumWidth: Double = 130
 		private var eventMonitor: LocalEventMonitor?
-		/// Changing shortcutName will always change the stringValue of the field.
+		private let onChange: ((_ shortcut: Shortcut?) -> Void)?
+		private var observer: NSObjectProtocol?
+
+		/// The shortcut name for the recorder.
+		/// Can be dynamically changed at any time.
 		public var shortcutName: Name {
 			didSet {
-				guard oldValue != shortcutName else {
+				guard shortcutName != oldValue else {
 					return
 				}
+
 				setStringValue(name: shortcutName)
+
 				DispatchQueue.main.async { [self] in
-					// When change from empty stringValue to some stringValue, text will cut off by placeholder. So we need to call blur to prevent this situation
+					// Prevents the placeholder from being cut off.
 					blur()
 				}
 			}
 		}
-		private let onChange: ((_ shortcut: Shortcut?) -> Void)?
-		private var observer: NSObjectProtocol?
 
 		/// :nodoc:
 		override public var canBecomeKeyView: Bool { false }
@@ -102,7 +106,8 @@ extension KeyboardShortcuts {
 
 		private func setStringValue(name: KeyboardShortcuts.Name) {
 			stringValue = getShortcut(for: shortcutName).map { "\($0)" } ?? ""
-			// If stringValue is empty dismiss cancelButton to let the placeholder centers.
+
+			// If `stringValue` is empty, hide the cancel button to let the placeholder center.
 			showsCancelButton = !stringValue.isEmpty
 		}
 
