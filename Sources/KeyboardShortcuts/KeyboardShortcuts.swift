@@ -214,7 +214,7 @@ public enum KeyboardShortcuts {
 	import Cocoa
 	import KeyboardShortcuts
 
-	@NSApplicationMain
+	@main
 	final class AppDelegate: NSObject, NSApplicationDelegate {
 		func applicationDidFinishLaunching(_ notification: Notification) {
 			KeyboardShortcuts.onKeyDown(for: .toggleUnicornMode) { [self] in
@@ -248,7 +248,7 @@ public enum KeyboardShortcuts {
 	import Cocoa
 	import KeyboardShortcuts
 
-	@NSApplicationMain
+	@main
 	final class AppDelegate: NSObject, NSApplicationDelegate {
 		func applicationDidFinishLaunching(_ notification: Notification) {
 			KeyboardShortcuts.onKeyUp(for: .toggleUnicornMode) { [self] in

@@ -79,7 +79,7 @@ Add a listener for when the user presses their chosen keyboard shortcut.
 import Cocoa
 import KeyboardShortcuts
 
-@NSApplicationMain
+@main
 final class AppDelegate: NSObject, NSApplicationDelegate {
 	func applicationDidFinishLaunching(_ notification: Notification) {
 		KeyboardShortcuts.onKeyUp(for: .toggleUnicornMode) { [self] in

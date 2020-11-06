@@ -2,7 +2,7 @@ import Cocoa
 import SwiftUI
 import KeyboardShortcuts
 
-@NSApplicationMain
+@main
 final class AppDelegate: NSObject, NSApplicationDelegate {
 	private var window: NSWindow!
 
