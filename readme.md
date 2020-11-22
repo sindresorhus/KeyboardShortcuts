@@ -92,6 +92,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
 *You can also listen to key down with `.onKeyDown()`*
 
+You can provide a default key combination when defining the shortcut by passing a `default` parameter:
+
+```swift
+import KeyboardShortcuts
+
+extension KeyboardShortcuts.Name {
+	static let toggleUnicornMode = Self("toggleUnicornMode",
+	     default: Shortcut(.u, modifiers: [.command, .option]))
+}
+```
+
 **That's all! ✨**
 
 You can find a complete example by opening `KeyboardShortcuts.xcodeproj` and then running the `KeyboardShortcutsExample` target.
