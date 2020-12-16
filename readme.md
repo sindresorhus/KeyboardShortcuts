@@ -171,6 +171,10 @@ Most of the Carbon APIs were deprecated years ago, but there are some left that 
 
 No.
 
+#### How can I add an app-specific keyboard shortcut that is only active when the app is?
+
+That is outside the scope of this package. You can either use [`NSEvent.addLocalMonitorForEvents`](https://developer.apple.com/documentation/appkit/nsevent/1534971-addlocalmonitorforevents), [`NSMenuItem` with keyboard shortcut](https://developer.apple.com/documentation/appkit/nsmenuitem/2880316-allowskeyequivalentwhenhidden) (it can even be hidden), or SwiftUI's [`View#keyboardShortcut()` modifier](https://developer.apple.com/documentation/swiftui/form/keyboardshortcut(_:)).
+
 ## Related
 
 - [Preferences](https://github.com/sindresorhus/Preferences) - Add a preferences window to your macOS app in minutes
