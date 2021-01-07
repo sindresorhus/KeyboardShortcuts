@@ -45,6 +45,16 @@ public enum KeyboardShortcuts {
 
 		// TODO: Should remove user defaults too.
 	}
+	
+	/**
+	Remove all handlers receiving keyboard shortcuts events.
+	*/
+	public static func removeAllHandlers() {
+		keyDownHandlers = [:]
+		keyUpHandlers = [:]
+		userDefaultsKeyDownHandlers = [:]
+		userDefaultsKeyUpHandlers = [:]
+	}
 
 	// TODO: Also add `.isEnabled(_ name: Name)`.
 	/**
