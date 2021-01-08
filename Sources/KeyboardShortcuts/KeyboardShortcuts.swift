@@ -45,7 +45,7 @@ public enum KeyboardShortcuts {
 
 		// TODO: Should remove user defaults too.
 	}
-	
+
 	/**
 	Remove all handlers receiving keyboard shortcuts events.
 	*/
