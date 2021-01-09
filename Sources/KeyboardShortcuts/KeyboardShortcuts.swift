@@ -48,6 +48,8 @@ public enum KeyboardShortcuts {
 
 	/**
 	Remove all handlers receiving keyboard shortcuts events.
+	
+	This can be used to reset the handlers before re-creating them to avoid having multiple handlers for the same shortcut.
 	*/
 	public static func removeAllHandlers() {
 		keyDownHandlers = [:]
