@@ -10,7 +10,6 @@ extension NSMenuItem {
 		keyEquivalentModifierMask = []
 	}
 	
-	
 	// TODO: Make this a getter/setter. We must first add the ability to create a `Shortcut` from a `keyEquivalent`.
 	/**
 	Show a recorded keyboard shortcut in a `NSMenuItem`.
