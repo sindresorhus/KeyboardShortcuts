@@ -4,7 +4,12 @@ extension NSMenuItem {
 	private struct AssociatedKeys {
 		static let observer = ObjectAssociation<NSObjectProtocol>()
 	}
-
+	
+	private func clearShortcut() {
+		keyEquivalent = ""
+		keyEquivalentModifierMask = []
+	}
+	
 	// TODO: Make this a getter/setter. We must first add the ability to create a `Shortcut` from a `keyEquivalent`.
 	/**
 	Show a recorded keyboard shortcut in a `NSMenuItem`.
@@ -31,40 +36,23 @@ extension NSMenuItem {
 	```
 
 	You can test this method in the example project. Run it, record a shortcut and then look at the “Test” menu in the app's main menu.
-
-	- Important: You will have to disable the global keyboard shortcut while the menu is open, as otherwise, the keyboard events will be buffered up and triggered when the menu closes. This is because `NSMenu` puts the thread in tracking-mode, which prevents the keyboard events from being received. You can listen to whether a menu is open by implementing `NSMenuDelegate#menuWillOpen` and `NSMenuDelegate#menuDidClose`. You then use `KeyboardShortcuts.disable` and `KeyboardShortcuts.enable`.
+	
+	- Important: You will have to remove the keyboard shortcut handlers while the menu is open, otherwise the keyboard events will be buffered up, the global handlers will be triggered when the menu closes and the events will not be correctly delivered to the menu. This is because `NSMenu` puts the thread in tracking-mode, which prevents the keyboard events from being received. You can listen to whether a menu is open by implementing `NSMenuDelegate#menuWillOpen` and `NSMenuDelegate#menuDidClose`, and use `KeyboardShortcuts.removeAllHandlers()` to remove the handlers when it is opened and recreate them once closed.
 	*/
 	public func setShortcut(for name: KeyboardShortcuts.Name?) {
-		func clear() {
-			keyEquivalent = ""
-			keyEquivalentModifierMask = []
-		}
-
 		guard let name = name else {
-			clear()
+			clearShortcut()
 			AssociatedKeys.observer[self] = nil
 			return
 		}
-
+		
 		func set() {
-			guard let shortcut = KeyboardShortcuts.Shortcut(name: name) else {
-				clear()
-				return
-			}
-
-			keyEquivalent = shortcut.keyEquivalent
-			keyEquivalentModifierMask = shortcut.modifiers
+			let shortcut = KeyboardShortcuts.Shortcut(name: name)
+			setShortcut(shortcut)
 		}
-
-		// `TISCopyCurrentASCIICapableKeyboardLayoutInputSource` works on a background thread, but crashes when used in a `NSBackgroundActivityScheduler` task, so we ensure it's not run in that queue.
-		if DispatchQueue.isCurrentQueueNSBackgroundActivitySchedulerQueue {
-			DispatchQueue.main.async {
-				set()
-			}
-		} else {
-			set()
-		}
-
+		
+		set()
+		
 		// TODO: Use Combine when targeting macOS 10.15.
 		AssociatedKeys.observer[self] = NotificationCenter.default.addObserver(forName: .shortcutByNameDidChange, object: nil, queue: nil) { notification in
 			guard
@@ -73,7 +61,42 @@ extension NSMenuItem {
 			else {
 				return
 			}
-
+			
+			set()
+		}
+	}
+	
+	/**
+	Add a keyboard shortcut to a `NSMenuItem`.
+	
+	Pass in `nil` to clear the keyboard shortcut.
+	
+	This method overrides `.keyEquivalent` and `.keyEquivalentModifierMask`.
+	
+	- Important: You will have to remove the keyboard shortcut handlers while the menu is open, otherwise the keyboard events will be buffered up, the global handlers will be triggered when the menu closes and the events will not be correctly delivered to the menu. This is because `NSMenu` puts the thread in tracking-mode, which prevents the keyboard events from being received. You can listen to whether a menu is open by implementing `NSMenuDelegate#menuWillOpen` and `NSMenuDelegate#menuDidClose`, and use `KeyboardShortcuts.removeAllHandlers()` to remove the handlers when it is opened and recreate them once closed.
+	*/
+	public func setShortcut(_ shortcut: KeyboardShortcuts.Shortcut?) {
+		func clear() {
+			keyEquivalent = ""
+			keyEquivalentModifierMask = []
+		}
+		
+		func set() {
+			guard let shortcut = shortcut else {
+				clearShortcut()
+				return
+			}
+			
+			keyEquivalent = shortcut.keyEquivalent
+			keyEquivalentModifierMask = shortcut.modifiers
+		}
+		
+		// `TISCopyCurrentASCIICapableKeyboardLayoutInputSource` works on a background thread, but crashes when used in a `NSBackgroundActivityScheduler` task, so we ensure it's not run in that queue.
+		if DispatchQueue.isCurrentQueueNSBackgroundActivitySchedulerQueue {
+			DispatchQueue.main.async {
+				set()
+			}
+		} else {
 			set()
 		}
 	}
