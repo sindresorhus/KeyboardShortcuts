@@ -68,6 +68,8 @@ extension NSMenuItem {
 
 	/**
 	Add a keyboard shortcut to a `NSMenuItem`.
+	
+	This method is only recommended for dynamic shortcuts, in general is preferred to create a static shortcut name and use `NSMenuItem.setShortcut(for:)` instead.
 
 	Pass in `nil` to clear the keyboard shortcut.
 
