@@ -75,6 +75,7 @@ extension NSMenuItem {
 	
 	- Important: You will have to remove the keyboard shortcut handlers while the menu is open, otherwise the keyboard events will be buffered up, the global handlers will be triggered when the menu closes and the events will not be correctly delivered to the menu. This is because `NSMenu` puts the thread in tracking-mode, which prevents the keyboard events from being received. You can listen to whether a menu is open by implementing `NSMenuDelegate#menuWillOpen` and `NSMenuDelegate#menuDidClose`, and use `KeyboardShortcuts.removeAllHandlers()` to remove the handlers when it is opened and recreate them once closed.
 	*/
+	@_disfavoredOverload
 	public func setShortcut(_ shortcut: KeyboardShortcuts.Shortcut?) {
 		func clear() {
 			keyEquivalent = ""
