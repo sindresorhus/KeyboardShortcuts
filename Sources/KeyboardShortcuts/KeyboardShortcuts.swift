@@ -52,6 +52,7 @@ public enum KeyboardShortcuts {
 	This can be used to reset the handlers before re-creating them to avoid having multiple handlers for the same shortcut.
 	*/
 	public static func removeAllHandlers() {
+		CarbonKeyboardShortcuts.unregisterAll()
 		keyDownHandlers = [:]
 		keyUpHandlers = [:]
 		userDefaultsKeyDownHandlers = [:]
