@@ -223,7 +223,7 @@ extension KeyboardShortcuts {
 
 					NSAlert.showModal(
 						for: self.window,
-						message: "This keyboard shortcut cannot be used as it's already used by the “\(menuItem.title)” menu item."
+						title: "This keyboard shortcut cannot be used as it's already used by the “\(menuItem.title)” menu item."
 					)
 
 					self.focus()
@@ -236,9 +236,9 @@ extension KeyboardShortcuts {
 
 					NSAlert.showModal(
 						for: self.window,
-						message: "This keyboard shortcut cannot be used as it's already a system-wide keyboard shortcut.",
+						title: "This keyboard shortcut cannot be used as it's already a system-wide keyboard shortcut.",
 						// TODO: Add button to offer to open the relevant system preference pane for the user.
-						informativeText: "Most system-wide keyboard shortcuts can be changed in “System Preferences › Keyboard › Shortcuts“."
+						message: "Most system-wide keyboard shortcuts can be changed in “System Preferences › Keyboard › Shortcuts“."
 					)
 
 					self.focus()

@@ -121,32 +121,32 @@ extension NSAlert {
 	@discardableResult
 	static func showModal(
 		for window: NSWindow? = nil,
-		message: String,
-		informativeText: String? = nil,
+		title: String,
+		message: String? = nil,
 		style: Style = .warning,
 		icon: NSImage? = nil
 	) -> NSApplication.ModalResponse {
 		NSAlert(
+			title: title,
 			message: message,
-			informativeText: informativeText,
 			style: style,
 			icon: icon
 		).runModal(for: window)
 	}
 
 	convenience init(
-		message: String,
-		informativeText: String? = nil,
+		title: String,
+		message: String? = nil,
 		style: Style = .warning,
 		icon: NSImage? = nil
 	) {
 		self.init()
-		self.messageText = message
+		self.messageText = title
 		self.alertStyle = style
 		self.icon = icon
 
-		if let informativeText = informativeText {
-			self.informativeText = informativeText
+		if let message = message {
+			self.informativeText = message
 		}
 	}
 
