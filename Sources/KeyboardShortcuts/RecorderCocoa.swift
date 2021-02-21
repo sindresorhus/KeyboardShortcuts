@@ -170,7 +170,7 @@ extension KeyboardShortcuts {
 
 				if
 					event.type == .leftMouseUp || event.type == .rightMouseUp,
-					!self.frame.insetBy(dx: -clickMargin, dy: -clickMargin).contains(clickPoint)
+					!self.bounds.insetBy(dx: -clickMargin, dy: -clickMargin).contains(clickPoint)
 				{
 					self.blur()
 					return nil
