@@ -2,6 +2,10 @@ import Cocoa
 import SwiftUI
 import KeyboardShortcuts
 
+extension KeyboardShortcuts.Name {
+	static let someShortcut = Self("someShortcut", default: .init(.s, modifiers: [.command, .option]))
+}
+
 @main
 final class AppDelegate: NSObject, NSApplicationDelegate {
 	private var window: NSWindow!
@@ -28,6 +32,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 		window.makeKeyAndOrderFront(nil)
 
 		createMenus()
+
+		KeyboardShortcuts.onKeyDown(for: .someShortcut) {
+			print("Works")
+		}
 	}
 
 	func createMenus() {
