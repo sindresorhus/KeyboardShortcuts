@@ -2,6 +2,14 @@ import Cocoa
 import Carbon.HIToolbox
 
 
+extension String {
+	/// Makes the string localizable.
+	var localized: String {
+		NSLocalizedString(self, bundle: .module, comment: self)
+	}
+}
+
+
 extension Data {
 	var string: String? { String(data: self, encoding: .utf8) }
 }

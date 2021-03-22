@@ -80,7 +80,7 @@ extension KeyboardShortcuts {
 
 			super.init(frame: .zero)
 			self.delegate = self
-			self.placeholderString = "Record Shortcut"
+			self.placeholderString = "record_shortcut".localized
 			self.centersPlaceholder = true
 			self.alignment = .center
 			(self.cell as? NSSearchFieldCell)?.searchButtonCell = nil
@@ -142,7 +142,7 @@ extension KeyboardShortcuts {
 		/// :nodoc:
 		public func controlTextDidEndEditing(_ object: Notification) {
 			eventMonitor = nil
-			placeholderString = "Record Shortcut"
+			placeholderString = "record_shortcut".localized
 			showsCancelButton = !stringValue.isEmpty
 			KeyboardShortcuts.isPaused = false
 		}
@@ -155,7 +155,7 @@ extension KeyboardShortcuts {
 				return shouldBecomeFirstResponder
 			}
 
-			placeholderString = "Press Shortcut"
+			placeholderString = "press_shortcut".localized
 			showsCancelButton = !stringValue.isEmpty
 			hideCaret()
 			KeyboardShortcuts.isPaused = true // The position here matters.
@@ -223,7 +223,7 @@ extension KeyboardShortcuts {
 
 					NSAlert.showModal(
 						for: self.window,
-						title: "This keyboard shortcut cannot be used as it's already used by the “\(menuItem.title)” menu item."
+						title: String.localizedStringWithFormat("keyboard_shortcut_used_by_menu_item".localized, menuItem.title)
 					)
 
 					self.focus()
@@ -236,9 +236,9 @@ extension KeyboardShortcuts {
 
 					NSAlert.showModal(
 						for: self.window,
-						title: "This keyboard shortcut cannot be used as it's already a system-wide keyboard shortcut.",
+						title: "keyboard_shortcut_used_by_system".localized,
 						// TODO: Add button to offer to open the relevant system preference pane for the user.
-						message: "Most system-wide keyboard shortcuts can be changed in “System Preferences › Keyboard › Shortcuts“."
+						message: "keyboard_shortcuts_can_be_changed".localized
 					)
 
 					self.focus()
