@@ -155,8 +155,7 @@ This package:
 
 `MASShortcut`:
 - More mature.
-- More features.
-- Localized.
+- More localizations.
 
 #### How is it different from [`HotKey`](https://github.com/soffes/HotKey)?
 
