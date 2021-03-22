@@ -46,12 +46,25 @@ public enum KeyboardShortcuts {
 		// TODO: Should remove user defaults too.
 	}
 
+	/**
+	Remove all handlers receiving keyboard shortcuts events.
+	
+	This can be used to reset the handlers before re-creating them to avoid having multiple handlers for the same shortcut.
+	*/
+	public static func removeAllHandlers() {
+		CarbonKeyboardShortcuts.unregisterAll()
+		keyDownHandlers = [:]
+		keyUpHandlers = [:]
+		userDefaultsKeyDownHandlers = [:]
+		userDefaultsKeyUpHandlers = [:]
+	}
+
 	// TODO: Also add `.isEnabled(_ name: Name)`.
 	/**
 	Disable a keyboard shortcut.
 	*/
 	public static func disable(_ name: Name) {
-		guard let shortcut = userDefaultsGet(name: name) else {
+		guard let shortcut = getShortcut(for: name) else {
 			return
 		}
 
@@ -62,11 +75,101 @@ public enum KeyboardShortcuts {
 	Enable a disabled keyboard shortcut.
 	*/
 	public static func enable(_ name: Name) {
-		guard let shortcut = userDefaultsGet(name: name) else {
+		guard let shortcut = getShortcut(for: name) else {
 			return
 		}
 
 		register(shortcut)
+	}
+
+	/**
+	Reset the keyboard shortcut for one or more names.
+
+	If the `Name` has a default shortcut, it will reset to that.
+
+	```
+	import SwiftUI
+	import KeyboardShortcuts
+
+	struct PreferencesView: View {
+		var body: some View {
+			VStack {
+				// …
+				Button("Reset All") {
+					KeyboardShortcuts.reset(
+						.toggleUnicornMode,
+						.showRainbow
+					)
+				}
+			}
+		}
+	}
+	```
+	*/
+	public static func reset(_ names: Name...) {
+		reset(names)
+	}
+
+	/**
+	Reset the keyboard shortcut for one or more names.
+
+	If the `Name` has a default shortcut, it will reset to that.
+
+	- Note: This overload exists as Swift doesn't support splatting.
+
+	```
+	import SwiftUI
+	import KeyboardShortcuts
+
+	struct PreferencesView: View {
+		var body: some View {
+			VStack {
+				// …
+				Button("Reset All") {
+					KeyboardShortcuts.reset(
+						.toggleUnicornMode,
+						.showRainbow
+					)
+				}
+			}
+		}
+	}
+	```
+	*/
+	public static func reset(_ names: [Name]) {
+		for name in names {
+			setShortcut(name.defaultShortcut, for: name)
+		}
+	}
+
+	/**
+	Set the keyboard shortcut for a name.
+
+	Setting it to `nil` removes the shortcut, even if the `Name` has a default shortcut defined. Use `.reset()` if you want it to respect the default shortcut.
+
+	You would usually not need this as the user would be the one setting the shortcut in a preferences user-interface, but it can be useful when, for example, migrating from a different keyboard shortcuts package.
+	*/
+	public static func setShortcut(_ shortcut: Shortcut?, for name: Name) {
+		guard let shortcut = shortcut else {
+			userDefaultsRemove(name: name)
+			return
+		}
+
+		userDefaultsSet(name: name, shortcut: shortcut)
+	}
+
+	/**
+	Get the keyboard shortcut for a name.
+	*/
+	public static func getShortcut(for name: Name) -> Shortcut? {
+		guard
+			let data = UserDefaults.standard.string(forKey: userDefaultsKey(for: name))?.data(using: .utf8),
+			let decoded = try? JSONDecoder().decode(Shortcut.self, from: data)
+		else {
+			return nil
+		}
+
+		return decoded
 	}
 
 	private static func handleOnKeyDown(_ shortcut: Shortcut) {
@@ -81,7 +184,7 @@ public enum KeyboardShortcuts {
 		}
 
 		for (name, handlers) in userDefaultsKeyDownHandlers {
-			guard userDefaultsGet(name: name) == shortcut else {
+			guard getShortcut(for: name) == shortcut else {
 				continue
 			}
 
@@ -103,7 +206,7 @@ public enum KeyboardShortcuts {
 		}
 
 		for (name, handlers) in userDefaultsKeyUpHandlers {
-			guard userDefaultsGet(name: name) == shortcut else {
+			guard getShortcut(for: name) == shortcut else {
 				continue
 			}
 
@@ -124,11 +227,11 @@ public enum KeyboardShortcuts {
 	import Cocoa
 	import KeyboardShortcuts
 
-	@NSApplicationMain
+	@main
 	final class AppDelegate: NSObject, NSApplicationDelegate {
 		func applicationDidFinishLaunching(_ notification: Notification) {
-			KeyboardShortcuts.onKeyDown(for: .toggleUnicornMode) {
-				self.isUnicornMode.toggle()
+			KeyboardShortcuts.onKeyDown(for: .toggleUnicornMode) { [self] in
+				isUnicornMode.toggle()
 			}
 		}
 	}
@@ -142,7 +245,7 @@ public enum KeyboardShortcuts {
 		userDefaultsKeyDownHandlers[name]?.append(action)
 
 		// If the keyboard shortcut already exist, we register it.
-		if let shortcut = userDefaultsGet(name: name) {
+		if let shortcut = getShortcut(for: name) {
 			register(shortcut)
 		}
 	}
@@ -158,11 +261,11 @@ public enum KeyboardShortcuts {
 	import Cocoa
 	import KeyboardShortcuts
 
-	@NSApplicationMain
+	@main
 	final class AppDelegate: NSObject, NSApplicationDelegate {
 		func applicationDidFinishLaunching(_ notification: Notification) {
-			KeyboardShortcuts.onKeyUp(for: .toggleUnicornMode) {
-				self.isUnicornMode.toggle()
+			KeyboardShortcuts.onKeyUp(for: .toggleUnicornMode) { [self] in
+				isUnicornMode.toggle()
 			}
 		}
 	}
@@ -176,7 +279,7 @@ public enum KeyboardShortcuts {
 		userDefaultsKeyUpHandlers[name]?.append(action)
 
 		// If the keyboard shortcut already exist, we register it.
-		if let shortcut = userDefaultsGet(name: name) {
+		if let shortcut = getShortcut(for: name) {
 			register(shortcut)
 		}
 	}
@@ -191,24 +294,12 @@ public enum KeyboardShortcuts {
 		NotificationCenter.default.post(name: .shortcutByNameDidChange, object: nil, userInfo: ["name": name])
 	}
 
-	// TODO: Should these be on `Shortcut` instead?
-	static func userDefaultsGet(name: Name) -> Shortcut? {
-		guard
-			let data = UserDefaults.standard.string(forKey: userDefaultsKey(for: name))?.data(using: .utf8),
-			let decoded = try? JSONDecoder().decode(Shortcut.self, from: data)
-		else {
-			return nil
-		}
-
-		return decoded
-	}
-
 	static func userDefaultsSet(name: Name, shortcut: Shortcut) {
 		guard let encoded = try? JSONEncoder().encode(shortcut).string else {
 			return
 		}
 
-		if let oldShortcut = userDefaultsGet(name: name) {
+		if let oldShortcut = getShortcut(for: name) {
 			unregister(oldShortcut)
 		}
 
@@ -218,7 +309,7 @@ public enum KeyboardShortcuts {
 	}
 
 	static func userDefaultsRemove(name: Name) {
-		guard let shortcut = userDefaultsGet(name: name) else {
+		guard let shortcut = getShortcut(for: name) else {
 			return
 		}
 

@@ -28,8 +28,25 @@ extension KeyboardShortcuts {
 	public final class RecorderCocoa: NSSearchField, NSSearchFieldDelegate {
 		private let minimumWidth: Double = 130
 		private var eventMonitor: LocalEventMonitor?
-		private let shortcutName: Name
 		private let onChange: ((_ shortcut: Shortcut?) -> Void)?
+		private var observer: NSObjectProtocol?
+
+		/// The shortcut name for the recorder.
+		/// Can be dynamically changed at any time.
+		public var shortcutName: Name {
+			didSet {
+				guard shortcutName != oldValue else {
+					return
+				}
+
+				setStringValue(name: shortcutName)
+
+				DispatchQueue.main.async { [self] in
+					// Prevents the placeholder from being cut off.
+					blur()
+				}
+			}
+		}
 
 		/// :nodoc:
 		override public var canBecomeKeyView: Bool { false }
@@ -68,10 +85,6 @@ extension KeyboardShortcuts {
 			self.alignment = .center
 			(self.cell as? NSSearchFieldCell)?.searchButtonCell = nil
 
-			if let shortcut = userDefaultsGet(name: shortcutName) {
-				self.stringValue = "\(shortcut)"
-			}
-
 			self.wantsLayer = true
 			self.translatesAutoresizingMaskIntoConstraints = false
 			self.setContentHuggingPriority(.defaultHigh, for: .vertical)
@@ -80,12 +93,36 @@ extension KeyboardShortcuts {
 
 			// Hide the cancel button when not showing the shortcut so the placeholder text is properly centered. Must be last.
 			self.cancelButton = (self.cell as? NSSearchFieldCell)?.cancelButtonCell
-			self.showsCancelButton = !stringValue.isEmpty
+
+			self.setStringValue(name: name)
+
+			setUpEvents()
 		}
 
 		@available(*, unavailable)
 		public required init?(coder: NSCoder) {
 			fatalError("init(coder:) has not been implemented")
+		}
+
+		private func setStringValue(name: KeyboardShortcuts.Name) {
+			stringValue = getShortcut(for: shortcutName).map { "\($0)" } ?? ""
+
+			// If `stringValue` is empty, hide the cancel button to let the placeholder center.
+			showsCancelButton = !stringValue.isEmpty
+		}
+
+		private func setUpEvents() {
+			observer = NotificationCenter.default.addObserver(forName: .shortcutByNameDidChange, object: nil, queue: nil) { [weak self] notification in
+				guard
+					let self = self,
+					let nameInNotification = notification.userInfo?["name"] as? KeyboardShortcuts.Name,
+					nameInNotification == self.shortcutName
+				else {
+					return
+				}
+
+				self.setStringValue(name: nameInNotification)
+			}
 		}
 
 		/// :nodoc:
@@ -133,7 +170,7 @@ extension KeyboardShortcuts {
 
 				if
 					event.type == .leftMouseUp || event.type == .rightMouseUp,
-					!self.frame.insetBy(dx: -clickMargin, dy: -clickMargin).contains(clickPoint)
+					!self.bounds.insetBy(dx: -clickMargin, dy: -clickMargin).contains(clickPoint)
 				{
 					self.blur()
 					return nil
@@ -186,7 +223,7 @@ extension KeyboardShortcuts {
 
 					NSAlert.showModal(
 						for: self.window,
-						message: String.localizedStringWithFormat("keyboard_shortcut_used_by_menu_item".localized, menuItem.title)
+						title: String.localizedStringWithFormat("keyboard_shortcut_used_by_menu_item".localized, menuItem.title)
 					)
 
 					self.focus()
@@ -199,9 +236,9 @@ extension KeyboardShortcuts {
 
 					NSAlert.showModal(
 						for: self.window,
-						message: "keyboard_shortcut_used_by_system".localized,
+						title: "keyboard_shortcut_used_by_system".localized,
 						// TODO: Add button to offer to open the relevant system preference pane for the user.
-						informativeText: "keyboard_shortcuts_can_be_changed".localized
+						message: "keyboard_shortcuts_can_be_changed".localized
 					)
 
 					self.focus()
@@ -222,12 +259,7 @@ extension KeyboardShortcuts {
 		}
 
 		private func saveShortcut(_ shortcut: Shortcut?) {
-			if let shortcut = shortcut {
-				userDefaultsSet(name: shortcutName, shortcut: shortcut)
-			} else {
-				userDefaultsRemove(name: shortcutName)
-			}
-
+			setShortcut(shortcut, for: shortcutName)
 			onChange?(shortcut)
 		}
 	}

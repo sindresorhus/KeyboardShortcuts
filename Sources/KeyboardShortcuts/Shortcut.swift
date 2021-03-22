@@ -46,7 +46,7 @@ extension KeyboardShortcuts {
 
 		/// Initialize from a keyboard shortcut stored by `Recorder` or `RecorderCocoa`.
 		public init?(name: Name) {
-			guard let shortcut = userDefaultsGet(name: name) else {
+			guard let shortcut = getShortcut(for: name) else {
 				return nil
 			}
 
@@ -226,7 +226,7 @@ extension KeyboardShortcuts.Shortcut {
 
 		guard keyString.count <= 1 else {
 			guard
-				let key = self.key,
+				let key = key,
 				let string = keyToKeyEquivalentString[key]
 			else {
 				return ""

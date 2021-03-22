@@ -1,13 +1,13 @@
 <div align="center">
-	<img width="900" src="https://github.com/sindresorhus/KeyboardShortcuts/raw/master/logo.png" alt="KeyboardShortcuts">
+	<img width="900" src="https://github.com/sindresorhus/KeyboardShortcuts/raw/main/logo.png" alt="KeyboardShortcuts">
 	<br>
 </div>
 
 This package lets you add support for user-customizable global keyboard shortcuts to your macOS app in minutes. It's fully sandbox and Mac App Store compatible. And it's used in production by [Dato](https://sindresorhus.com/dato), [Jiffy](https://sindresorhus.com/jiffy), [Plash](https://github.com/sindresorhus/Plash), and [Lungo](https://sindresorhus.com/lungo).
 
-This package is still in its early days. I'm happy to accept more configurability and features. PR welcome! What you see here is just what I needed for my own apps.
+I'm happy to accept more configurability and features. PR welcome! What you see here is just what I needed for my own apps.
 
-<img src="https://github.com/sindresorhus/KeyboardShortcuts/raw/master/screenshot.png" width="532">
+<img src="https://github.com/sindresorhus/KeyboardShortcuts/raw/main/screenshot.png" width="532">
 
 ## Requirements
 
@@ -79,12 +79,12 @@ Add a listener for when the user presses their chosen keyboard shortcut.
 import Cocoa
 import KeyboardShortcuts
 
-@NSApplicationMain
+@main
 final class AppDelegate: NSObject, NSApplicationDelegate {
 	func applicationDidFinishLaunching(_ notification: Notification) {
-		KeyboardShortcuts.onKeyUp(for: .toggleUnicornMode) {
+		KeyboardShortcuts.onKeyUp(for: .toggleUnicornMode) { [self] in
 			// The user pressed the keyboard shortcut for “unicorn mode”!
-			self.isUnicornMode.toggle()
+			isUnicornMode.toggle()
 		}
 	}
 }
@@ -139,7 +139,19 @@ See [`NSMenuItem#setShortcut`](https://sindresorhus.com/KeyboardShortcuts/Extens
 
 #### Dynamic keyboard shortcuts
 
-Your app might need to support keyboard shortcuts for user-defined actions. Normally, you would statically register the keyboard shortcuts upfront in `extension KeyboardShortcuts.Name {}`. However, this is not a requirement. It's only for convenience so that you can use dot-syntax when calling various APIs (for example, `.onKeyDown(.unicornMode) {}`). You can create `KeyboardShortcut.Name`'s dynamically and store them yourself.
+Your app might need to support keyboard shortcuts for user-defined actions. Normally, you would statically register the keyboard shortcuts upfront in `extension KeyboardShortcuts.Name {}`. However, this is not a requirement. It's only for convenience so that you can use dot-syntax when calling various APIs (for example, `.onKeyDown(.unicornMode) {}`). You can create `KeyboardShortcut.Name`'s dynamically and store them yourself. You can see this in action in the example project.
+
+#### Default keyboard shortcuts
+
+Setting a default keyboard shortcut can be useful if you're migrating from a different package or just making something for yourself. However, please do not set this for a publicly distributed app. Users find it annoying when random apps steal their existing keyboard shortcuts. It’s generally better to show a welcome screen on the first app launch that lets the user set the shortcut.
+
+```swift
+import KeyboardShortcuts
+
+extension KeyboardShortcuts.Name {
+    static let toggleUnicornMode = Self("toggleUnicornMode", default: .init(.k, modifiers: [.command, .option]))
+}
+```
 
 ## FAQ
 
@@ -168,6 +180,10 @@ Most of the Carbon APIs were deprecated years ago, but there are some left that 
 #### Does this package cause any permission dialogs?
 
 No.
+
+#### How can I add an app-specific keyboard shortcut that is only active when the app is?
+
+That is outside the scope of this package. You can either use [`NSEvent.addLocalMonitorForEvents`](https://developer.apple.com/documentation/appkit/nsevent/1534971-addlocalmonitorforevents), [`NSMenuItem` with keyboard shortcut](https://developer.apple.com/documentation/appkit/nsmenuitem/2880316-allowskeyequivalentwhenhidden) (it can even be hidden), or SwiftUI's [`View#keyboardShortcut()` modifier](https://developer.apple.com/documentation/swiftui/form/keyboardshortcut(_:)).
 
 ## Related
 
