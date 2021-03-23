@@ -18,6 +18,12 @@ let package = Package(
 	targets: [
 		.target(
 			name: "KeyboardShortcuts"
+		),
+		.testTarget(
+			name: "KeyboardShortcutsTests",
+			dependencies: [
+				"KeyboardShortcuts"
+			]
 		)
 	]
 )

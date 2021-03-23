@@ -139,6 +139,7 @@ struct ContentView: View {
 			Divider()
 			DynamicShortcut()
 		}
+			.frame(width: 400, height: 320)
 	}
 }
 

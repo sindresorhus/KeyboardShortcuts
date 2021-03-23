@@ -5,6 +5,8 @@ extension KeyboardShortcuts {
 	// swiftlint:disable identifier_name
 	/// Represents a key on the keyboard.
 	public struct Key: Hashable, RawRepresentable {
+		// MARK: Letters
+
 		public static let a = Self(kVK_ANSI_A)
 		public static let b = Self(kVK_ANSI_B)
 		public static let c = Self(kVK_ANSI_C)

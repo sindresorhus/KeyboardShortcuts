@@ -15,23 +15,7 @@ macOS 10.11+
 
 ## Install
 
-#### Swift Package Manager
-
 Add `https://github.com/sindresorhus/KeyboardShortcuts` in the [“Swift Package Manager” tab in Xcode](https://developer.apple.com/documentation/xcode/adding_package_dependencies_to_your_app).
-
-You also need to set the build setting “Other Linker Flags” to `-weak_framework Combine` to work around [this Xcode bug](https://github.com/feedback-assistant/reports/issues/44).
-
-#### Carthage
-
-```
-github "sindresorhus/KeyboardShortcuts"
-```
-
-#### CocoaPods
-
-```ruby
-pod 'KeyboardShortcuts'
-```
 
 ## Usage
 
@@ -94,7 +78,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
 **That's all! ✨**
 
-You can find a complete example by opening `KeyboardShortcuts.xcodeproj` and then running the `KeyboardShortcutsExample` target.
+You can find a complete example in the “Example” directory.
 
 You can also find a [real-world example](https://github.com/sindresorhus/Plash/blob/b348a62645a873abba8dc11ff0fb8fe423419411/Plash/PreferencesView.swift#L121-L130) in my Plash app.
 
@@ -184,6 +168,10 @@ No.
 #### How can I add an app-specific keyboard shortcut that is only active when the app is?
 
 That is outside the scope of this package. You can either use [`NSEvent.addLocalMonitorForEvents`](https://developer.apple.com/documentation/appkit/nsevent/1534971-addlocalmonitorforevents), [`NSMenuItem` with keyboard shortcut](https://developer.apple.com/documentation/appkit/nsmenuitem/2880316-allowskeyequivalentwhenhidden) (it can even be hidden), or SwiftUI's [`View#keyboardShortcut()` modifier](https://developer.apple.com/documentation/swiftui/form/keyboardshortcut(_:)).
+
+#### Can you support CocoaPods or Carthage?
+
+No. However, there is nothing stopping you from using Swift Package Manager for just this package even if you normally use CocoaPods or Carthage.
 
 ## Related
 
