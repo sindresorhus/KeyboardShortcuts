@@ -62,8 +62,8 @@ struct SwiftUI_Previews: PreviewProvider {
 				.environment(\.locale, .init(identifier: "en"))
 			KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
 				.environment(\.locale, .init(identifier: "zh-Hans"))
-            KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
-                .environment(\.locale, .init(identifier: "ru"))
+			KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
+				.environment(\.locale, .init(identifier: "ru"))
 		}
 	}
 }
