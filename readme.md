@@ -175,7 +175,8 @@ No. However, there is nothing stopping you from using Swift Package Manager for 
 
 ## Related
 
+- [Defaults](https://github.com/sindresorhus/Defaults) - Swifty and modern UserDefaults
+- [Regex](https://github.com/sindresorhus/Regex) - Swifty regular expressions
 - [Preferences](https://github.com/sindresorhus/Preferences) - Add a preferences window to your macOS app in minutes
 - [LaunchAtLogin](https://github.com/sindresorhus/LaunchAtLogin) - Add "Launch at Login" functionality to your macOS app
-- [Defaults](https://github.com/sindresorhus/Defaults) - Swifty and modern UserDefaults
 - [More…](https://github.com/search?q=user%3Asindresorhus+language%3Aswift)
