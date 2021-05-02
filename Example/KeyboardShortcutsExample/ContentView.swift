@@ -29,7 +29,7 @@ private struct DynamicShortcutRecorder: View {
 	@Binding var isPressed: Bool
 
 	var body: some View {
-		HStack {
+		HStack(alignment: .firstTextBaseline) {
 			KeyboardShortcuts.Recorder(for: name)
 				.padding(.trailing, 10)
 			Text("Pressed? \(isPressed ? "👍" : "👎")")
@@ -91,13 +91,13 @@ private struct DoubleShortcut: View {
 
 	var body: some View {
 		VStack {
-			HStack {
+			HStack(alignment: .firstTextBaseline) {
 				KeyboardShortcuts.Recorder(for: .testShortcut1)
 					.padding(.trailing, 10)
 				Text("Pressed? \(isPressed1 ? "👍" : "👎")")
 					.frame(width: 100, alignment: .leading)
 			}
-			HStack {
+			HStack(alignment: .firstTextBaseline) {
 				KeyboardShortcuts.Recorder(for: .testShortcut2)
 					.padding(.trailing, 10)
 				Text("Pressed? \(isPressed2 ? "👍" : "👎")")
