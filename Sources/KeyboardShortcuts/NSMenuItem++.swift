@@ -1,7 +1,7 @@
 import Cocoa
 
 extension NSMenuItem {
-	private struct AssociatedKeys {
+	private enum AssociatedKeys {
 		static let observer = ObjectAssociation<NSObjectProtocol>()
 	}
 
@@ -68,7 +68,7 @@ extension NSMenuItem {
 
 	/**
 	Add a keyboard shortcut to a `NSMenuItem`.
-	
+
 	This method is only recommended for dynamic shortcuts. In general, it's preferred to create a static shortcut name and use `NSMenuItem.setShortcut(for:)` instead.
 
 	Pass in `nil` to clear the keyboard shortcut.

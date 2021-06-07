@@ -83,18 +83,18 @@ extension KeyboardShortcuts {
 			self.placeholderString = "record_shortcut".localized
 			self.centersPlaceholder = true
 			self.alignment = .center
-			(self.cell as? NSSearchFieldCell)?.searchButtonCell = nil
+			(cell as? NSSearchFieldCell)?.searchButtonCell = nil
 
 			self.wantsLayer = true
 			self.translatesAutoresizingMaskIntoConstraints = false
-			self.setContentHuggingPriority(.defaultHigh, for: .vertical)
-			self.setContentHuggingPriority(.defaultHigh, for: .horizontal)
-			self.widthAnchor.constraint(greaterThanOrEqualToConstant: CGFloat(minimumWidth)).isActive = true
+			setContentHuggingPriority(.defaultHigh, for: .vertical)
+			setContentHuggingPriority(.defaultHigh, for: .horizontal)
+			widthAnchor.constraint(greaterThanOrEqualToConstant: CGFloat(minimumWidth)).isActive = true
 
 			// Hide the cancel button when not showing the shortcut so the placeholder text is properly centered. Must be last.
-			self.cancelButton = (self.cell as? NSSearchFieldCell)?.cancelButtonCell
+			self.cancelButton = (cell as? NSSearchFieldCell)?.cancelButtonCell
 
-			self.setStringValue(name: name)
+			setStringValue(name: name)
 
 			setUpEvents()
 		}
