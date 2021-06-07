@@ -17,7 +17,7 @@ extension KeyboardShortcuts {
 
 	struct PreferencesView: View {
 		var body: some View {
-			HStack {
+			HStack(alignment: .firstTextBaseline) {
 				Text("Toggle Unicorn Mode:")
 				KeyboardShortcuts.Recorder(for: .toggleUnicornMode)
 			}

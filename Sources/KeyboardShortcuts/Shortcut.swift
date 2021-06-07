@@ -64,10 +64,18 @@ extension KeyboardShortcuts {
 
 extension KeyboardShortcuts.Shortcut {
 	/// System-defined keyboard shortcuts.
-	static var system: [Self] { CarbonKeyboardShortcuts.system }
+	static var system: [Self] {
+		CarbonKeyboardShortcuts.system
+	}
 
 	/// Check whether the keyboard shortcut is already taken by the system.
-	var isTakenBySystem: Bool { Self.system.contains(self) }
+	var isTakenBySystem: Bool {
+		guard self != KeyboardShortcuts.Shortcut(.f12, modifiers: []) else {
+			return false
+		}
+
+		return Self.system.contains(self)
+	}
 }
 
 extension KeyboardShortcuts.Shortcut {
