@@ -50,20 +50,39 @@ extension KeyboardShortcuts {
 		/// :nodoc:
 		public func updateNSView(_ nsView: NSViewType, context: Context) {
 			nsView.shortcutName = name
+            
+            // support for controlSize(:) modifier
+            switch context.environment.controlSize {
+                case .small:
+                    nsView.font = .systemFont(ofSize: 11)
+                    nsView.changeWidth(width: 110)
+                case .mini:
+                    nsView.font = .systemFont(ofSize: 9)
+                    nsView.changeWidth(width: 95)
+                default:
+                    break
+            }
 		}
 	}
 }
 
 @available(macOS 10.15, *)
 struct SwiftUI_Previews: PreviewProvider {
-	static var previews: some View {
+    static var previews: some View {
 		Group {
 			KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
 				.environment(\.locale, .init(identifier: "en"))
-			KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
-				.environment(\.locale, .init(identifier: "zh-Hans"))
-			KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
-				.environment(\.locale, .init(identifier: "ru"))
+            
+            KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
+                .previewDisplayName("Test: .controlSize(.small)")
+                .environment(\.locale, .init(identifier: "en"))
+                .controlSize(.small)
+            
+            KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
+                .previewDisplayName("Test: .controlSize(.mini)")
+                .environment(\.locale, .init(identifier: "en"))
+                .controlSize(.mini)
 		}
+        .padding()
 	}
 }

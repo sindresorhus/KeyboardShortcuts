@@ -26,7 +26,7 @@ extension KeyboardShortcuts {
 	```
 	*/
 	public final class RecorderCocoa: NSSearchField, NSSearchFieldDelegate {
-		private let minimumWidth: Double = 130
+		private var intrinsicWidth: CGFloat = 130
 		private var eventMonitor: LocalEventMonitor?
 		private let onChange: ((_ shortcut: Shortcut?) -> Void)?
 		private var observer: NSObjectProtocol?
@@ -54,7 +54,7 @@ extension KeyboardShortcuts {
 		/// :nodoc:
 		override public var intrinsicContentSize: CGSize {
 			var size = super.intrinsicContentSize
-			size.width = CGFloat(minimumWidth)
+			size.width = intrinsicWidth
 			return size
 		}
 
@@ -89,7 +89,6 @@ extension KeyboardShortcuts {
 			self.translatesAutoresizingMaskIntoConstraints = false
 			setContentHuggingPriority(.defaultHigh, for: .vertical)
 			setContentHuggingPriority(.defaultHigh, for: .horizontal)
-			widthAnchor.constraint(greaterThanOrEqualToConstant: CGFloat(minimumWidth)).isActive = true
 
 			// Hide the cancel button when not showing the shortcut so the placeholder text is properly centered. Must be last.
 			self.cancelButton = (cell as? NSSearchFieldCell)?.cancelButtonCell
@@ -138,6 +137,11 @@ extension KeyboardShortcuts {
 				focus()
 			}
 		}
+        
+        public func changeWidth(width: Double) {
+            self.intrinsicWidth = CGFloat(width)
+            invalidateIntrinsicContentSize()
+        }
 
 		/// :nodoc:
 		public func controlTextDidEndEditing(_ object: Notification) {
