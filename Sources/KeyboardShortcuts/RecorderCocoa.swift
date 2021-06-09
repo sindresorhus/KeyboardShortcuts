@@ -70,12 +70,10 @@ extension KeyboardShortcuts {
         /**
          - Parameter name: Strongly-typed keyboard shortcut name.
          - Parameter onChange: Callback which will be called when the keyboard shortcut is changed/removed by the user. This can be useful when you need more control. For example, when migrating from a different keyboard shortcut solution and you need to store the keyboard shortcut somewhere yourself instead of relying on the built-in storage. However, it's strongly recommended to just rely on the built-in storage when possible.
-         - Parameter isHorizontalContentSizeConstraintActive: When `true`, makes sure to have width constraint set to avoid cutting placeholder string. When `false`, the frame(:) modifier will control the actual width of the text field.
          */
 		public required init(
 			for name: Name,
-			onChange: ((_ shortcut: Shortcut?) -> Void)? = nil,
-            isHorizontalContentSizeConstraintActive: Bool = false
+			onChange: ((_ shortcut: Shortcut?) -> Void)? = nil
 		) {
 			self.shortcutName = name
 			self.onChange = onChange
@@ -91,7 +89,6 @@ extension KeyboardShortcuts {
 			self.translatesAutoresizingMaskIntoConstraints = false
 			setContentHuggingPriority(.defaultHigh, for: .vertical)
 			setContentHuggingPriority(.defaultLow, for: .horizontal)
-            self.isHorizontalContentSizeConstraintActive = isHorizontalContentSizeConstraintActive
 
 			// Hide the cancel button when not showing the shortcut so the placeholder text is properly centered. Must be last.
 			self.cancelButton = (cell as? NSSearchFieldCell)?.cancelButtonCell
@@ -100,6 +97,21 @@ extension KeyboardShortcuts {
 
 			setUpEvents()
 		}
+        
+        /**
+         - Parameter name: Strongly-typed keyboard shortcut name.
+         - Parameter onChange: Callback which will be called when the keyboard shortcut is changed/removed by the user. This can be useful when you need more control. For example, when migrating from a different keyboard shortcut solution and you need to store the keyboard shortcut somewhere yourself instead of relying on the built-in storage. However, it's strongly recommended to just rely on the built-in storage when possible.
+         - Parameter isHorizontalContentSizeConstraintActive: When `true`, makes sure to have width constraint set to avoid a cluttering placeholder string visibility. When `false`, the frame(:) modifier will control the actual width of the text field.
+         */
+        @available(macOS 10.15, *)
+        public convenience init(
+            for name: Name,
+            onChange: ((_ shortcut: Shortcut?) -> Void)? = nil,
+            isHorizontalContentSizeConstraintActive: Bool = false
+        ) {
+            self.init(for: name, onChange: onChange)
+            self.isHorizontalContentSizeConstraintActive = isHorizontalContentSizeConstraintActive
+        }
 
 		@available(*, unavailable)
 		public required init?(coder: NSCoder) {
