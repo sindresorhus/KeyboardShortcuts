@@ -31,39 +31,70 @@ extension KeyboardShortcuts {
 
 		private let name: Name
 		private let onChange: ((_ shortcut: Shortcut?) -> Void)?
+        private let isHorizontalContentSizeConstraintActive: Bool
 
-		/**
-		- Parameter name: Strongly-typed keyboard shortcut name.
-		- Parameter onChange: Callback which will be called when the keyboard shortcut is changed/removed by the user. This can be useful when you need more control. For example, when migrating from a different keyboard shortcut solution and you need to store the keyboard shortcut somewhere yourself instead of relying on the built-in storage. However, it's strongly recommended to just rely on the built-in storage when possible.
-		*/
+        /**
+         - Parameter name: Strongly-typed keyboard shortcut name.
+         - Parameter onChange: Callback which will be called when the keyboard shortcut is changed/removed by the user. This can be useful when you need more control. For example, when migrating from a different keyboard shortcut solution and you need to store the keyboard shortcut somewhere yourself instead of relying on the built-in storage. However, it's strongly recommended to just rely on the built-in storage when possible.
+         - Parameter isHorizontalContentSizeConstraintActive: When `true`, makes sure to have width constraint set to avoid cutting placeholder string. When `false`, the frame(:) modifier will control the actual width of the text field.
+         */
 		public init(
 			for name: Name,
-			onChange: ((_ shortcut: Shortcut?) -> Void)? = nil
+			onChange: ((_ shortcut: Shortcut?) -> Void)? = nil,
+            constraint isHorizontalContentSizeConstraintActive: Bool = false
 		) {
 			self.name = name
 			self.onChange = onChange
+            self.isHorizontalContentSizeConstraintActive = isHorizontalContentSizeConstraintActive
 		}
 
 		/// :nodoc:
-		public func makeNSView(context: Context) -> NSViewType { .init(for: name, onChange: onChange) }
+		public func makeNSView(context: Context) -> NSViewType { .init(for: name, onChange: onChange, isHorizontalContentSizeConstraintActive: isHorizontalContentSizeConstraintActive) }
 
 		/// :nodoc:
 		public func updateNSView(_ nsView: NSViewType, context: Context) {
 			nsView.shortcutName = name
+            
+            // support for controlSize(:) modifier
+            switch context.environment.controlSize {
+                case .small:
+                    nsView.font = .systemFont(ofSize: 11)
+                    nsView.changeWidth(width: 110)
+                case .mini:
+                    nsView.font = .systemFont(ofSize: 9)
+                    nsView.changeWidth(width: 95)
+                default:
+                    break
+            }
 		}
 	}
 }
 
 @available(macOS 10.15, *)
 struct SwiftUI_Previews: PreviewProvider {
-	static var previews: some View {
+    static var previews: some View {
 		Group {
 			KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
 				.environment(\.locale, .init(identifier: "en"))
-			KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
-				.environment(\.locale, .init(identifier: "zh-Hans"))
-			KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
-				.environment(\.locale, .init(identifier: "ru"))
+                .frame(width: 130)
+            
+            KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
+                .previewDisplayName("Test: .controlSize(.small)")
+                .environment(\.locale, .init(identifier: "en"))
+                .controlSize(.small)
+                .frame(width: 110)
+            
+            KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
+                .previewDisplayName("Test: .controlSize(.mini)")
+                .environment(\.locale, .init(identifier: "en"))
+                .controlSize(.mini)
+                .frame(width: 95)
+                
+            KeyboardShortcuts.Recorder(for: .init("xcodePreview"), constraint: true)
+                .previewDisplayName("Test: Horizontal constraint")
+                .environment(\.locale, .init(identifier: "en"))
+                .frame(width: 50)
 		}
+        .padding()
 	}
 }
