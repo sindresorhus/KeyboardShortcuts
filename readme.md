@@ -9,6 +9,35 @@ I'm happy to accept more configurability and features. PR welcome! What you see 
 
 <img src="https://github.com/sindresorhus/KeyboardShortcuts/raw/main/screenshot.png" width="532">
 
+<br>
+
+---
+
+<div align="center">
+	<p>
+		<p>
+			<sup>
+				<a href="https://github.com/sponsors/sindresorhus">Sindre‘s open source work is supported by the community</a>
+			</sup>
+		</p>
+		<sup>Special thanks to:</sup>
+		<br>
+		<br>
+		<a href="https://keygen.sh">
+			<div>
+				<img src="https://sindresorhus.com/assets/thanks/keygen-logo.svg" width="210" alt="Keygen">
+			</div>
+			<b>A dead-simple software licensing and distribution API built for developers</b>
+		</a>
+		<br>
+		<br>
+	</p>
+</div>
+
+---
+
+<br>
+
 ## Requirements
 
 macOS 10.11+
