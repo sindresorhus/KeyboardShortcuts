@@ -7,16 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E33F1EFC26F3B89C00ACEB0F /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = E33F1EFB26F3B89C00ACEB0F /* KeyboardShortcuts */; };
 		E36FB94A2609BA43004272D9 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = E36FB9492609BA43004272D9 /* App.swift */; };
 		E36FB94C2609BA43004272D9 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E36FB94B2609BA43004272D9 /* ContentView.swift */; };
 		E36FB94E2609BA45004272D9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E36FB94D2609BA45004272D9 /* Assets.xcassets */; };
 		E36FB9512609BA45004272D9 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E36FB9502609BA45004272D9 /* Preview Assets.xcassets */; };
 		E36FB9632609BB83004272D9 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E36FB9622609BB83004272D9 /* AppState.swift */; };
 		E36FB9662609BF3D004272D9 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = E36FB9652609BF3D004272D9 /* Utilities.swift */; };
-		E386C4D32609C0C500F147B8 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = E386C4D22609C0C500F147B8 /* KeyboardShortcuts */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E33F1EFA26F3B78800ACEB0F /* KeyboardShortcuts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = KeyboardShortcuts; path = ..; sourceTree = "<group>"; };
 		E36FB9462609BA43004272D9 /* KeyboardShortcutsExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KeyboardShortcutsExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E36FB9492609BA43004272D9 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		E36FB94B2609BA43004272D9 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -26,7 +27,6 @@
 		E36FB9532609BA45004272D9 /* KeyboardShortcutsExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = KeyboardShortcutsExample.entitlements; sourceTree = "<group>"; };
 		E36FB9622609BB83004272D9 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		E36FB9652609BF3D004272D9 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
-		E386C4D02609C0B700F147B8 /* KeyboardShortcuts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = KeyboardShortcuts; path = ..; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -34,20 +34,27 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E386C4D32609C0C500F147B8 /* KeyboardShortcuts in Frameworks */,
+				E33F1EFC26F3B89C00ACEB0F /* KeyboardShortcuts in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E33F1EF926F3B78800ACEB0F /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				E33F1EFA26F3B78800ACEB0F /* KeyboardShortcuts */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
 		E36FB93D2609BA43004272D9 = {
 			isa = PBXGroup;
 			children = (
-				E386C4D02609C0B700F147B8 /* KeyboardShortcuts */,
 				E36FB9482609BA43004272D9 /* KeyboardShortcutsExample */,
 				E36FB9472609BA43004272D9 /* Products */,
-				E36FB95E2609BACA004272D9 /* Frameworks */,
+				E33F1EF926F3B78800ACEB0F /* Packages */,
 			);
 			sourceTree = "<group>";
 		};
@@ -82,13 +89,6 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
-		E36FB95E2609BACA004272D9 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -106,7 +106,7 @@
 			);
 			name = KeyboardShortcutsExample;
 			packageProductDependencies = (
-				E386C4D22609C0C500F147B8 /* KeyboardShortcuts */,
+				E33F1EFB26F3B89C00ACEB0F /* KeyboardShortcuts */,
 			);
 			productName = KeyboardShortcutsExample;
 			productReference = E36FB9462609BA43004272D9 /* KeyboardShortcutsExample.app */;
@@ -222,7 +222,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 11.1;
+				MACOSX_DEPLOYMENT_TARGET = 11.3;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -277,7 +277,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 11.1;
+				MACOSX_DEPLOYMENT_TARGET = 11.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
@@ -362,7 +362,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		E386C4D22609C0C500F147B8 /* KeyboardShortcuts */ = {
+		E33F1EFB26F3B89C00ACEB0F /* KeyboardShortcuts */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = KeyboardShortcuts;
 		};
