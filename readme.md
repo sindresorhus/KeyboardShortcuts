@@ -198,6 +198,10 @@ No.
 
 That is outside the scope of this package. You can either use [`NSEvent.addLocalMonitorForEvents`](https://developer.apple.com/documentation/appkit/nsevent/1534971-addlocalmonitorforevents), [`NSMenuItem` with keyboard shortcut](https://developer.apple.com/documentation/appkit/nsmenuitem/2880316-allowskeyequivalentwhenhidden) (it can even be hidden), or SwiftUI's [`View#keyboardShortcut()` modifier](https://developer.apple.com/documentation/swiftui/form/keyboardshortcut(_:)).
 
+#### Does it support media keys?
+
+No, since it would not work for sandboxed apps. If your app is not sandboxed, you can use [`MediaKeyTap`](https://github.com/nhurden/MediaKeyTap).
+
 #### Can you support CocoaPods or Carthage?
 
 No. However, there is nothing stopping you from using Swift Package Manager for just this package even if you normally use CocoaPods or Carthage.
