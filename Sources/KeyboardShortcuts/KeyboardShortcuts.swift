@@ -172,6 +172,16 @@ public enum KeyboardShortcuts {
 		return decoded
 	}
 
+	/**
+	 Gives the names of all the user-set shortcuts.
+	 */
+	public static var names: [Name] {
+		UserDefaults.standard
+			.dictionaryRepresentation()
+			.filter { $0.key.hasPrefix("KeyboardShortcuts_") }
+			.compactMap { Name($0.key) }
+	}
+
 	private static func handleOnKeyDown(_ shortcut: Shortcut) {
 		guard !isPaused else {
 			return
