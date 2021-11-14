@@ -3,7 +3,9 @@ import Carbon.HIToolbox
 
 
 extension String {
-	/// Makes the string localizable.
+	/**
+	Makes the string localizable.
+	*/
 	var localized: String {
 		NSLocalizedString(self, bundle: .module, comment: self)
 	}
@@ -117,7 +119,9 @@ extension NSEvent {
 
 
 extension NSSearchField {
-	/// Clear the search field.
+	/**
+	Clear the search field.
+	*/
 	func clear() {
 		(cell as? NSSearchFieldCell)?.cancelButtonCell?.performClick(self)
 	}
@@ -125,7 +129,9 @@ extension NSSearchField {
 
 
 extension NSAlert {
-	/// Show an alert as a window-modal sheet, or as an app-modal (window-independent) alert if the window is `nil` or not given.
+	/**
+	Show an alert as a window-modal sheet, or as an app-modal (window-independent) alert if the window is `nil` or not given.
+	*/
 	@discardableResult
 	static func showModal(
 		for window: NSWindow? = nil,
@@ -158,7 +164,9 @@ extension NSAlert {
 		}
 	}
 
-	/// Runs the alert as a window-modal sheet, or as an app-modal (window-independent) alert if the window is `nil` or not given.
+	/**
+	Runs the alert as a window-modal sheet, or as an app-modal (window-independent) alert if the window is `nil` or not given.
+	*/
 	@discardableResult
 	func runModal(for window: NSWindow? = nil) -> NSApplication.ModalResponse {
 		guard let window = window else {
@@ -351,6 +359,8 @@ extension DispatchQueue {
 	*/
 	static var currentQueueLabel: String { String(cString: __dispatch_queue_get_label(nil)) }
 
-	/// Whether the current queue is a `NSBackgroundActivityScheduler` task.
+	/**
+	Whether the current queue is a `NSBackgroundActivityScheduler` task.
+	*/
 	static var isCurrentQueueNSBackgroundActivitySchedulerQueue: Bool { currentQueueLabel.hasPrefix("com.apple.xpc.activity.") }
 }

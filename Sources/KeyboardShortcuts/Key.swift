@@ -3,7 +3,9 @@ import Carbon.HIToolbox
 
 extension KeyboardShortcuts {
 	// swiftlint:disable identifier_name
-	/// Represents a key on the keyboard.
+	/**
+	Represents a key on the keyboard.
+	*/
 	public struct Key: Hashable, RawRepresentable {
 		// MARK: Letters
 
@@ -139,12 +141,16 @@ extension KeyboardShortcuts {
 
 		// MARK: Properties
 
-		/// The raw key code.
+		/**
+		The raw key code.
+		*/
 		public let rawValue: Int
 
 		// MARK: Initializers
 
-		/// Create a `Key` from a key code.
+		/**
+		Create a `Key` from a key code.
+		*/
 		public init(rawValue: Int) {
 			self.rawValue = rawValue
 		}
@@ -156,7 +162,9 @@ extension KeyboardShortcuts {
 }
 
 extension KeyboardShortcuts.Key {
-	/// All the function keys.
+	/**
+	All the function keys.
+	*/
 	static let functionKeys: Set<Self> = [
 		.f1,
 		.f2,
@@ -180,6 +188,8 @@ extension KeyboardShortcuts.Key {
 		.f20
 	]
 
-	/// Returns true if the key is a function key. For example, `F1`.
+	/**
+	Returns true if the key is a function key. For example, `F1`.
+	*/
 	var isFunctionKey: Bool { Self.functionKeys.contains(self) }
 }

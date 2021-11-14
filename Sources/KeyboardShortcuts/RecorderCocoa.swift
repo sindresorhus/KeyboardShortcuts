@@ -31,8 +31,11 @@ extension KeyboardShortcuts {
 		private let onChange: ((_ shortcut: Shortcut?) -> Void)?
 		private var observer: NSObjectProtocol?
 
-		/// The shortcut name for the recorder.
-		/// Can be dynamically changed at any time.
+		/**
+		The shortcut name for the recorder.
+
+		Can be dynamically changed at any time.
+		*/
 		public var shortcutName: Name {
 			didSet {
 				guard shortcutName != oldValue else {

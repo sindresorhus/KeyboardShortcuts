@@ -2,29 +2,46 @@ import Cocoa
 import Carbon.HIToolbox
 
 extension KeyboardShortcuts {
-	/// A keyboard shortcut.
+	/**
+	A keyboard shortcut.
+	*/
 	public struct Shortcut: Hashable, Codable {
-		/// Carbon modifiers are not always stored as the same number.
-		/// For example, the system has `⌃F2` stored with the modifiers number `135168`, but if you press the keyboard shortcut, you get `4096`.
+		/**
+		Carbon modifiers are not always stored as the same number.
+
+		For example, the system has `⌃F2` stored with the modifiers number `135168`, but if you press the keyboard shortcut, you get `4096`.
+		*/
 		private static func normalizeModifiers(_ carbonModifiers: Int) -> Int {
 			NSEvent.ModifierFlags(carbon: carbonModifiers).carbon
 		}
 
-		/// The keyboard key of the shortcut.
+		/**
+		The keyboard key of the shortcut.
+		*/
 		public var key: Key? { Key(rawValue: carbonKeyCode) }
 
-		/// The modifier keys of the shortcut.
+		/**
+		The modifier keys of the shortcut.
+		*/
 		public var modifiers: NSEvent.ModifierFlags { NSEvent.ModifierFlags(carbon: carbonModifiers) }
 
-		/// Low-level represetation of the key.
-		/// You most likely don't need this.
+		/**
+		Low-level represetation of the key.
+
+		You most likely don't need this.
+		*/
 		public let carbonKeyCode: Int
 
-		/// Low-level representation of the modifier keys.
-		/// You most likely don't need this.
+		/**
+		Low-level representation of the modifier keys.
+
+		You most likely don't need this.
+		*/
 		public let carbonModifiers: Int
 
-		/// Initialize from a strongly-typed key and modifiers.
+		/**
+		Initialize from a strongly-typed key and modifiers.
+		*/
 		public init(_ key: Key, modifiers: NSEvent.ModifierFlags = []) {
 			self.init(
 				carbonKeyCode: key.rawValue,
@@ -32,7 +49,9 @@ extension KeyboardShortcuts {
 			)
 		}
 
-		/// Initialize from a key event.
+		/**
+		Initialize from a key event.
+		*/
 		public init?(event: NSEvent) {
 			guard event.isKeyEvent else {
 				return nil
@@ -44,7 +63,9 @@ extension KeyboardShortcuts {
 			)
 		}
 
-		/// Initialize from a keyboard shortcut stored by `Recorder` or `RecorderCocoa`.
+		/**
+		Initialize from a keyboard shortcut stored by `Recorder` or `RecorderCocoa`.
+		*/
 		public init?(name: Name) {
 			guard let shortcut = getShortcut(for: name) else {
 				return nil
@@ -53,8 +74,11 @@ extension KeyboardShortcuts {
 			self = shortcut
 		}
 
-		/// Initialize from a key code number and modifier code.
-		/// You most likely don't need this.
+		/**
+		Initialize from a key code number and modifier code.
+
+		You most likely don't need this.
+		*/
 		public init(carbonKeyCode: Int, carbonModifiers: Int = 0) {
 			self.carbonKeyCode = carbonKeyCode
 			self.carbonModifiers = Self.normalizeModifiers(carbonModifiers)
@@ -63,12 +87,16 @@ extension KeyboardShortcuts {
 }
 
 extension KeyboardShortcuts.Shortcut {
-	/// System-defined keyboard shortcuts.
+	/**
+	System-defined keyboard shortcuts.
+	*/
 	static var system: [Self] {
 		CarbonKeyboardShortcuts.system
 	}
 
-	/// Check whether the keyboard shortcut is already taken by the system.
+	/**
+	Check whether the keyboard shortcut is already taken by the system.
+	*/
 	var isTakenBySystem: Bool {
 		guard self != KeyboardShortcuts.Shortcut(.f12, modifiers: []) else {
 			return false
@@ -79,7 +107,9 @@ extension KeyboardShortcuts.Shortcut {
 }
 
 extension KeyboardShortcuts.Shortcut {
-	/// Recursively finds a menu item in the given menu that has a matching key equivalent and modifier.
+	/**
+	Recursively finds a menu item in the given menu that has a matching key equivalent and modifier.
+	*/
 	func menuItemWithMatchingShortcut(in menu: NSMenu) -> NSMenuItem? {
 		for item in menu.items {
 			if
@@ -100,7 +130,9 @@ extension KeyboardShortcuts.Shortcut {
 		return nil
 	}
 
-	/// Returns a menu item in the app's main menu that has a matching key equivalent and modifier.
+	/**
+	Returns a menu item in the app's main menu that has a matching key equivalent and modifier.
+	*/
 	var takenByMainMenu: NSMenuItem? {
 		guard let mainMenu = NSApp.mainMenu else {
 			return nil

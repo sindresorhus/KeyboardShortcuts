@@ -16,7 +16,9 @@ public enum KeyboardShortcuts {
 	private static var userDefaultsKeyDownHandlers = [Name: [KeyAction]]()
 	private static var userDefaultsKeyUpHandlers = [Name: [KeyAction]]()
 
-	/// When `true`, event handlers will not be called for registered keyboard shortcuts.
+	/**
+	When `true`, event handlers will not be called for registered keyboard shortcuts.
+	*/
 	static var isPaused = false
 
 	private static func register(_ shortcut: Shortcut) {
