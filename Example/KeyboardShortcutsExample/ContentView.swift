@@ -100,7 +100,7 @@ private struct DoubleShortcut: View {
 			.frame(maxWidth: 300)
 			.padding()
 			.padding()
-			.onAppear {
+			.task {
 				KeyboardShortcuts.onKeyDown(for: .testShortcut1) {
 					isPressed1 = true
 				}

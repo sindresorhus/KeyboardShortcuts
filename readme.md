@@ -134,7 +134,7 @@ final class PreferencesViewController: NSViewController {
 This package supports [localizations](/Sources/KeyboardShortcuts/Localization). PR welcome for more!
 
 1. Fork the repo.
-2. Create a directory that has a name that uses an ISO 639 language code and optional designators, followed by the `.lproj` suffix. [More here.](https://developer.apple.com/documentation/swift_packages/localizing_package_resources)
+2. Create a directory that has a name that uses an [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) language code and optional designators, followed by the `.lproj` suffix. [More here.](https://developer.apple.com/documentation/swift_packages/localizing_package_resources)
 3. Create a file named `Localizable.strings` under the new language directory and then copy the contents of `KeyboardShortcuts/Localization/en.lproj/Localizable.strings` to the new file that you just created.
 4. Localize and make sure to review your localization multiple times. Check for typos.
 5. Try to find someone that speaks your language to review the translation.
@@ -162,7 +162,7 @@ Setting a default keyboard shortcut can be useful if you're migrating from a dif
 import KeyboardShortcuts
 
 extension KeyboardShortcuts.Name {
-    static let toggleUnicornMode = Self("toggleUnicornMode", default: .init(.k, modifiers: [.command, .option]))
+	static let toggleUnicornMode = Self("toggleUnicornMode", default: .init(.k, modifiers: [.command, .option]))
 }
 ```
 

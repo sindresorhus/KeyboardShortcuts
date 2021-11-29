@@ -8,17 +8,18 @@ final class CallbackMenuItem: NSMenuItem {
 		validateCallback = callback
 	}
 
+	private let callback: () -> Void
+
 	init(
 		_ title: String,
 		key: String = "",
 		keyModifiers: NSEvent.ModifierFlags? = nil,
-		data: Any? = nil,
 		isEnabled: Bool = true,
 		isChecked: Bool = false,
 		isHidden: Bool = false,
-		callback: @escaping (NSMenuItem) -> Void
+		action: @escaping () -> Void
 	) {
-		self.callback = callback
+		self.callback = action
 		super.init(title: title, action: #selector(action(_:)), keyEquivalent: key)
 		self.target = self
 		self.isEnabled = isEnabled
@@ -35,11 +36,9 @@ final class CallbackMenuItem: NSMenuItem {
 		fatalError()
 	}
 
-	private let callback: (NSMenuItem) -> Void
-
 	@objc
-	func action(_ sender: NSMenuItem) {
-		callback(sender)
+	private func action(_ sender: NSMenuItem) {
+		callback()
 	}
 }
 
@@ -87,21 +86,19 @@ extension NSMenu {
 		_ title: String,
 		key: String = "",
 		keyModifiers: NSEvent.ModifierFlags? = nil,
-		data: Any? = nil,
 		isEnabled: Bool = true,
 		isChecked: Bool = false,
 		isHidden: Bool = false,
-		callback: @escaping (NSMenuItem) -> Void
+		action: @escaping () -> Void
 	) -> NSMenuItem {
 		let menuItem = CallbackMenuItem(
 			title,
 			key: key,
 			keyModifiers: keyModifiers,
-			data: data,
 			isEnabled: isEnabled,
 			isChecked: isChecked,
 			isHidden: isHidden,
-			callback: callback
+			action: action
 		)
 		addItem(menuItem)
 		return menuItem
