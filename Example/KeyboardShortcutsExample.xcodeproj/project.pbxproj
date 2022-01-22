@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		E33F1EFC26F3B89C00ACEB0F /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = E33F1EFB26F3B89C00ACEB0F /* KeyboardShortcuts */; };
 		E36FB94A2609BA43004272D9 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = E36FB9492609BA43004272D9 /* App.swift */; };
-		E36FB94C2609BA43004272D9 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E36FB94B2609BA43004272D9 /* ContentView.swift */; };
+		E36FB94C2609BA43004272D9 /* MainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E36FB94B2609BA43004272D9 /* MainScreen.swift */; };
 		E36FB94E2609BA45004272D9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E36FB94D2609BA45004272D9 /* Assets.xcassets */; };
 		E36FB9512609BA45004272D9 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E36FB9502609BA45004272D9 /* Preview Assets.xcassets */; };
 		E36FB9632609BB83004272D9 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E36FB9622609BB83004272D9 /* AppState.swift */; };
@@ -20,7 +20,7 @@
 		E33F1EFA26F3B78800ACEB0F /* KeyboardShortcuts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = KeyboardShortcuts; path = ..; sourceTree = "<group>"; };
 		E36FB9462609BA43004272D9 /* KeyboardShortcutsExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KeyboardShortcutsExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E36FB9492609BA43004272D9 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
-		E36FB94B2609BA43004272D9 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		E36FB94B2609BA43004272D9 /* MainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainScreen.swift; sourceTree = "<group>"; };
 		E36FB94D2609BA45004272D9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E36FB9502609BA45004272D9 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		E36FB9522609BA45004272D9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -71,7 +71,7 @@
 			children = (
 				E36FB9492609BA43004272D9 /* App.swift */,
 				E36FB9622609BB83004272D9 /* AppState.swift */,
-				E36FB94B2609BA43004272D9 /* ContentView.swift */,
+				E36FB94B2609BA43004272D9 /* MainScreen.swift */,
 				E36FB9652609BF3D004272D9 /* Utilities.swift */,
 				E36FB94D2609BA45004272D9 /* Assets.xcassets */,
 				E36FB9522609BA45004272D9 /* Info.plist */,
@@ -162,7 +162,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E36FB9632609BB83004272D9 /* AppState.swift in Sources */,
-				E36FB94C2609BA43004272D9 /* ContentView.swift in Sources */,
+				E36FB94C2609BA43004272D9 /* MainScreen.swift in Sources */,
 				E36FB9662609BF3D004272D9 /* Utilities.swift in Sources */,
 				E36FB94A2609BA43004272D9 /* App.swift in Sources */,
 			);

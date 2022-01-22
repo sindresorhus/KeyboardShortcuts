@@ -6,7 +6,7 @@ struct AppMain: App {
 
 	var body: some Scene {
 		WindowGroup {
-			ContentView()
+			MainScreen()
 				.task {
 					state.createMenus()
 				}

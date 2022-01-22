@@ -17,7 +17,7 @@ I'm happy to accept more configurability and features. PR welcome! What you see 
 	<p>
 		<p>
 			<sup>
-				<a href="https://github.com/sponsors/sindresorhus">Sindre‘s open source work is supported by the community</a>
+				<a href="https://github.com/sponsors/sindresorhus">Sindre's open source work is supported by the community</a>
 			</sup>
 		</p>
 		<sup>Special thanks to:</sup>
@@ -64,17 +64,19 @@ You can then refer to this strongly-typed name in other places.
 
 You will want to make a view where the user can choose a keyboard shortcut.
 
-`PreferencesView.swift`
+`SettingsScreen.swift`
 
 ```swift
 import SwiftUI
 import KeyboardShortcuts
 
-struct PreferencesView: View {
+struct SettingsScreen: View {
 	var body: some View {
-		HStack(alignment: .firstTextBaseline) {
-			Text("Toggle Unicorn Mode:")
-			KeyboardShortcuts.Recorder(for: .toggleUnicornMode)
+		Form {
+			HStack(alignment: .firstTextBaseline) {
+				Text("Toggle Unicorn Mode:")
+				KeyboardShortcuts.Recorder(for: .toggleUnicornMode)
+			}
 		}
 	}
 }
@@ -86,17 +88,30 @@ struct PreferencesView: View {
 
 Add a listener for when the user presses their chosen keyboard shortcut.
 
-`AppDelegate.swift`
+`App.swift`
 
 ```swift
-import Cocoa
+import SwiftUI
 import KeyboardShortcuts
 
 @main
-final class AppDelegate: NSObject, NSApplicationDelegate {
-	func applicationDidFinishLaunching(_ notification: Notification) {
+struct YourApp: App {
+	@StateObject private var appState = AppState()
+
+	var body: some Scene {
+		WindowGroup {
+			// …
+		}
+		Settings {
+			SettingsScreen()
+		}
+	}
+}
+
+@MainActor
+final class AppState: ObservableObject {
+	init() {
 		KeyboardShortcuts.onKeyUp(for: .toggleUnicornMode) { [self] in
-			// The user pressed the keyboard shortcut for “unicorn mode”!
 			isUnicornMode.toggle()
 		}
 	}
@@ -113,7 +128,7 @@ You can also find a [real-world example](https://github.com/sindresorhus/Plash/b
 
 #### Cocoa
 
-Use [`KeyboardShortcuts.RecorderCocoa`](Sources/KeyboardShortcuts/RecorderCocoa.swift) instead of `KeyboardShortcuts.Recorder`.
+Using [`KeyboardShortcuts.RecorderCocoa`](Sources/KeyboardShortcuts/RecorderCocoa.swift) instead of `KeyboardShortcuts.Recorder`:
 
 ```swift
 import Cocoa
