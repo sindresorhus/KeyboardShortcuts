@@ -21,6 +21,11 @@ extension KeyboardShortcuts {
 		public let defaultShortcut: Shortcut?
 
 		/**
+		Get the keyboard shortcut assigned to the name.
+		*/
+		public var shortcut: Shortcut? { KeyboardShortcuts.getShortcut(for: self) }
+
+		/**
 		- Parameter name: Name of the shortcut.
 		- Parameter default: Optional default key combination. Do not set this unless it's essential. Users find it annoying when random apps steal their existing keyboard shortcuts. It's generally better to show a welcome screen on the first app launch that lets the user set the shortcut.
 		*/

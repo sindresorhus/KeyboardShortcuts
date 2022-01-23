@@ -181,6 +181,36 @@ extension KeyboardShortcuts.Name {
 }
 ```
 
+#### Get all keyboard shortcuts
+
+To get all the keyboard shortcut `Name`'s, conform `KeyboardShortcuts.Name` to `CaseIterable`.
+
+```swift
+import KeyboardShortcuts
+
+extension KeyboardShortcuts.Name {
+	static let foo = Self("foo")
+	static let bar = Self("bar")
+}
+
+extension KeyboardShortcuts.Name: CaseIterable {
+	public static let allCases: [Self] = [
+		.foo,
+		.bar
+	]
+}
+
+// …
+
+print(KeyboardShortcuts.Name.allCases)
+```
+
+And to get all the `Name`'s with a set keyboard shortcut:
+
+```swift
+print(KeyboardShortcuts.Name.allCases.filter { $0.shortcut != nil })
+```
+
 ## FAQ
 
 #### How is it different from [`MASShortcut`](https://github.com/shpakovski/MASShortcut)?
