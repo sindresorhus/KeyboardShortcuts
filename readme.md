@@ -1,5 +1,6 @@
 <div align="center">
-	<img width="900" src="https://github.com/sindresorhus/KeyboardShortcuts/raw/main/logo.png" alt="KeyboardShortcuts">
+	<img width="900" src="https://github.com/sindresorhus/KeyboardShortcuts/raw/main/logo-light.png#gh-light-mode-only" alt="KeyboardShortcuts">
+	<img width="900" src="https://github.com/sindresorhus/KeyboardShortcuts/raw/main/logo-dark.png#gh-dark-mode-only" alt="KeyboardShortcuts">
 	<br>
 </div>
 
