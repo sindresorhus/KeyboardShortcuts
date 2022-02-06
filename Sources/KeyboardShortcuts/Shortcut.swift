@@ -300,8 +300,9 @@ extension KeyboardShortcuts.Shortcut: CustomStringConvertible {
 extension KeyboardShortcuts.Shortcut {
 	
 	@available(iOS 14.0, macOS 11.0, *)
-	var swiftUI: SwiftUI.KeyboardShortcut {
-		.init(.init(keyEquivalent.first!), modifiers: modifiers.swiftUI)
+	var swiftUI: SwiftUI.KeyboardShortcut? {
+		guard let key = keyEquivalent.first else { return nil }
+		return .init(.init(key), modifiers: modifiers.swiftUI)
 	}
 	
 }
