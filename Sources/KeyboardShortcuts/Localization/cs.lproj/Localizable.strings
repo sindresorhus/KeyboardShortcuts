@@ -1,0 +1,5 @@
+"record_shortcut" = "Přidat zkratku";
+"press_shortcut" = "Stiskněte klávesy";
+"keyboard_shortcut_used_by_menu_item" = "Tuto zkratku nelze použít, protože ji už využívá položka „%@“ v nabídce.";
+"keyboard_shortcut_used_by_system" = "Tuto zkratku nelze použít, protože už ji používá systém.";
+"keyboard_shortcuts_can_be_changed" = "Většinu systémových zkratek můžete změnit v „Předvolby systému › Klávesnice › Zkratky“.";
