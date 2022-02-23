@@ -74,10 +74,7 @@ import KeyboardShortcuts
 struct SettingsScreen: View {
 	var body: some View {
 		Form {
-			HStack(alignment: .firstTextBaseline) {
-				Text("Toggle Unicorn Mode:")
-				KeyboardShortcuts.Recorder(for: .toggleUnicornMode)
-			}
+			KeyboardShortcuts.Recorder("Toggle Unicorn Mode:", name: .toggleUnicornMode)
 		}
 	}
 }

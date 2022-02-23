@@ -1,5 +1,5 @@
-import Cocoa
 import Carbon.HIToolbox
+import SwiftUI
 
 
 extension String {
@@ -13,7 +13,7 @@ extension String {
 
 
 extension Data {
-	var string: String? { String(data: self, encoding: .utf8) }
+	var toString: String? { String(data: self, encoding: .utf8) }
 }
 
 
@@ -363,4 +363,28 @@ extension DispatchQueue {
 	Whether the current queue is a `NSBackgroundActivityScheduler` task.
 	*/
 	static var isCurrentQueueNSBackgroundActivitySchedulerQueue: Bool { currentQueueLabel.hasPrefix("com.apple.xpc.activity.") }
+}
+
+
+@available(macOS 10.15, *)
+extension HorizontalAlignment {
+	private enum ControlAlignment: AlignmentID {
+		static func defaultValue(in context: ViewDimensions) -> CGFloat { // swiftlint:disable:this no_cgfloat
+			context[HorizontalAlignment.center]
+		}
+	}
+
+	fileprivate static let controlAlignment = Self(ControlAlignment.self)
+}
+
+@available(macOS 10.15, *)
+extension View {
+	func formLabel<Label: View>(@ViewBuilder _ label: () -> Label) -> some View {
+		HStack(alignment: .firstTextBaseline) {
+			label()
+			labelsHidden()
+				.alignmentGuide(.controlAlignment) { $0[.leading] }
+		}
+			.alignmentGuide(.leading) { $0[.controlAlignment] }
+	}
 }

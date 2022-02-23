@@ -78,25 +78,25 @@ private struct DoubleShortcut: View {
 	@State private var isPressed2 = false
 
 	var body: some View {
-		VStack {
-			HStack(alignment: .firstTextBaseline) {
-				KeyboardShortcuts.Recorder(for: .testShortcut1)
-					.padding(.trailing, 10)
-				Text("Pressed? \(isPressed1 ? "👍" : "👎")")
-					.frame(width: 100, alignment: .leading)
+		Form {
+			KeyboardShortcuts.Recorder("Shortcut 1:", name: .testShortcut1)
+				.overlay(alignment: .trailing) {
+					Text("Pressed? \(isPressed1 ? "👍" : "👎")")
+						.offset(x: 90)
+				}
+			KeyboardShortcuts.Recorder(for: .testShortcut2) {
+				Text("Shortcut 2:") // Intentionally using the verbose initializer for testing.
 			}
-			HStack(alignment: .firstTextBaseline) {
-				KeyboardShortcuts.Recorder(for: .testShortcut2)
-					.padding(.trailing, 10)
-				Text("Pressed? \(isPressed2 ? "👍" : "👎")")
-					.frame(width: 100, alignment: .leading)
-			}
+				.overlay(alignment: .trailing) {
+					Text("Pressed? \(isPressed2 ? "👍" : "👎")")
+						.offset(x: 90)
+				}
 			Spacer()
-			Divider()
 			Button("Reset All") {
 				KeyboardShortcuts.reset(.testShortcut1, .testShortcut2)
 			}
 		}
+			.offset(x: -40)
 			.frame(maxWidth: 300)
 			.padding()
 			.padding()

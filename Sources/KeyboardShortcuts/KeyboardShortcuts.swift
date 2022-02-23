@@ -297,7 +297,7 @@ public enum KeyboardShortcuts {
 	}
 
 	static func userDefaultsSet(name: Name, shortcut: Shortcut) {
-		guard let encoded = try? JSONEncoder().encode(shortcut).string else {
+		guard let encoded = try? JSONEncoder().encode(shortcut).toString else {
 			return
 		}
 

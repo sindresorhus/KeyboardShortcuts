@@ -98,7 +98,7 @@ extension KeyboardShortcuts.Shortcut {
 	Check whether the keyboard shortcut is already taken by the system.
 	*/
 	var isTakenBySystem: Bool {
-		guard self != KeyboardShortcuts.Shortcut(.f12, modifiers: []) else {
+		guard self != Self(.f12, modifiers: []) else {
 			return false
 		}
 
