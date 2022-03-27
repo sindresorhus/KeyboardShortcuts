@@ -53,7 +53,7 @@ extension NSMenuItem {
 
 		set()
 
-		// TODO: Use Combine when targeting macOS 10.15.
+		// TODO: Use AsyncStream when targeting macOS 10.15.
 		AssociatedKeys.observer[self] = NotificationCenter.default.addObserver(forName: .shortcutByNameDidChange, object: nil, queue: nil) { notification in
 			guard
 				let nameInNotification = notification.userInfo?["name"] as? KeyboardShortcuts.Name,

@@ -105,16 +105,17 @@ private struct DoubleShortcut: View {
 					isPressed1 = true
 				}
 
-				KeyboardShortcuts.onKeyUp(for: .testShortcut1) {
-					isPressed1 = false
-				}
-
 				KeyboardShortcuts.onKeyDown(for: .testShortcut2) {
 					isPressed2 = true
 				}
 
 				KeyboardShortcuts.onKeyUp(for: .testShortcut2) {
 					isPressed2 = false
+				}
+			}
+			.task {
+				for await _ in KeyboardShortcuts.on(.keyUp, for: .testShortcut1) {
+					isPressed1 = false
 				}
 			}
 	}
