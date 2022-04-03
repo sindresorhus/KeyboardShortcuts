@@ -2,7 +2,7 @@ name: Generate documentation
 on:
   push:
     branches:
-      - main
+      - docc
     # tags:
     #    - '*'
 jobs:
