@@ -26,7 +26,7 @@ extension KeyboardShortcuts {
 
 	It takes care of storing the keyboard shortcut in `UserDefaults` for you.
 
-	```
+	```swift
 	import SwiftUI
 	import KeyboardShortcuts
 

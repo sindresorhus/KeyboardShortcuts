@@ -4,7 +4,7 @@ extension KeyboardShortcuts {
 
 	After registering it, you can use it in, for example, `KeyboardShortcut.Recorder` and `KeyboardShortcut.onKeyUp()`.
 
-	```
+	```swift
 	import KeyboardShortcuts
 
 	extension KeyboardShortcuts.Name {

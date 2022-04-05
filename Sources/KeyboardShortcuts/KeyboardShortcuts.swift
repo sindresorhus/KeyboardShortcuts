@@ -4,16 +4,13 @@ import Cocoa
 Global keyboard shortcuts for your macOS app.
 */
 public enum KeyboardShortcuts {
-	/// :nodoc:
-	public typealias KeyAction = () -> Void
-
 	private static var registeredShortcuts = Set<Shortcut>()
 
-	private static var legacyKeyDownHandlers = [Name: [KeyAction]]()
-	private static var legacyKeyUpHandlers = [Name: [KeyAction]]()
+	private static var legacyKeyDownHandlers = [Name: [() -> Void]]()
+	private static var legacyKeyUpHandlers = [Name: [() -> Void]]()
 
-	private static var streamKeyDownHandlers = [Name: [UUID: KeyAction]]()
-	private static var streamKeyUpHandlers = [Name: [UUID: KeyAction]]()
+	private static var streamKeyDownHandlers = [Name: [UUID: () -> Void]]()
+	private static var streamKeyUpHandlers = [Name: [UUID: () -> Void]]()
 
 	private static var shortcutsForLegacyHandlers: Set<Shortcut> {
 		let shortcuts = [legacyKeyDownHandlers.keys, legacyKeyUpHandlers.keys]
@@ -145,7 +142,7 @@ public enum KeyboardShortcuts {
 
 	If the `Name` has a default shortcut, it will reset to that.
 
-	```
+	```swift
 	import SwiftUI
 	import KeyboardShortcuts
 
@@ -175,7 +172,7 @@ public enum KeyboardShortcuts {
 
 	- Note: This overload exists as Swift doesn't support splatting.
 
-	```
+	```swift
 	import SwiftUI
 	import KeyboardShortcuts
 
@@ -289,7 +286,7 @@ public enum KeyboardShortcuts {
 
 	You can safely call this even if the user has not yet set a keyboard shortcut. It will just be inactive until they do.
 
-	```
+	```swift
 	import Cocoa
 	import KeyboardShortcuts
 
@@ -303,7 +300,7 @@ public enum KeyboardShortcuts {
 	}
 	```
 	*/
-	public static func onKeyDown(for name: Name, action: @escaping KeyAction) {
+	public static func onKeyDown(for name: Name, action: @escaping () -> Void) {
 		legacyKeyDownHandlers[name, default: []].append(action)
 		registerShortcutIfNeeded(for: name)
 	}
@@ -315,7 +312,7 @@ public enum KeyboardShortcuts {
 
 	You can safely call this even if the user has not yet set a keyboard shortcut. It will just be inactive until they do.
 
-	```
+	```swift
 	import Cocoa
 	import KeyboardShortcuts
 
@@ -329,7 +326,7 @@ public enum KeyboardShortcuts {
 	}
 	```
 	*/
-	public static func onKeyUp(for name: Name, action: @escaping KeyAction) {
+	public static func onKeyUp(for name: Name, action: @escaping () -> Void) {
 		legacyKeyUpHandlers[name, default: []].append(action)
 		registerShortcutIfNeeded(for: name)
 	}
@@ -389,7 +386,7 @@ extension KeyboardShortcuts {
 
 	Ending the async sequence will stop the listener. For example, in the below example, the listener will stop when the view disappears.
 
-	```
+	```swift
 	import SwiftUI
 	import KeyboardShortcuts
 

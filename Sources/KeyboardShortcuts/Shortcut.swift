@@ -283,8 +283,8 @@ extension KeyboardShortcuts.Shortcut: CustomStringConvertible {
 	/**
 	The string representation of the keyboard shortcut.
 
-	```
-	print(Shortcut(.a, modifiers: [.command]))
+	```swift
+	print(KeyboardShortcuts.Shortcut(.a, modifiers: [.command]))
 	//=> "⌘A"
 	```
 	*/

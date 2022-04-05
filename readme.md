@@ -155,13 +155,15 @@ This package supports [localizations](/Sources/KeyboardShortcuts/Localization). 
 
 ## API
 
-[See the API docs.](https://sindresorhus.com/KeyboardShortcuts/Enums/KeyboardShortcuts.html)
+[See the API docs.](https://sindresorhus.com/KeyboardShortcuts/documentation/keyboardshortcuts/keyboardshortcuts)
 
 ## Tips
 
 #### Show a recorded keyboard shortcut in an `NSMenuItem`
 
-See [`NSMenuItem#setShortcut`](https://sindresorhus.com/KeyboardShortcuts/Extensions/NSMenuItem.html).
+<!-- TODO: Link to the docs instead when DocC supports showing type extensions. -->
+
+See [`NSMenuItem#setShortcut`](https://github.com/sindresorhus/KeyboardShortcuts/blob/0dcedd56994d871f243f3d9c76590bfd9f8aba69/Sources/KeyboardShortcuts/NSMenuItem%2B%2B.swift#L14-L41).
 
 #### Dynamic keyboard shortcuts
 
