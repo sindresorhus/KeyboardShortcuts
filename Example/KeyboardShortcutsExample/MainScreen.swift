@@ -84,6 +84,9 @@ private struct DoubleShortcut: View {
 					Text("Pressed? \(isPressed1 ? "👍" : "👎")")
 						.offset(x: 90)
 				}
+				.onShortcutEvent(.testShortcut1) {
+					isPressed1 = $0 == .keyDown
+				}
 			KeyboardShortcuts.Recorder(for: .testShortcut2) {
 				Text("Shortcut 2:") // Intentionally using the verbose initializer for testing.
 			}
@@ -101,21 +104,11 @@ private struct DoubleShortcut: View {
 			.padding()
 			.padding()
 			.task {
-				KeyboardShortcuts.onKeyDown(for: .testShortcut1) {
-					isPressed1 = true
-				}
-
 				KeyboardShortcuts.onKeyDown(for: .testShortcut2) {
 					isPressed2 = true
 				}
-
 				KeyboardShortcuts.onKeyUp(for: .testShortcut2) {
 					isPressed2 = false
-				}
-			}
-			.task {
-				for await _ in KeyboardShortcuts.on(.keyUp, for: .testShortcut1) {
-					isPressed1 = false
 				}
 			}
 	}
