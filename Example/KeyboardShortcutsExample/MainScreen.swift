@@ -103,7 +103,7 @@ private struct DoubleShortcut: View {
 			.onKeyboardShortcut(.testShortcut1) {
 				isPressed1 = $0 == .keyDown
 			}
-			.onKeyboardShortcut(.testShortcut2, event: .keyDown) {
+			.onKeyboardShortcut(.testShortcut2, type: .keyDown) {
 				isPressed2 = true
 			}
 			.task {

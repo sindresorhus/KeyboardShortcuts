@@ -10,9 +10,9 @@ extension View {
 		}
 	}
 
-	public func onKeyboardShortcut(_ shortcut: KeyboardShortcuts.Name, event: KeyboardShortcuts.EventType, perform: @escaping () -> Void) -> some View {
+	public func onKeyboardShortcut(_ shortcut: KeyboardShortcuts.Name, type: KeyboardShortcuts.EventType, perform: @escaping () -> Void) -> some View {
 		task {
-			for await shortcutEvent in KeyboardShortcuts.events(for: shortcut) where shortcutEvent == event {
+			for await eventType in KeyboardShortcuts.events(for: shortcut) where eventType == type {
 				perform()
 			}
 		}
