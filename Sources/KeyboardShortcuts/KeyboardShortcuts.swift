@@ -429,6 +429,35 @@ extension KeyboardShortcuts {
 		}
 	}
 
+	/**
+	Listen to keyboard shortcut events with the given name and type.
+
+	You can register multiple listeners.
+
+	You can safely call this even if the user has not yet set a keyboard shortcut. It will just be inactive until they do.
+
+	Ending the async sequence will stop the listener. For example, in the below example, the listener will stop when the view disappears.
+
+	```swift
+	import SwiftUI
+	import KeyboardShortcuts
+
+	struct ContentView: View {
+		@State private var isUnicornMode = false
+
+		var body: some View {
+			Text(isUnicornMode ? "🦄" : "🐴")
+				.task {
+					for await event in KeyboardShortcuts.events(for: .toggleUnicornMode) where event == .keyUp {
+						isUnicornMode.toggle()
+					}
+				}
+		}
+	}
+	```
+
+	- Note: This method is not affected by `.removeAllHandlers()`.
+	*/
 	@available(macOS 10.15, *)
 	public static func events(_ type: EventType, for name: Name) -> AsyncFilterSequence<AsyncStream<EventType>> {
 		events(for: name).filter { $0 == type }
