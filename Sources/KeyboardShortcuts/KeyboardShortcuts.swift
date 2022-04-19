@@ -430,12 +430,12 @@ extension KeyboardShortcuts {
 	}
 
 	@available(macOS 10.15, *)
-	public static func events(for name: Name, type: EventType) -> AsyncFilterSequence<AsyncStream<EventType>> {
+	public static func events(_ type: EventType, for name: Name) -> AsyncFilterSequence<AsyncStream<EventType>> {
 		events(for: name).filter { $0 == type }
 	}
-
+	
 	@available(macOS 10.15, *)
-	@available(*, deprecated, renamed: "events(for:type:)")
+	@available(*, deprecated, renamed: "events(_:for:)")
 	public static func on(_ type: EventType, for name: Name) -> AsyncStream<Void> {
 		AsyncStream { continuation in
 			let id = UUID()

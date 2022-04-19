@@ -12,7 +12,7 @@ extension View {
 
 	public func onKeyboardShortcut(_ shortcut: KeyboardShortcuts.Name, type: KeyboardShortcuts.EventType, perform: @escaping () -> Void) -> some View {
 		task {
-			for await _ in KeyboardShortcuts.events(for: shortcut, type: type) {
+			for await _ in KeyboardShortcuts.events(type, for: shortcut) {
 				perform()
 			}
 		}
