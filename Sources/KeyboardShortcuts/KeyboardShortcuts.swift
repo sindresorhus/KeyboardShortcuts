@@ -411,20 +411,24 @@ extension KeyboardShortcuts {
 		AsyncStream { continuation in
 			let id = UUID()
 
-			streamKeyDownHandlers[name, default: [:]][id] = {
-				continuation.yield(.keyDown)
-			}
-			streamKeyUpHandlers[name, default: [:]][id] = {
-				continuation.yield(.keyUp)
-			}
+			DispatchQueue.main.async {
+				streamKeyDownHandlers[name, default: [:]][id] = {
+					continuation.yield(.keyDown)
+				}
+				streamKeyUpHandlers[name, default: [:]][id] = {
+					continuation.yield(.keyUp)
+				}
 
-			registerShortcutIfNeeded(for: name)
+				registerShortcutIfNeeded(for: name)
+			}
 
 			continuation.onTermination = { _ in
-				streamKeyDownHandlers[name]?[id] = nil
-				streamKeyUpHandlers[name]?[id] = nil
+				DispatchQueue.main.async {
+					streamKeyDownHandlers[name]?[id] = nil
+					streamKeyUpHandlers[name]?[id] = nil
 
-				unregisterShortcutIfNeeded(for: name)
+					unregisterShortcutIfNeeded(for: name)
+				}
 			}
 		}
 	}
