@@ -30,6 +30,7 @@ extension KeyboardShortcuts {
 		private var eventMonitor: LocalEventMonitor?
 		private let onChange: ((_ shortcut: Shortcut?) -> Void)?
 		private var observer: NSObjectProtocol?
+		private var canBecomeKey = false
 
 		/**
 		The shortcut name for the recorder.
@@ -52,7 +53,7 @@ extension KeyboardShortcuts {
 		}
 
 		/// :nodoc:
-		override public var canBecomeKeyView: Bool { false }
+		override public var canBecomeKeyView: Bool { canBecomeKey }
 
 		/// :nodoc:
 		override public var intrinsicContentSize: CGSize {
@@ -147,6 +148,18 @@ extension KeyboardShortcuts {
 			placeholderString = "record_shortcut".localized
 			showsCancelButton = !stringValue.isEmpty
 			KeyboardShortcuts.isPaused = false
+		}
+
+		// Prevent the control from receiving the initial focus.
+		/// :nodoc:
+		override public func viewDidMoveToWindow() {
+			guard window != nil else {
+				return
+			}
+
+			DispatchQueue.main.async { [self] in
+				canBecomeKey = true
+			}
 		}
 
 		/// :nodoc:
