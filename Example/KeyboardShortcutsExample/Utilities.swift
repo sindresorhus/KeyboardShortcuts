@@ -33,6 +33,7 @@ final class CallbackMenuItem: NSMenuItem {
 
 	@available(*, unavailable)
 	required init(coder decoder: NSCoder) {
+		// swiftlint:disable:next fatal_error_message
 		fatalError()
 	}
 
