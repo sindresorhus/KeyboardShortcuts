@@ -415,6 +415,7 @@ extension KeyboardShortcuts {
 				streamKeyDownHandlers[name, default: [:]][id] = {
 					continuation.yield(.keyDown)
 				}
+
 				streamKeyUpHandlers[name, default: [:]][id] = {
 					continuation.yield(.keyUp)
 				}
@@ -466,7 +467,7 @@ extension KeyboardShortcuts {
 	public static func events(_ type: EventType, for name: Name) -> AsyncFilterSequence<AsyncStream<EventType>> {
 		events(for: name).filter { $0 == type }
 	}
-	
+
 	@available(macOS 10.15, *)
 	@available(*, deprecated, renamed: "events(_:for:)")
 	public static func on(_ type: EventType, for name: Name) -> AsyncStream<Void> {
