@@ -396,7 +396,7 @@ extension KeyboardShortcuts {
 		var body: some View {
 			Text(isUnicornMode ? "🦄" : "🐴")
 				.task {
-					for await _ in KeyboardShortcuts.on(.keyUp, for: .toggleUnicornMode) {
+					for await event in KeyboardShortcuts.events(for: .toggleUnicornMode) where event == .keyUp {
 						isUnicornMode.toggle()
 					}
 				}
@@ -407,6 +407,69 @@ extension KeyboardShortcuts {
 	- Note: This method is not affected by `.removeAllHandlers()`.
 	*/
 	@available(macOS 10.15, *)
+	public static func events(for name: Name) -> AsyncStream<KeyboardShortcuts.EventType> {
+		AsyncStream { continuation in
+			let id = UUID()
+
+			DispatchQueue.main.async {
+				streamKeyDownHandlers[name, default: [:]][id] = {
+					continuation.yield(.keyDown)
+				}
+
+				streamKeyUpHandlers[name, default: [:]][id] = {
+					continuation.yield(.keyUp)
+				}
+
+				registerShortcutIfNeeded(for: name)
+			}
+
+			continuation.onTermination = { _ in
+				DispatchQueue.main.async {
+					streamKeyDownHandlers[name]?[id] = nil
+					streamKeyUpHandlers[name]?[id] = nil
+
+					unregisterShortcutIfNeeded(for: name)
+				}
+			}
+		}
+	}
+
+	/**
+	Listen to keyboard shortcut events with the given name and type.
+
+	You can register multiple listeners.
+
+	You can safely call this even if the user has not yet set a keyboard shortcut. It will just be inactive until they do.
+
+	Ending the async sequence will stop the listener. For example, in the below example, the listener will stop when the view disappears.
+
+	```swift
+	import SwiftUI
+	import KeyboardShortcuts
+
+	struct ContentView: View {
+		@State private var isUnicornMode = false
+
+		var body: some View {
+			Text(isUnicornMode ? "🦄" : "🐴")
+				.task {
+					for await event in KeyboardShortcuts.events(for: .toggleUnicornMode) where event == .keyUp {
+						isUnicornMode.toggle()
+					}
+				}
+		}
+	}
+	```
+
+	- Note: This method is not affected by `.removeAllHandlers()`.
+	*/
+	@available(macOS 10.15, *)
+	public static func events(_ type: EventType, for name: Name) -> AsyncFilterSequence<AsyncStream<EventType>> {
+		events(for: name).filter { $0 == type }
+	}
+
+	@available(macOS 10.15, *)
+	@available(*, deprecated, renamed: "events(_:for:)")
 	public static func on(_ type: EventType, for name: Name) -> AsyncStream<Void> {
 		AsyncStream { continuation in
 			let id = UUID()
