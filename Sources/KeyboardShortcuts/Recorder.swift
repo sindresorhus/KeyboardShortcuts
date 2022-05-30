@@ -7,13 +7,18 @@ extension KeyboardShortcuts {
 
 		let name: Name
 		let onChange: ((_ shortcut: Shortcut?) -> Void)?
+		/// Adjust AppKit properties of NSViewType
+		let configuration: ((NSViewType) -> Void)?
 
 		func makeNSView(context: Context) -> NSViewType {
-			.init(for: name, onChange: onChange)
+			let view = NSViewType(for: name, onChange: onChange)
+			configuration?(view)
+			return view
 		}
 
 		func updateNSView(_ nsView: NSViewType, context: Context) {
 			nsView.shortcutName = name
+			configuration?(nsView)
 		}
 	}
 
@@ -42,17 +47,20 @@ extension KeyboardShortcuts {
 	public struct Recorder<Label: View>: View { // swiftlint:disable:this type_name
 		private let name: Name
 		private let onChange: ((Shortcut?) -> Void)?
+		private let configuration: ((KeyboardShortcuts.RecorderCocoa) -> Void)?
 		private let hasLabel: Bool
 		private let label: Label
 
 		init(
 			for name: Name,
 			onChange: ((Shortcut?) -> Void)? = nil,
+			configuration: ((KeyboardShortcuts.RecorderCocoa) -> Void)? = nil,
 			hasLabel: Bool,
 			@ViewBuilder label: () -> Label
 		) {
 			self.name = name
 			self.onChange = onChange
+			self.configuration = configuration
 			self.hasLabel = hasLabel
 			self.label = label()
 		}
@@ -61,7 +69,8 @@ extension KeyboardShortcuts {
 			if hasLabel {
 				_Recorder(
 					name: name,
-					onChange: onChange
+					onChange: onChange,
+					configuration: configuration
 				)
 					.formLabel {
 						label
@@ -69,7 +78,8 @@ extension KeyboardShortcuts {
 			} else {
 				_Recorder(
 					name: name,
-					onChange: onChange
+					onChange: onChange,
+					configuration: configuration
 				)
 			}
 		}
@@ -81,14 +91,17 @@ extension KeyboardShortcuts.Recorder where Label == EmptyView {
 	/**
 	- Parameter name: Strongly-typed keyboard shortcut name.
 	- Parameter onChange: Callback which will be called when the keyboard shortcut is changed/removed by the user. This can be useful when you need more control. For example, when migrating from a different keyboard shortcut solution and you need to store the keyboard shortcut somewhere yourself instead of relying on the built-in storage. However, it's strongly recommended to just rely on the built-in storage when possible.
+	- Parameter configuration: Callback which will be called whenever the AppKit `RecorderCocoa` control will be created or updated.
 	*/
 	public init(
 		for name: KeyboardShortcuts.Name,
-		onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil
+		onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil,
+		configuration: ((KeyboardShortcuts.RecorderCocoa) -> Void)? = nil
 	) {
 		self.init(
 			for: name,
 			onChange: onChange,
+			configuration: configuration,
 			hasLabel: false
 		) {}
 	}
@@ -100,15 +113,18 @@ extension KeyboardShortcuts.Recorder where Label == Text {
 	- Parameter title: The title of the keyboard shortcut recorder, describing its purpose.
 	- Parameter name: Strongly-typed keyboard shortcut name.
 	- Parameter onChange: Callback which will be called when the keyboard shortcut is changed/removed by the user. This can be useful when you need more control. For example, when migrating from a different keyboard shortcut solution and you need to store the keyboard shortcut somewhere yourself instead of relying on the built-in storage. However, it's strongly recommended to just rely on the built-in storage when possible.
+	- Parameter configuration: Callback which will be called whenever the AppKit `RecorderCocoa` control will be created or updated.
 	*/
 	public init(
 		_ title: String,
 		name: KeyboardShortcuts.Name,
-		onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil
+		onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil,
+		configuration: ((KeyboardShortcuts.RecorderCocoa) -> Void)? = nil
 	) {
 		self.init(
 			for: name,
 			onChange: onChange,
+			configuration: configuration,
 			hasLabel: true
 		) {
 			Text(title)
@@ -121,16 +137,19 @@ extension KeyboardShortcuts.Recorder {
 	/**
 	- Parameter name: Strongly-typed keyboard shortcut name.
 	- Parameter onChange: Callback which will be called when the keyboard shortcut is changed/removed by the user. This can be useful when you need more control. For example, when migrating from a different keyboard shortcut solution and you need to store the keyboard shortcut somewhere yourself instead of relying on the built-in storage. However, it's strongly recommended to just rely on the built-in storage when possible.
+	- Parameter configuration: Callback which will be called whenever the AppKit `RecorderCocoa` control will be created or updated.
 	- Parameter label: A view that describes the purpose of the keyboard shortcut recorder.
 	*/
 	public init(
 		for name: KeyboardShortcuts.Name,
 		onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil,
+		configuration: ((KeyboardShortcuts.RecorderCocoa) -> Void)? = nil,
 		@ViewBuilder label: () -> Label
 	) {
 		self.init(
 			for: name,
 			onChange: onChange,
+			configuration: configuration,
 			hasLabel: true,
 			label: label
 		)
