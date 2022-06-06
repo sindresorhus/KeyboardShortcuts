@@ -9,16 +9,22 @@ extension KeyboardShortcuts.Name {
 }
 
 private struct DynamicShortcutRecorder: View {
+	@FocusState private var isFocused: Bool
+
 	@Binding var name: KeyboardShortcuts.Name
 	@Binding var isPressed: Bool
 
 	var body: some View {
 		HStack(alignment: .firstTextBaseline) {
 			KeyboardShortcuts.Recorder(for: name)
+				.focused($isFocused)
 				.padding(.trailing, 10)
 			Text("Pressed? \(isPressed ? "👍" : "👎")")
 				.frame(width: 100, alignment: .leading)
 		}
+			.onChange(of: name) { _ in
+				isFocused = true
+			}
 	}
 }
 
