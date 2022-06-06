@@ -22,11 +22,9 @@ private struct DynamicShortcutRecorder: View {
 			Text("Pressed? \(isPressed ? "👍" : "👎")")
 				.frame(width: 100, alignment: .leading)
 		}
-		.onChange(of: name) { _ in
-			DispatchQueue.main.async {
+			.onChange(of: name) { _ in
 				isFocused = true
 			}
-		}
 	}
 }
 

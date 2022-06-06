@@ -45,9 +45,12 @@ extension KeyboardShortcuts {
 
 				setStringValue(name: shortcutName)
 
-				DispatchQueue.main.async { [self] in
-					// Prevents the placeholder from being cut off.
-					blur()
+				// This doesn't seem to be needed anymore, but I cannot test on older OS versions, so keeping it just in case.
+				if #unavailable(macOS 12) {
+					DispatchQueue.main.async { [self] in
+						// Prevents the placeholder from being cut off.
+						blur()
+					}
 				}
 			}
 		}
@@ -157,9 +160,7 @@ extension KeyboardShortcuts {
 				return
 			}
 
-			DispatchQueue.main.async { [self] in
-				canBecomeKey = true
-			}
+			canBecomeKey = true
 		}
 
 		/// :nodoc:
