@@ -8,6 +8,10 @@ extension NSMenuItem {
 	private func clearShortcut() {
 		keyEquivalent = ""
 		keyEquivalentModifierMask = []
+
+		if #available(macOS 12, *) {
+			allowsAutomaticKeyEquivalentLocalization = true
+		}
 	}
 
 	// TODO: Make this a getter/setter. We must first add the ability to create a `Shortcut` from a `keyEquivalent`.
@@ -87,6 +91,10 @@ extension NSMenuItem {
 
 			keyEquivalent = shortcut.keyEquivalent
 			keyEquivalentModifierMask = shortcut.modifiers
+
+			if #available(macOS 12, *) {
+				allowsAutomaticKeyEquivalentLocalization = false
+			}
 		}
 
 		// `TISCopyCurrentASCIICapableKeyboardLayoutInputSource` works on a background thread, but crashes when used in a `NSBackgroundActivityScheduler` task, so we ensure it's not run in that queue.

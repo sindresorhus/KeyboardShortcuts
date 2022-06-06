@@ -182,6 +182,14 @@ extension NSAlert {
 }
 
 
+enum UnicodeSymbols {
+	/**
+	Represents the Function (Fn) key on the keybord.
+	*/
+	static let functionKey = "🌐\u{FE0E}"
+}
+
+
 extension NSEvent.ModifierFlags {
 	var carbon: Int {
 		var modifierFlags = 0
@@ -253,6 +261,10 @@ extension NSEvent.ModifierFlags: CustomStringConvertible {
 
 		if contains(.command) {
 			description += "⌘"
+		}
+
+		if contains(.function) {
+			description += UnicodeSymbols.functionKey
 		}
 
 		return description
