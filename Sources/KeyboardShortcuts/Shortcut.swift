@@ -112,12 +112,20 @@ extension KeyboardShortcuts.Shortcut {
 	*/
 	func menuItemWithMatchingShortcut(in menu: NSMenu) -> NSMenuItem? {
 		for item in menu.items {
-			if
-				keyToCharacter() == item.keyEquivalent,
-				modifiers == item.keyEquivalentModifierMask
-			{
-				return item
-			}
+            var keyEquivalent = item.keyEquivalent
+            var keyEquivalentModifierMask = item.keyEquivalentModifierMask
+            
+            if modifiers.contains(.shift) {
+                keyEquivalent = keyEquivalent.lowercased()
+                keyEquivalentModifierMask.insert(.shift)
+            }
+            
+            if
+                keyToCharacter() == keyEquivalent,
+                modifiers == keyEquivalentModifierMask
+            {
+                return item
+            }
 
 			if
 				let submenu = item.submenu,
