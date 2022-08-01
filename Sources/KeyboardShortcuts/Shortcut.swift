@@ -104,7 +104,7 @@ extension KeyboardShortcuts.Shortcut {
 	/**
 	Check whether the keyboard shortcut is already taken by the system.
 	*/
-	var isTakenBySystem: Bool {
+	public var isTakenBySystem: Bool {
 		guard self != Self(.f12, modifiers: []) else {
 			return false
 		}
