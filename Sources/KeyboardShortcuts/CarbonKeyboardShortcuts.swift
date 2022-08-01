@@ -38,12 +38,8 @@ enum CarbonKeyboardShortcuts {
 	private static var eventHandler: EventHandlerRef?
 
 	private static func setUpEventHandlerIfNeeded() -> Bool {
-		guard
-			eventHandler == nil,
-			let dispatcher = GetEventDispatcherTarget()
-		else {
-			return false
-		}
+		guard eventHandler == nil else { return true }
+		guard let dispatcher = GetEventDispatcherTarget() else { return false }
 
 		let eventSpecs = [
 			EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed)),
