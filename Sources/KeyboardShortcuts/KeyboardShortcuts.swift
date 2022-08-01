@@ -37,18 +37,22 @@ public enum KeyboardShortcuts {
 	*/
 	static var isPaused = false
 
-	private static func register(_ shortcut: Shortcut) {
+	@discardableResult private static func register(_ shortcut: Shortcut) -> Bool {
 		guard !registeredShortcuts.contains(shortcut) else {
-			return
+			return true //already registered
 		}
 
-		CarbonKeyboardShortcuts.register(
+		let keyboardShortcutRegistered = CarbonKeyboardShortcuts.register(
 			shortcut,
 			onKeyDown: handleOnKeyDown,
 			onKeyUp: handleOnKeyUp
 		)
 
+		guard keyboardShortcutRegistered else { return false }
+		
 		registeredShortcuts.insert(shortcut)
+		
+		return true
 	}
 
 	/**
@@ -129,12 +133,19 @@ public enum KeyboardShortcuts {
 	/**
 	Enable a disabled keyboard shortcut.
 	*/
-	public static func enable(_ name: Name) {
+	@discardableResult public static func enable(_ name: Name) -> Bool {
 		guard let shortcut = getShortcut(for: name) else {
-			return
+			return false
 		}
 
-		register(shortcut)
+		return register(shortcut)
+	}
+	
+	/**
+	 Returns whether the passed-in shortcut is currently registered.
+	 */
+	public static func shortcutIsEnabled(_ shortcut: Shortcut) -> Bool {
+		return registeredShortcuts.contains(shortcut) || registeredShortcuts.first(where: {$0.key == shortcut.key && $0.modifiers == shortcut.modifiers}) != nil
 	}
 
 	/**

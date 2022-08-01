@@ -38,6 +38,13 @@ extension KeyboardShortcuts {
 		You most likely don't need this.
 		*/
 		public let carbonModifiers: Int
+		
+		/**
+		 Returns whether this shortcut is registered/enabled.
+		 */
+		public var isEnabled: Bool {
+			KeyboardShortcuts.shortcutIsEnabled(self)
+		}
 
 		/**
 		Initialize from a strongly-typed key and modifiers.
@@ -97,7 +104,7 @@ extension KeyboardShortcuts.Shortcut {
 	/**
 	Check whether the keyboard shortcut is already taken by the system.
 	*/
-	var isTakenBySystem: Bool {
+	public var isTakenBySystem: Bool {
 		guard self != Self(.f12, modifiers: []) else {
 			return false
 		}
