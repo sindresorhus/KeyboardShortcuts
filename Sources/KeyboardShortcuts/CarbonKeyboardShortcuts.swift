@@ -37,12 +37,12 @@ enum CarbonKeyboardShortcuts {
 	private static var hotKeyId = 0
 	private static var eventHandler: EventHandlerRef?
 
-	private static func setUpEventHandlerIfNeeded() {
+	private static func setUpEventHandlerIfNeeded() -> Bool {
 		guard
 			eventHandler == nil,
 			let dispatcher = GetEventDispatcherTarget()
 		else {
-			return
+			return false
 		}
 
 		let eventSpecs = [
@@ -50,21 +50,23 @@ enum CarbonKeyboardShortcuts {
 			EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyReleased))
 		]
 
-		InstallEventHandler(
+		guard InstallEventHandler(
 			dispatcher,
 			carbonKeyboardShortcutsEventHandler,
 			eventSpecs.count,
 			eventSpecs,
 			nil,
 			&eventHandler
-		)
+		) == noErr else { return false }
+		
+		return true
 	}
 
-	static func register(
+	@discardableResult static func register(
 		_ shortcut: KeyboardShortcuts.Shortcut,
 		onKeyDown: @escaping (KeyboardShortcuts.Shortcut) -> Void,
 		onKeyUp: @escaping (KeyboardShortcuts.Shortcut) -> Void
-	) {
+	) -> Bool {
 		hotKeyId += 1
 
 		var eventHotKey: EventHotKeyRef?
@@ -81,7 +83,7 @@ enum CarbonKeyboardShortcuts {
 			registerError == noErr,
 			let carbonHotKey = eventHotKey
 		else {
-			return
+			return false
 		}
 
 		hotKeys[hotKeyId] = HotKey(
@@ -92,7 +94,7 @@ enum CarbonKeyboardShortcuts {
 			onKeyUp: onKeyUp
 		)
 
-		setUpEventHandlerIfNeeded()
+		return setUpEventHandlerIfNeeded()
 	}
 
 	private static func unregisterHotKey(_ hotKey: HotKey) {
