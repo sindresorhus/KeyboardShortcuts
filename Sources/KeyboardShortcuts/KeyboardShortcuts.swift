@@ -140,6 +140,13 @@ public enum KeyboardShortcuts {
 
 		return register(shortcut)
 	}
+	
+	/**
+	 Returns whether the passed-in shortcut is currently registered.
+	 */
+	public static func shortcutIsEnabled(_ shortcut: Shortcut) -> Bool {
+		return registeredShortcuts.contains(shortcut) || registeredShortcuts.first(where: {$0.key == shortcut.key && $0.modifiers == shortcut.modifiers}) != nil
+	}
 
 	/**
 	Reset the keyboard shortcut for one or more names.
