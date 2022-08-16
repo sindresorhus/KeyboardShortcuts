@@ -155,7 +155,7 @@ This package supports [localizations](/Sources/KeyboardShortcuts/Localization). 
 
 ## API
 
-[See the API docs.](https://sindresorhus.com/KeyboardShortcuts/documentation/keyboardshortcuts/keyboardshortcuts)
+[See the API docs.](https://swiftpackageindex.com/sindresorhus/KeyboardShortcuts/main/documentation/keyboardshortcuts/keyboardshortcuts)
 
 ## Tips
 
