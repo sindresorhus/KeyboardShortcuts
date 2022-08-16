@@ -115,7 +115,7 @@ extension KeyboardShortcuts.Shortcut {
 			var keyEquivalent = item.keyEquivalent
 			var keyEquivalentModifierMask = item.keyEquivalentModifierMask
 
-			if modifiers.contains(.shift) {
+			if modifiers.contains(.shift), keyEquivalent.lowercased() != keyEquivalent {
 				keyEquivalent = keyEquivalent.lowercased()
 				keyEquivalentModifierMask.insert(.shift)
 			}
