@@ -146,7 +146,7 @@ public enum KeyboardShortcuts {
 	import SwiftUI
 	import KeyboardShortcuts
 
-	struct PreferencesView: View {
+	struct SettingsScreen: View {
 		var body: some View {
 			VStack {
 				// …
@@ -176,7 +176,7 @@ public enum KeyboardShortcuts {
 	import SwiftUI
 	import KeyboardShortcuts
 
-	struct PreferencesView: View {
+	struct SettingsScreen: View {
 		var body: some View {
 			VStack {
 				// …
@@ -202,10 +202,10 @@ public enum KeyboardShortcuts {
 
 	Setting it to `nil` removes the shortcut, even if the `Name` has a default shortcut defined. Use `.reset()` if you want it to respect the default shortcut.
 
-	You would usually not need this as the user would be the one setting the shortcut in a preferences user-interface, but it can be useful when, for example, migrating from a different keyboard shortcuts package.
+	You would usually not need this as the user would be the one setting the shortcut in a settings user-interface, but it can be useful when, for example, migrating from a different keyboard shortcuts package.
 	*/
 	public static func setShortcut(_ shortcut: Shortcut?, for name: Name) {
-		guard let shortcut = shortcut else {
+		guard let shortcut else {
 			userDefaultsRemove(name: name)
 			return
 		}

@@ -5,7 +5,7 @@ extension KeyboardShortcuts {
 	/**
 	A `NSView` that lets the user record a keyboard shortcut.
 
-	You would usually put this in your preferences window.
+	You would usually put this in your settings window.
 
 	It automatically prevents choosing a keyboard shortcut that is already taken by the system or by the app's main menu by showing a user-friendly alert to the user.
 
@@ -15,7 +15,7 @@ extension KeyboardShortcuts {
 	import Cocoa
 	import KeyboardShortcuts
 
-	final class PreferencesViewController: NSViewController {
+	final class SettingsViewController: NSViewController {
 		override func loadView() {
 			view = NSView()
 
@@ -120,7 +120,7 @@ extension KeyboardShortcuts {
 		private func setUpEvents() {
 			observer = NotificationCenter.default.addObserver(forName: .shortcutByNameDidChange, object: nil, queue: nil) { [weak self] notification in
 				guard
-					let self = self,
+					let self,
 					let nameInNotification = notification.userInfo?["name"] as? KeyboardShortcuts.Name,
 					nameInNotification == self.shortcutName
 				else {
@@ -177,7 +177,7 @@ extension KeyboardShortcuts {
 			KeyboardShortcuts.isPaused = true // The position here matters.
 
 			eventMonitor = LocalEventMonitor(events: [.keyDown, .leftMouseUp, .rightMouseUp]) { [weak self] event in
-				guard let self = self else {
+				guard let self else {
 					return nil
 				}
 
@@ -254,7 +254,7 @@ extension KeyboardShortcuts {
 					NSAlert.showModal(
 						for: self.window,
 						title: "keyboard_shortcut_used_by_system".localized,
-						// TODO: Add button to offer to open the relevant system preference pane for the user.
+						// TODO: Add button to offer to open the relevant system settings pane for the user.
 						message: "keyboard_shortcuts_can_be_changed".localized
 					)
 

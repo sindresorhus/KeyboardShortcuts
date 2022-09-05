@@ -34,7 +34,7 @@ extension KeyboardShortcuts {
 			self.defaultShortcut = defaultShortcut
 
 			if
-				let defaultShortcut = defaultShortcut,
+				let defaultShortcut,
 				!userDefaultsContains(name: self)
 			{
 				setShortcut(defaultShortcut, for: self)

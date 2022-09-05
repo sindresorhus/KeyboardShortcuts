@@ -10,35 +10,6 @@ I'm happy to accept more configurability and features. PR welcome! What you see 
 
 <img src="https://github.com/sindresorhus/KeyboardShortcuts/raw/main/screenshot.png" width="532">
 
-<br>
-
----
-
-<div align="center">
-	<p>
-		<p>
-			<sup>
-				<a href="https://github.com/sponsors/sindresorhus">Sindre's open source work is supported by the community</a>
-			</sup>
-		</p>
-		<sup>Special thanks to:</sup>
-		<br>
-		<br>
-		<a href="https://keygen.sh">
-			<div>
-				<img src="https://sindresorhus.com/assets/thanks/keygen-logo.svg" width="210" alt="Keygen">
-			</div>
-			<b>A dead-simple software licensing and distribution API built for developers</b>
-		</a>
-		<br>
-		<br>
-	</p>
-</div>
-
----
-
-<br>
-
 ## Requirements
 
 macOS 10.11+
@@ -132,7 +103,7 @@ Using [`KeyboardShortcuts.RecorderCocoa`](Sources/KeyboardShortcuts/RecorderCoco
 import Cocoa
 import KeyboardShortcuts
 
-final class PreferencesViewController: NSViewController {
+final class SettingsViewController: NSViewController {
 	override func loadView() {
 		view = NSView()
 
@@ -255,6 +226,6 @@ No. However, there is nothing stopping you from using Swift Package Manager for 
 
 - [Defaults](https://github.com/sindresorhus/Defaults) - Swifty and modern UserDefaults
 - [Regex](https://github.com/sindresorhus/Regex) - Swifty regular expressions
-- [Preferences](https://github.com/sindresorhus/Preferences) - Add a preferences window to your macOS app in minutes
+- [Preferences](https://github.com/sindresorhus/Preferences) - Add a settings window to your macOS app in minutes
 - [LaunchAtLogin](https://github.com/sindresorhus/LaunchAtLogin) - Add "Launch at Login" functionality to your macOS app
 - [More…](https://github.com/search?q=user%3Asindresorhus+language%3Aswift)

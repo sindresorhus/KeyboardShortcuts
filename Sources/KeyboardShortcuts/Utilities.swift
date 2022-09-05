@@ -74,7 +74,7 @@ final class LocalEventMonitor {
 	}
 
 	func stop() {
-		guard let monitor = monitor else {
+		guard let monitor else {
 			return
 		}
 
@@ -159,7 +159,7 @@ extension NSAlert {
 		self.alertStyle = style
 		self.icon = icon
 
-		if let message = message {
+		if let message {
 			self.informativeText = message
 		}
 	}
@@ -169,7 +169,7 @@ extension NSAlert {
 	*/
 	@discardableResult
 	func runModal(for window: NSWindow? = nil) -> NSApplication.ModalResponse {
-		guard let window = window else {
+		guard let window else {
 			return runModal()
 		}
 
@@ -391,7 +391,7 @@ extension HorizontalAlignment {
 
 @available(macOS 10.15, *)
 extension View {
-	func formLabel<Label: View>(@ViewBuilder _ label: () -> Label) -> some View {
+	func formLabel(@ViewBuilder _ label: () -> some View) -> some View {
 		HStack(alignment: .firstTextBaseline) {
 			label()
 			labelsHidden()

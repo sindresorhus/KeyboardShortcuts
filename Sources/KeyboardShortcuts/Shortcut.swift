@@ -223,7 +223,7 @@ extension KeyboardShortcuts.Shortcut {
 
 		// Some characters cannot be automatically translated.
 		if
-			let key = key,
+			let key,
 			let character = keyToCharacterMapping[key]
 		{
 			return character
@@ -274,7 +274,7 @@ extension KeyboardShortcuts.Shortcut {
 
 		guard keyString.count <= 1 else {
 			guard
-				let key = key,
+				let key,
 				let string = keyToKeyEquivalentString[key]
 			else {
 				return ""

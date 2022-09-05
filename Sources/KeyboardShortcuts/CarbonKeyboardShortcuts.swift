@@ -113,7 +113,7 @@ enum CarbonKeyboardShortcuts {
 	}
 
 	fileprivate static func handleEvent(_ event: EventRef?) -> OSStatus {
-		guard let event = event else {
+		guard let event else {
 			return OSStatus(eventNotHandledErr)
 		}
 

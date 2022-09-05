@@ -44,7 +44,7 @@ extension NSMenuItem {
 	- Important: You will have to disable the global keyboard shortcut while the menu is open, as otherwise, the keyboard events will be buffered up and triggered when the menu closes. This is because `NSMenu` puts the thread in tracking-mode, which prevents the keyboard events from being received. You can listen to whether a menu is open by implementing `NSMenuDelegate#menuWillOpen` and `NSMenuDelegate#menuDidClose`. You then use `KeyboardShortcuts.disable` and `KeyboardShortcuts.enable`.
 	*/
 	public func setShortcut(for name: KeyboardShortcuts.Name?) {
-		guard let name = name else {
+		guard let name else {
 			clearShortcut()
 			AssociatedKeys.observer[self] = nil
 			return
@@ -84,7 +84,7 @@ extension NSMenuItem {
 	@_disfavoredOverload
 	public func setShortcut(_ shortcut: KeyboardShortcuts.Shortcut?) {
 		func set() {
-			guard let shortcut = shortcut else {
+			guard let shortcut else {
 				clearShortcut()
 				return
 			}

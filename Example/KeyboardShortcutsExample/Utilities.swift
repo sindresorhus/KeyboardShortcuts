@@ -26,7 +26,7 @@ final class CallbackMenuItem: NSMenuItem {
 		self.isChecked = isChecked
 		self.isHidden = isHidden
 
-		if let keyModifiers = keyModifiers {
+		if let keyModifiers {
 			self.keyEquivalentModifierMask = keyModifiers
 		}
 	}
@@ -67,7 +67,7 @@ extension NSMenuItem {
 		self.isChecked = isChecked
 		self.isHidden = isHidden
 
-		if let keyModifiers = keyModifiers {
+		if let keyModifiers {
 			self.keyEquivalentModifierMask = keyModifiers
 		}
 	}
