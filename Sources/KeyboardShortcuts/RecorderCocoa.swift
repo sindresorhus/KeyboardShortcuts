@@ -153,14 +153,16 @@ extension KeyboardShortcuts {
 			KeyboardShortcuts.isPaused = false
 		}
 
-		// Prevent the control from receiving the initial focus.
 		/// :nodoc:
 		override public func viewDidMoveToWindow() {
 			guard window != nil else {
 				return
 			}
 
-			canBecomeKey = true
+			// Prevent the control from receiving the initial focus.
+			DispatchQueue.main.async { [self] in
+				canBecomeKey = true
+			}
 		}
 
 		/// :nodoc:
