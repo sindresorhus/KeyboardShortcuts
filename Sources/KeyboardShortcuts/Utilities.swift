@@ -338,7 +338,7 @@ enum AssociationPolicy {
 	}
 }
 
-final class ObjectAssociation<T: Any> {
+final class ObjectAssociation<T> {
 	private let policy: AssociationPolicy
 
 	init(policy: AssociationPolicy = .retainNonatomic) {
