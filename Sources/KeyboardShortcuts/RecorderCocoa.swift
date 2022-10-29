@@ -92,10 +92,8 @@ extension KeyboardShortcuts {
 			(cell as? NSSearchFieldCell)?.searchButtonCell = nil
 
 			self.wantsLayer = true
-			self.translatesAutoresizingMaskIntoConstraints = false
 			setContentHuggingPriority(.defaultHigh, for: .vertical)
 			setContentHuggingPriority(.defaultHigh, for: .horizontal)
-			widthAnchor.constraint(greaterThanOrEqualToConstant: minimumWidth).isActive = true
 
 			// Hide the cancel button when not showing the shortcut so the placeholder text is properly centered. Must be last.
 			self.cancelButton = (cell as? NSSearchFieldCell)?.cancelButtonCell
