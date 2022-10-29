@@ -191,7 +191,7 @@ extension KeyboardShortcuts {
 					!self.bounds.insetBy(dx: -clickMargin, dy: -clickMargin).contains(clickPoint)
 				{
 					self.blur()
-					return nil
+					return event
 				}
 
 				guard event.isKeyEvent else {
