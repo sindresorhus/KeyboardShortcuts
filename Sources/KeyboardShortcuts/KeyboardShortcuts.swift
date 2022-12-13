@@ -205,12 +205,15 @@ public enum KeyboardShortcuts {
 	You would usually not need this as the user would be the one setting the shortcut in a settings user-interface, but it can be useful when, for example, migrating from a different keyboard shortcuts package.
 	*/
 	public static func setShortcut(_ shortcut: Shortcut?, for name: Name) {
-		guard let shortcut else {
-			userDefaultsRemove(name: name)
-			return
+		if let shortcut {
+			userDefaultsSet(name: name, shortcut: shortcut)
+		} else {
+			if name.defaultShortcut != nil {
+				userDefaultsDisable(name: name)
+			} else {
+				userDefaultsRemove(name: name)
+			}
 		}
-
-		userDefaultsSet(name: name, shortcut: shortcut)
 	}
 
 	/**
@@ -355,12 +358,22 @@ public enum KeyboardShortcuts {
 		userDefaultsDidChange(name: name)
 	}
 
-	static func userDefaultsRemove(name: Name) {
+	static func userDefaultsDisable(name: Name) {
 		guard let shortcut = getShortcut(for: name) else {
 			return
 		}
 
 		UserDefaults.standard.set(false, forKey: userDefaultsKey(for: name))
+		unregister(shortcut)
+		userDefaultsDidChange(name: name)
+	}
+
+	static func userDefaultsRemove(name: Name) {
+		guard let shortcut = getShortcut(for: name) else {
+			return
+		}
+
+		UserDefaults.standard.removeObject(forKey: userDefaultsKey(for: name))
 		unregister(shortcut)
 		userDefaultsDidChange(name: name)
 	}
