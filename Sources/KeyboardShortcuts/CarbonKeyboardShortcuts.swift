@@ -81,14 +81,20 @@ enum CarbonKeyboardShortcuts {
 			return
 		}
 
-		if KeyboardShortcuts.isMenuOpen {
+		if KeyboardShortcuts.isEnabled {
+			if KeyboardShortcuts.isMenuOpen {
+				softUnregisterAll()
+				RemoveEventTypesFromHandler(eventHandler, hotKeyEventTypes.count, hotKeyEventTypes)
+				AddEventTypesToHandler(eventHandler, rawKeyEventTypes.count, rawKeyEventTypes)
+			} else {
+				softRegisterAll()
+				RemoveEventTypesFromHandler(eventHandler, rawKeyEventTypes.count, rawKeyEventTypes)
+				AddEventTypesToHandler(eventHandler, hotKeyEventTypes.count, hotKeyEventTypes)
+			}
+		} else {
 			softUnregisterAll()
 			RemoveEventTypesFromHandler(eventHandler, hotKeyEventTypes.count, hotKeyEventTypes)
-			AddEventTypesToHandler(eventHandler, rawKeyEventTypes.count, rawKeyEventTypes)
-		} else {
-			softRegisterAll()
 			RemoveEventTypesFromHandler(eventHandler, rawKeyEventTypes.count, rawKeyEventTypes)
-			AddEventTypesToHandler(eventHandler, hotKeyEventTypes.count, hotKeyEventTypes)
 		}
 	}
 

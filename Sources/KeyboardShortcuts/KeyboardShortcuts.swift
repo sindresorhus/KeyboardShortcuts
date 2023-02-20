@@ -38,6 +38,19 @@ public enum KeyboardShortcuts {
 	static var isPaused = false
 
 	/**
+	Enable/disable monitoring of all keyboard shortcuts.
+	 */
+	public static var isEnabled = true {
+		didSet {
+			guard isEnabled != oldValue else {
+				return
+			}
+
+			CarbonKeyboardShortcuts.updateEventHandler()
+		}
+	}
+
+	/**
 	Set according to the opening state of your NSMenu if you want your keyboard shortcuts to work when it is open.
 
 	```swift
