@@ -39,7 +39,9 @@ public enum KeyboardShortcuts {
 
 	/**
 	Enable/disable monitoring of all keyboard shortcuts.
-	 */
+
+	The default is `true`.
+	*/
 	public static var isEnabled = true {
 		didSet {
 			guard isEnabled != oldValue else {
@@ -51,14 +53,20 @@ public enum KeyboardShortcuts {
 	}
 
 	/**
-	Set according to the opening state of your NSMenu if you want your keyboard shortcuts to work when it is open.
+	Enable keyboard shortcuts to work even when an `NSMenu` is open by setting this property when the menu opens and closes.
+
+	`NSMenu` runs in a tracking run mode that blocks keyboard shortcuts events. When you set this property to `true`, it switches to a different kind of event handler, which does work when the menu is open.
+
+	The main use-case for this is toggling the menu of a menu bar app with a keyboard shortcut.
 
 	```swift
+	import keyboardShortcuts
+
 	let menu = NSMenu()
 	let menuDelegate = MenuDelegate()
 	menu.delegate = menuDelegate
 
-	class MenuDelegate: NSObject, NSMenuDelegate {
+	final class MenuDelegate: NSObject, NSMenuDelegate {
 		func menuWillOpen(_ menu: NSMenu) {
 			KeyboardShortcuts.isMenuOpen = true
 		}
@@ -68,7 +76,7 @@ public enum KeyboardShortcuts {
 		}
 	}
 	```
-	 */
+	*/
 	public static var isMenuOpen = false {
 		didSet {
 			guard isMenuOpen != oldValue else {
