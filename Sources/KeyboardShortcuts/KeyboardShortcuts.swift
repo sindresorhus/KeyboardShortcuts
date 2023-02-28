@@ -60,7 +60,8 @@ public enum KeyboardShortcuts {
 	The main use-case for this is toggling the menu of a menu bar app with a keyboard shortcut.
 
 	```swift
-	import keyboardShortcuts
+	import Cocoa
+	import KeyboardShortcuts
 
 	let menu = NSMenu()
 	let menuDelegate = MenuDelegate()
