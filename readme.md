@@ -193,6 +193,7 @@ This package:
 - Support for listening to key down, not just key up.
 - Swift Package Manager support.
 - Connect a shortcut to an `NSMenuItem`.
+- Works when [`NSMenu` is open](https://github.com/sindresorhus/KeyboardShortcuts/issues/1) (e.g. menu bar apps).
 
 `MASShortcut`:
 - More mature.
