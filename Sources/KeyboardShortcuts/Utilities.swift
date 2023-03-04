@@ -26,6 +26,10 @@ extension NSTextField {
 	func hideCaret() {
 		(currentEditor() as? NSTextView)?.insertionPointColor = .clear
 	}
+
+    func restoreCaret() {
+        (currentEditor() as? NSTextView)?.insertionPointColor = .labelColor
+    }
 }
 
 
