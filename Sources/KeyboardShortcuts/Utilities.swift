@@ -138,13 +138,15 @@ extension NSAlert {
 		title: String,
 		message: String? = nil,
 		style: Style = .warning,
-		icon: NSImage? = nil
+		icon: NSImage? = nil,
+		buttonTitles: [String] = []
 	) -> NSApplication.ModalResponse {
 		NSAlert(
 			title: title,
 			message: message,
 			style: style,
-			icon: icon
+			icon: icon,
+			buttonTitles: buttonTitles
 		).runModal(for: window)
 	}
 
@@ -152,12 +154,17 @@ extension NSAlert {
 		title: String,
 		message: String? = nil,
 		style: Style = .warning,
-		icon: NSImage? = nil
+		icon: NSImage? = nil,
+		buttonTitles: [String] = []
 	) {
 		self.init()
 		self.messageText = title
 		self.alertStyle = style
 		self.icon = icon
+		
+		for buttonTitle in buttonTitles {
+			self.addButton(withTitle: buttonTitle)
+		}
 
 		if let message {
 			self.informativeText = message
