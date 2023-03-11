@@ -283,19 +283,27 @@ extension KeyboardShortcuts {
 					return nil
 				}
 
-				guard !shortcut.isTakenBySystem else {
+				if shortcut.isTakenBySystem {
 					self.blur()
 
-					NSAlert.showModal(
+					let modalResponse = NSAlert.showModal(
 						for: self.window,
 						title: "keyboard_shortcut_used_by_system".localized,
 						// TODO: Add button to offer to open the relevant system settings pane for the user.
-						message: "keyboard_shortcuts_can_be_changed".localized
+						message: "keyboard_shortcuts_can_be_changed".localized,
+						buttonTitles: [
+							"force_use_shortcut".localized,
+							"Cancel"
+						]
 					)
 
 					self.focus()
 
-					return nil
+					// first button returned from alert means user wants to continue setting this 
+					// shortcut despite it being used by system.
+					guard modalResponse == .alertFirstButtonReturn else {
+						return nil
+					}
 				}
 
 				self.stringValue = "\(shortcut)"
