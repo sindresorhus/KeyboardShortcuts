@@ -1,4 +1,4 @@
-import Cocoa
+import Foundation
 
 /**
 Global keyboard shortcuts for your macOS app.
@@ -166,54 +166,45 @@ public enum KeyboardShortcuts {
 	}
 
 	// TODO: Also add `.isEnabled(_ name: Name)`.
+
 	/**
-	Disable a keyboard shortcut.
+	Disable the keyboard shortcut for one or more names.
 	*/
-	public static func disable(_ name: Name) {
-		guard let shortcut = getShortcut(for: name) else {
-			return
-		}
-
-		unregister(shortcut)
-	}
-
-	/**
-	Enable a disabled keyboard shortcut.
-	*/
-	public static func enable(_ name: Name) {
-		guard let shortcut = getShortcut(for: name) else {
-			return
-		}
-
-		register(shortcut)
-	}
-
-	/**
-	Reset the keyboard shortcut for one or more names.
-
-	If the `Name` has a default shortcut, it will reset to that.
-
-	```swift
-	import SwiftUI
-	import KeyboardShortcuts
-
-	struct SettingsScreen: View {
-		var body: some View {
-			VStack {
-				// …
-				Button("Reset All") {
-					KeyboardShortcuts.reset(
-						.toggleUnicornMode,
-						.showRainbow
-					)
-				}
+	public static func disable(_ names: [Name]) {
+		for name in names {
+			guard let shortcut = getShortcut(for: name) else {
+				continue
 			}
+
+			unregister(shortcut)
 		}
 	}
-	```
+
+	/**
+	Disable the keyboard shortcut for one or more names.
 	*/
-	public static func reset(_ names: Name...) {
-		reset(names)
+	public static func disable(_ names: Name...) {
+		disable(names)
+	}
+
+	/**
+	Enable the keyboard shortcut for one or more names.
+	*/
+	public static func enable(_ names: [Name]) {
+		for name in names {
+			guard let shortcut = getShortcut(for: name) else {
+				continue
+			}
+
+			register(shortcut)
+		}
+	}
+
+	/**
+	Enable the keyboard shortcut for one or more names.
+	*/
+	public static func enable(_ names: Name...) {
+		enable(names)
 	}
 
 	/**
@@ -246,6 +237,34 @@ public enum KeyboardShortcuts {
 		for name in names {
 			setShortcut(name.defaultShortcut, for: name)
 		}
+	}
+
+	/**
+	Reset the keyboard shortcut for one or more names.
+
+	If the `Name` has a default shortcut, it will reset to that.
+
+	```swift
+	import SwiftUI
+	import KeyboardShortcuts
+
+	struct SettingsScreen: View {
+		var body: some View {
+			VStack {
+				// …
+				Button("Reset All") {
+					KeyboardShortcuts.reset(
+						.toggleUnicornMode,
+						.showRainbow
+					)
+				}
+			}
+		}
+	}
+	```
+	*/
+	public static func reset(_ names: Name...) {
+		reset(names)
 	}
 
 	/**

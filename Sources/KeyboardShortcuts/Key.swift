@@ -1,4 +1,3 @@
-import Cocoa
 import Carbon.HIToolbox
 
 extension KeyboardShortcuts {

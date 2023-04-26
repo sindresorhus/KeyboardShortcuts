@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E33F1EFC26F3B89C00ACEB0F /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = E33F1EFB26F3B89C00ACEB0F /* KeyboardShortcuts */; };
 		E36FB94A2609BA43004272D9 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = E36FB9492609BA43004272D9 /* App.swift */; };
 		E36FB94C2609BA43004272D9 /* MainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E36FB94B2609BA43004272D9 /* MainScreen.swift */; };
 		E36FB94E2609BA45004272D9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E36FB94D2609BA45004272D9 /* Assets.xcassets */; };
 		E36FB9512609BA45004272D9 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E36FB9502609BA45004272D9 /* Preview Assets.xcassets */; };
 		E36FB9632609BB83004272D9 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E36FB9622609BB83004272D9 /* AppState.swift */; };
 		E36FB9662609BF3D004272D9 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = E36FB9652609BF3D004272D9 /* Utilities.swift */; };
+		E3A680512A042A0B00715D81 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = E3A680502A042A0B00715D81 /* KeyboardShortcuts */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,7 +34,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E33F1EFC26F3B89C00ACEB0F /* KeyboardShortcuts in Frameworks */,
+				E3A680512A042A0B00715D81 /* KeyboardShortcuts in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -55,6 +55,7 @@
 				E36FB9482609BA43004272D9 /* KeyboardShortcutsExample */,
 				E36FB9472609BA43004272D9 /* Products */,
 				E33F1EF926F3B78800ACEB0F /* Packages */,
+				E3A6804F2A042A0B00715D81 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -89,6 +90,13 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
+		E3A6804F2A042A0B00715D81 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -106,7 +114,7 @@
 			);
 			name = KeyboardShortcutsExample;
 			packageProductDependencies = (
-				E33F1EFB26F3B89C00ACEB0F /* KeyboardShortcuts */,
+				E3A680502A042A0B00715D81 /* KeyboardShortcuts */,
 			);
 			productName = KeyboardShortcutsExample;
 			productReference = E36FB9462609BA43004272D9 /* KeyboardShortcutsExample.app */;
@@ -118,8 +126,9 @@
 		E36FB93E2609BA43004272D9 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				BuildIndependentTargetsInParallel = YES;
 				LastSwiftUpdateCheck = 1240;
-				LastUpgradeCheck = 1410;
+				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					E36FB9452609BA43004272D9 = {
 						CreatedOnToolsVersion = 12.4;
@@ -366,7 +375,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		E33F1EFB26F3B89C00ACEB0F /* KeyboardShortcuts */ = {
+		E3A680502A042A0B00715D81 /* KeyboardShortcuts */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = KeyboardShortcuts;
 		};
