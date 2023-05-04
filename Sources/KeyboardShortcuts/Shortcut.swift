@@ -186,7 +186,7 @@ private var keyToCharacterMapping: [KeyboardShortcuts.Key: String] = [
 	.f18: "F18",
 	.f19: "F19",
 	.f20: "F20",
-	
+
 	// Representations for numeric keypad keys with   ⃣  Unicode U+20e3 'COMBINING ENCLOSING KEYCAP'
 	.keypad0: "0\u{20e3}",
 	.keypad1: "1\u{20e3}",
