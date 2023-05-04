@@ -185,7 +185,30 @@ private var keyToCharacterMapping: [KeyboardShortcuts.Key: String] = [
 	.f17: "F17",
 	.f18: "F18",
 	.f19: "F19",
-	.f20: "F20"
+	.f20: "F20",
+
+	// Representations for numeric keypad keys with   ⃣  Unicode U+20e3 'COMBINING ENCLOSING KEYCAP'
+	.keypad0: "0\u{20e3}",
+	.keypad1: "1\u{20e3}",
+	.keypad2: "2\u{20e3}",
+	.keypad3: "3\u{20e3}",
+	.keypad4: "4\u{20e3}",
+	.keypad5: "5\u{20e3}",
+	.keypad6: "6\u{20e3}",
+	.keypad7: "7\u{20e3}",
+	.keypad8: "8\u{20e3}",
+	.keypad9: "9\u{20e3}",
+	// There's "⌧“ 'X In A Rectangle Box' (U+2327), "☒" 'Ballot Box with X' (U+2612), "×" 'Multiplication Sign' (U+00d7), "⨯" 'Vector or Cross Product' (U+2a2f), or a plain small x. All combined symbols appear bigger.
+	.keypadClear: "☒\u{20e3}", // The combined symbol appears bigger than the other combined 'keycaps'
+	// TODO: Respect locale decimal separator ("." or ",")
+	.keypadDecimal: ".\u{20e3}",
+	.keypadDivide: "/\u{20e3}",
+	// "⏎" 'Return Symbol' (U+23CE) but "↩" 'Leftwards Arrow with Hook' (U+00d7) seems to be more common on macOS.
+	.keypadEnter: "↩\u{20e3}", // The combined symbol appears bigger than the other combined 'keycaps'
+	.keypadEquals: "=\u{20e3}",
+	.keypadMinus: "-\u{20e3}",
+	.keypadMultiply: "*\u{20e3}",
+	.keypadPlus: "+\u{20e3}"
 ]
 
 private func stringFromKeyCode(_ keyCode: Int) -> String {
