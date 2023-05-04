@@ -148,6 +148,7 @@ extension KeyboardShortcuts {
 			eventMonitor = nil
 			placeholderString = "record_shortcut".localized
 			showsCancelButton = !stringValue.isEmpty
+            restoreCaret()
 			KeyboardShortcuts.isPaused = false
 		}
 
