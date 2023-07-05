@@ -1,4 +1,4 @@
-import Foundation
+import AppKit.NSMenu
 
 /**
 Global keyboard shortcuts for your macOS app.
@@ -32,10 +32,32 @@ public enum KeyboardShortcuts {
 		shortcutsForLegacyHandlers.union(shortcutsForStreamHandlers)
 	}
 
+	private static var isInitialized = false
+
+	private static var openMenuObserver: NSObjectProtocol?
+	private static var closeMenuObserver: NSObjectProtocol?
+
 	/**
 	When `true`, event handlers will not be called for registered keyboard shortcuts.
 	*/
 	static var isPaused = false
+
+	/**
+	Enable keyboard shortcuts to work even when an `NSMenu` is open by setting this property when the menu opens and closes.
+
+	`NSMenu` runs in a tracking run mode that blocks keyboard shortcuts events. When you set this property to `true`, it switches to a different kind of event handler, which does work when the menu is open.
+
+	The main use-case for this is toggling the menu of a menu bar app with a keyboard shortcut.
+	*/
+	private(set) static var isMenuOpen = false {
+		didSet {
+			guard isMenuOpen != oldValue else {
+				return
+			}
+
+			CarbonKeyboardShortcuts.updateEventHandler()
+		}
+	}
 
 	/**
 	Enable/disable monitoring of all keyboard shortcuts.
@@ -45,42 +67,6 @@ public enum KeyboardShortcuts {
 	public static var isEnabled = true {
 		didSet {
 			guard isEnabled != oldValue else {
-				return
-			}
-
-			CarbonKeyboardShortcuts.updateEventHandler()
-		}
-	}
-
-	/**
-	Enable keyboard shortcuts to work even when an `NSMenu` is open by setting this property when the menu opens and closes.
-
-	`NSMenu` runs in a tracking run mode that blocks keyboard shortcuts events. When you set this property to `true`, it switches to a different kind of event handler, which does work when the menu is open.
-
-	The main use-case for this is toggling the menu of a menu bar app with a keyboard shortcut.
-
-	```swift
-	import Cocoa
-	import KeyboardShortcuts
-
-	let menu = NSMenu()
-	let menuDelegate = MenuDelegate()
-	menu.delegate = menuDelegate
-
-	final class MenuDelegate: NSObject, NSMenuDelegate {
-		func menuWillOpen(_ menu: NSMenu) {
-			KeyboardShortcuts.isMenuOpen = true
-		}
-
-		func menuDidClose(_ menu: NSMenu) {
-			KeyboardShortcuts.isMenuOpen = false
-		}
-	}
-	```
-	*/
-	public static var isMenuOpen = false {
-		didSet {
-			guard isMenuOpen != oldValue else {
 				return
 			}
 
@@ -145,6 +131,21 @@ public enum KeyboardShortcuts {
 		registeredShortcuts.removeAll()
 
 		// TODO: Should remove user defaults too.
+	}
+
+	static func initialize() {
+		guard !isInitialized else {
+			return
+		}
+
+		openMenuObserver = NotificationCenter.default.addObserver(forName: NSMenu.didBeginTrackingNotification, object: nil, queue: nil) { _ in
+			isMenuOpen = true
+		}
+		closeMenuObserver = NotificationCenter.default.addObserver(forName: NSMenu.didEndTrackingNotification, object: nil, queue: nil) { _ in
+			isMenuOpen = false
+		}
+
+		isInitialized = true
 	}
 
 	/**
