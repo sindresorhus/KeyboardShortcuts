@@ -43,6 +43,21 @@ public enum KeyboardShortcuts {
 	static var isPaused = false
 
 	/**
+	Enable/disable monitoring of all keyboard shortcuts.
+
+	The default is `true`.
+	*/
+	public static var isEnabled = true {
+		didSet {
+			guard isEnabled != oldValue else {
+				return
+			}
+
+			CarbonKeyboardShortcuts.updateEventHandler()
+		}
+	}
+
+	/**
 	Enable keyboard shortcuts to work even when an `NSMenu` is open by setting this property when the menu opens and closes.
 
 	`NSMenu` runs in a tracking run mode that blocks keyboard shortcuts events. When you set this property to `true`, it switches to a different kind of event handler, which does work when the menu is open.
@@ -52,21 +67,6 @@ public enum KeyboardShortcuts {
 	private(set) static var isMenuOpen = false {
 		didSet {
 			guard isMenuOpen != oldValue else {
-				return
-			}
-
-			CarbonKeyboardShortcuts.updateEventHandler()
-		}
-	}
-
-	/**
-	Enable/disable monitoring of all keyboard shortcuts.
-
-	The default is `true`.
-	*/
-	public static var isEnabled = true {
-		didSet {
-			guard isEnabled != oldValue else {
 				return
 			}
 
