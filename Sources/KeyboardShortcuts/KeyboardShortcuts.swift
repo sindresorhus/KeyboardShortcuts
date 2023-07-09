@@ -141,6 +141,7 @@ public enum KeyboardShortcuts {
 		openMenuObserver = NotificationCenter.default.addObserver(forName: NSMenu.didBeginTrackingNotification, object: nil, queue: nil) { _ in
 			isMenuOpen = true
 		}
+
 		closeMenuObserver = NotificationCenter.default.addObserver(forName: NSMenu.didEndTrackingNotification, object: nil, queue: nil) { _ in
 			isMenuOpen = false
 		}
