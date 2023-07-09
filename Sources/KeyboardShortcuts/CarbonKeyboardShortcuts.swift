@@ -46,6 +46,18 @@ enum CarbonKeyboardShortcuts {
 		EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventRawKeyUp))
 	]
 
+	// `keyDown` not working
+	private static let keyEventMonitor = LocalEventMonitor(events: [.keyDown, .keyUp]) { event in
+		guard
+			let eventRef = OpaquePointer(event.eventRef),
+			handleRawKeyEvent(eventRef) == noErr
+		else {
+			return event
+		}
+
+		return nil
+	}
+
 	private static func setUpEventHandlerIfNeeded() {
 		guard
 			eventHandler == nil,
@@ -85,16 +97,32 @@ enum CarbonKeyboardShortcuts {
 			if KeyboardShortcuts.isMenuOpen {
 				softUnregisterAll()
 				RemoveEventTypesFromHandler(eventHandler, hotKeyEventTypes.count, hotKeyEventTypes)
-				AddEventTypesToHandler(eventHandler, rawKeyEventTypes.count, rawKeyEventTypes)
+
+				if #available(macOS 14, *) {
+					keyEventMonitor.start()
+				} else {
+					AddEventTypesToHandler(eventHandler, rawKeyEventTypes.count, rawKeyEventTypes)
+				}
 			} else {
 				softRegisterAll()
-				RemoveEventTypesFromHandler(eventHandler, rawKeyEventTypes.count, rawKeyEventTypes)
+
+				if #available(macOS 14, *) {
+					keyEventMonitor.stop()
+				} else {
+					RemoveEventTypesFromHandler(eventHandler, rawKeyEventTypes.count, rawKeyEventTypes)
+				}
+
 				AddEventTypesToHandler(eventHandler, hotKeyEventTypes.count, hotKeyEventTypes)
 			}
 		} else {
 			softUnregisterAll()
 			RemoveEventTypesFromHandler(eventHandler, hotKeyEventTypes.count, hotKeyEventTypes)
-			RemoveEventTypesFromHandler(eventHandler, rawKeyEventTypes.count, rawKeyEventTypes)
+
+			if #available(macOS 14, *) {
+				keyEventMonitor.stop()
+			} else {
+				RemoveEventTypesFromHandler(eventHandler, rawKeyEventTypes.count, rawKeyEventTypes)
+			}
 		}
 	}
 
