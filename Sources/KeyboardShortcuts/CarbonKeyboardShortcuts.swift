@@ -46,8 +46,7 @@ enum CarbonKeyboardShortcuts {
 		EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventRawKeyUp))
 	]
 
-	// `keyDown` not working
-	private static let keyEventMonitor = LocalEventMonitor(events: [.keyDown, .keyUp]) { event in
+	private static let keyEventMonitor = RunLoopLocalEventMonitor(runLoopMode: RunLoop.Mode.eventTracking, events: [.keyDown, .keyUp]) { event in
 		guard
 			let eventRef = OpaquePointer(event.eventRef),
 			handleRawKeyEvent(eventRef) == noErr

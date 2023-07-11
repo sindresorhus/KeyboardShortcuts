@@ -87,6 +87,58 @@ final class LocalEventMonitor {
 }
 
 
+final class RunLoopLocalEventMonitor {
+	private let runLoopMode: RunLoop.Mode
+	private let events: NSEvent.EventTypeMask
+	private let callback: (NSEvent) -> NSEvent?
+	private let observer: CFRunLoopObserver
+
+	init(runLoopMode: RunLoop.Mode, events: NSEvent.EventTypeMask, callback: @escaping (NSEvent) -> NSEvent?) {
+		self.runLoopMode = runLoopMode
+		self.events = events
+		self.callback = callback
+
+		observer = CFRunLoopObserverCreateWithHandler(nil, CFRunLoopActivity.beforeSources.rawValue, true, 0) { _, _ in
+			var eventsToHandle = [NSEvent]()
+
+			while let eventToHandle = NSApp.nextEvent(matching: .any, until: nil, inMode: .default, dequeue: true) {
+				eventsToHandle.append(eventToHandle)
+			}
+
+			for eventToHandle in eventsToHandle {
+				var handledEvent: NSEvent?
+
+				if !events.contains(NSEvent.EventTypeMask(rawValue: 1 << eventToHandle.type.rawValue)) {
+					handledEvent = eventToHandle
+				} else if let callbackEvent = callback(eventToHandle) {
+					handledEvent = callbackEvent
+				}
+
+				guard let handledEvent else {
+					continue
+				}
+
+				NSApp.postEvent(handledEvent, atStart: false)
+			}
+		}
+	}
+
+	deinit {
+		stop()
+	}
+
+	@discardableResult
+	func start() -> Self {
+		CFRunLoopAddObserver(RunLoop.current.getCFRunLoop(), observer, CFRunLoopMode(runLoopMode.rawValue as CFString))
+		return self
+	}
+
+	func stop() {
+		CFRunLoopRemoveObserver(RunLoop.current.getCFRunLoop(), observer, CFRunLoopMode(runLoopMode.rawValue as CFString))
+	}
+}
+
+
 extension NSEvent {
 	static var modifiers: ModifierFlags {
 		modifierFlags
