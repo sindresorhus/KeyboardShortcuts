@@ -89,16 +89,18 @@ final class LocalEventMonitor {
 
 final class RunLoopLocalEventMonitor {
 	private let runLoopMode: RunLoop.Mode
-	private let events: NSEvent.EventTypeMask
 	private let callback: (NSEvent) -> NSEvent?
 	private let observer: CFRunLoopObserver
 
-	init(runLoopMode: RunLoop.Mode, events: NSEvent.EventTypeMask, callback: @escaping (NSEvent) -> NSEvent?) {
+	init(
+		events: NSEvent.EventTypeMask,
+		runLoopMode: RunLoop.Mode,
+		callback: @escaping (NSEvent) -> NSEvent?
+	) {
 		self.runLoopMode = runLoopMode
-		self.events = events
 		self.callback = callback
 
-		observer = CFRunLoopObserverCreateWithHandler(nil, CFRunLoopActivity.beforeSources.rawValue, true, 0) { _, _ in
+		self.observer = CFRunLoopObserverCreateWithHandler(nil, CFRunLoopActivity.beforeSources.rawValue, true, 0) { _, _ in
 			var eventsToHandle = [NSEvent]()
 
 			while let eventToHandle = NSApp.nextEvent(matching: .any, until: nil, inMode: .default, dequeue: true) {
