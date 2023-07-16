@@ -4,7 +4,6 @@ import KeyboardShortcuts
 final class KeyboardShortcutsTests: XCTestCase {
 	// TODO: Add more tests.
 
-	// swiftlint:disable:next overridden_super_call
 	override func setUpWithError() throws {
 		UserDefaults.standard.removeAll()
 	}
