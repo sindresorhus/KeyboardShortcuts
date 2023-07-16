@@ -101,15 +101,16 @@ final class RunLoopLocalEventMonitor {
 		self.callback = callback
 
 		self.observer = CFRunLoopObserverCreateWithHandler(nil, CFRunLoopActivity.beforeSources.rawValue, true, 0) { _, _ in
-			/* Pull all events from the queue and push back in undiscarded events, maintaining order:
-			   non-matching events as is and matching events after handling */
+			// Pull all events from the queue and push back in undiscarded events, maintaining order: non-matching events as is and matching events after handling.
 
 			var eventsToHandle = [NSEvent]()
 
+			// We intentionally don't use the `matching` parameter as we need all events so we can maintain the order.
 			while let eventToHandle = NSApp.nextEvent(matching: .any, until: nil, inMode: .default, dequeue: true) {
 				eventsToHandle.append(eventToHandle)
 			}
 
+			// We intentionally first gather the events and then iterate, as otherwise, it could create an infinite loop; matching undiscarded events are retrieved again.
 			for eventToHandle in eventsToHandle {
 				var handledEvent: NSEvent?
 
