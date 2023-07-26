@@ -1,3 +1,4 @@
+#if os(macOS)
 import SwiftUI
 
 @available(macOS 10.15, *)
@@ -161,3 +162,4 @@ struct SwiftUI_Previews: PreviewProvider {
 		}
 	}
 }
+#endif

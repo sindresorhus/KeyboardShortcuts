@@ -1,3 +1,4 @@
+#if os(macOS)
 import SwiftUI
 
 @available(macOS 12, *)
@@ -38,3 +39,4 @@ extension View {
 		}
 	}
 }
+#endif
