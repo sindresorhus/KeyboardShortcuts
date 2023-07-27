@@ -4,6 +4,7 @@ import AppKit.NSMenu
 Global keyboard shortcuts for your macOS app.
 */
 public enum KeyboardShortcuts {
+    public static var storageProvider: StorageProvider?
 	private static var registeredShortcuts = Set<Shortcut>()
 
 	private static var legacyKeyDownHandlers = [Name: [() -> Void]]()
@@ -137,7 +138,11 @@ public enum KeyboardShortcuts {
 		guard !isInitialized else {
 			return
 		}
-
+        
+        if storageProvider == nil {
+            storageProvider = UserDefaultsStorage()
+        }
+        
 		openMenuObserver = NotificationCenter.default.addObserver(forName: NSMenu.didBeginTrackingNotification, object: nil, queue: nil) { _ in
 			isMenuOpen = true
 		}
@@ -277,29 +282,24 @@ public enum KeyboardShortcuts {
 	You would usually not need this as the user would be the one setting the shortcut in a settings user-interface, but it can be useful when, for example, migrating from a different keyboard shortcuts package.
 	*/
 	public static func setShortcut(_ shortcut: Shortcut?, for name: Name) {
-		if let shortcut {
-			userDefaultsSet(name: name, shortcut: shortcut)
-		} else {
-			if name.defaultShortcut != nil {
-				userDefaultsDisable(name: name)
-			} else {
-				userDefaultsRemove(name: name)
-			}
-		}
+        if let shortcut {
+            storageProviderSet(name: name, shortcut: shortcut)
+        } else {
+            storageProviderRemove(name: name)
+        }
 	}
 
 	/**
 	Get the keyboard shortcut for a name.
 	*/
 	public static func getShortcut(for name: Name) -> Shortcut? {
-		guard
-			let data = UserDefaults.standard.string(forKey: userDefaultsKey(for: name))?.data(using: .utf8),
-			let decoded = try? JSONDecoder().decode(Shortcut.self, from: data)
-		else {
-			return nil
-		}
-
-		return decoded
+        guard
+            let data = storageProvider?.get(forKey: name.rawValue)?.data(using: .utf8),
+            let decoded = try? JSONDecoder().decode(Shortcut.self, from: data)
+        else {
+            return nil
+        }
+        return decoded
 	}
 
 	private static func handleOnKeyDown(_ shortcut: Shortcut) {
@@ -406,53 +406,48 @@ public enum KeyboardShortcuts {
 		registerShortcutIfNeeded(for: name)
 	}
 
-	private static let userDefaultsPrefix = "KeyboardShortcuts_"
+    static func shortcutDidChange(name: Name) {
+        NotificationCenter.default.post(name: .shortcutByNameDidChange, object: nil, userInfo: ["name": name])
+    }
 
-	private static func userDefaultsKey(for shortcutName: Name) -> String { "\(userDefaultsPrefix)\(shortcutName.rawValue)"
-	}
+    static func storageProviderSet(name: Name, shortcut: Shortcut) {
+        guard let encoded = try? JSONEncoder().encode(shortcut).toString else {
+            return
+        }
 
-	static func userDefaultsDidChange(name: Name) {
-		// TODO: Use proper UserDefaults observation instead of this.
-		NotificationCenter.default.post(name: .shortcutByNameDidChange, object: nil, userInfo: ["name": name])
-	}
+        if let oldShortcut = getShortcut(for: name) {
+            unregister(oldShortcut)
+        }
 
-	static func userDefaultsSet(name: Name, shortcut: Shortcut) {
-		guard let encoded = try? JSONEncoder().encode(shortcut).toString else {
-			return
-		}
+        register(shortcut)
+        storageProvider?.set(encoded, forKey: name.rawValue)
+        shortcutDidChange(name: name)
+    }
 
-		if let oldShortcut = getShortcut(for: name) {
-			unregister(oldShortcut)
-		}
+    static func storageProviderDisable(name: Name) {
+        guard let shortcut = getShortcut(for: name) else {
+            return
+        }
 
-		register(shortcut)
-		UserDefaults.standard.set(encoded, forKey: userDefaultsKey(for: name))
-		userDefaultsDidChange(name: name)
-	}
+        storageProvider?.set(nil, forKey: name.rawValue)
+        unregister(shortcut)
+        shortcutDidChange(name: name)
+    }
 
-	static func userDefaultsDisable(name: Name) {
-		guard let shortcut = getShortcut(for: name) else {
-			return
-		}
+    static func storageProviderRemove(name: Name) {
+        guard let shortcut = getShortcut(for: name) else {
+            return
+        }
+        
+        storageProvider?.remove(forKey: name.rawValue)
+        unregister(shortcut)
+        shortcutDidChange(name: name)
+    }
 
-		UserDefaults.standard.set(false, forKey: userDefaultsKey(for: name))
-		unregister(shortcut)
-		userDefaultsDidChange(name: name)
-	}
-
-	static func userDefaultsRemove(name: Name) {
-		guard let shortcut = getShortcut(for: name) else {
-			return
-		}
-
-		UserDefaults.standard.removeObject(forKey: userDefaultsKey(for: name))
-		unregister(shortcut)
-		userDefaultsDidChange(name: name)
-	}
-
-	static func userDefaultsContains(name: Name) -> Bool {
-		UserDefaults.standard.object(forKey: userDefaultsKey(for: name)) != nil
-	}
+    static func storageProviderContains(name: Name) -> Bool {
+        return storageProvider?.get(forKey: name.rawValue) != nil
+    }
+    
 }
 
 extension KeyboardShortcuts {
@@ -588,4 +583,35 @@ extension KeyboardShortcuts {
 
 extension Notification.Name {
 	static let shortcutByNameDidChange = Self("KeyboardShortcuts_shortcutByNameDidChange")
+}
+
+class UserDefaultsStorage: StorageProvider {
+    private static let userDefaultsPrefix = "KeyboardShortcuts_"
+    private static func userDefaultsKey(for shortcutName: String) -> String { "\(userDefaultsPrefix)\(shortcutName)"}
+    
+    func set(_ value: String?, forKey defaultName: String) {
+        UserDefaults.standard.set(value, forKey: Self.userDefaultsKey(for: defaultName))
+    }
+
+    func remove(forKey defaultName: String) {
+        UserDefaults.standard.removeObject(forKey: Self.userDefaultsKey(for: defaultName))
+    }
+    
+    func disable(forKey defaultName: String) {
+        UserDefaults.standard.set(false, forKey: Self.userDefaultsKey(for: defaultName))
+    }
+
+    func get(forKey defaultName: String) -> String? {
+        guard
+            let data = UserDefaults.standard.string(forKey: Self.userDefaultsKey(for: defaultName))
+        else {
+            return nil
+        }
+        return data
+    }
+    
+    func contains(forKey defaultName: String) -> Bool {
+        return UserDefaults.standard.object(forKey: Self.userDefaultsKey(for: defaultName)) != nil
+    }
+    
 }
