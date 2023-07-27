@@ -285,7 +285,11 @@ public enum KeyboardShortcuts {
         if let shortcut {
             storageProviderSet(name: name, shortcut: shortcut)
         } else {
-            storageProviderRemove(name: name)
+            if name.defaultShortcut != nil {
+                storageProviderDisable(name: name)
+            } else {
+                storageProviderRemove(name: name)
+            }
         }
 	}
 
