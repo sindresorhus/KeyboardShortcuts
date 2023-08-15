@@ -158,7 +158,7 @@ private var keyToCharacterMapping: [KeyboardShortcuts.Key: String] = [
 	.escape: "⎋",
 	.help: "?⃝",
 	.home: "↖",
-	.space: "⎵",
+	.space: "Space", // This matches what macOS uses.
 	.tab: "⇥",
 	.pageUp: "⇞",
 	.pageDown: "⇟",
@@ -320,6 +320,7 @@ extension KeyboardShortcuts.Shortcut: CustomStringConvertible {
 	```
 	*/
 	public var description: String {
-		modifiers.description + (keyToCharacter()?.uppercased() ?? "�")
+		// We use `.capitalized` so it correctly handles “⌘Space”.
+		modifiers.description + (keyToCharacter()?.capitalized ?? "�")
 	}
 }
