@@ -26,11 +26,13 @@ extension KeyboardShortcuts {
 	```
 	*/
 	public final class RecorderCocoa: NSSearchField, NSSearchFieldDelegate {
-		private let minimumWidth: Double = 130
-		private var eventMonitor: LocalEventMonitor?
+		private let minimumWidth = 130.0
 		private let onChange: ((_ shortcut: Shortcut?) -> Void)?
-		private var observer: NSObjectProtocol?
 		private var canBecomeKey = false
+		private var eventMonitor: LocalEventMonitor?
+		private var shortcutsNameChangeObserver: NSObjectProtocol?
+		private var windowDidResignKeyObserver: NSObjectProtocol?
+		private var windowDidBecomeKeyObserver: NSObjectProtocol?
 
 		/**
 		The shortcut name for the recorder.
@@ -116,7 +118,7 @@ extension KeyboardShortcuts {
 		}
 
 		private func setUpEvents() {
-			observer = NotificationCenter.default.addObserver(forName: .shortcutByNameDidChange, object: nil, queue: nil) { [weak self] notification in
+			shortcutsNameChangeObserver = NotificationCenter.default.addObserver(forName: .shortcutByNameDidChange, object: nil, queue: nil) { [weak self] notification in
 				guard
 					let self,
 					let nameInNotification = notification.userInfo?["name"] as? KeyboardShortcuts.Name,
@@ -126,6 +128,23 @@ extension KeyboardShortcuts {
 				}
 
 				self.setStringValue(name: nameInNotification)
+			}
+		}
+
+		private func endRecording() {
+			eventMonitor = nil
+			placeholderString = "record_shortcut".localized
+			showsCancelButton = !stringValue.isEmpty
+			restoreCaret()
+			KeyboardShortcuts.isPaused = false
+		}
+
+		private func preventBecomingKey() {
+			canBecomeKey = false
+
+			// Prevent the control from receiving the initial focus.
+			DispatchQueue.main.async { [self] in
+				canBecomeKey = true
 			}
 		}
 
@@ -145,23 +164,38 @@ extension KeyboardShortcuts {
 
 		/// :nodoc:
 		public func controlTextDidEndEditing(_ object: Notification) {
-			eventMonitor = nil
-			placeholderString = "record_shortcut".localized
-			showsCancelButton = !stringValue.isEmpty
-            restoreCaret()
-			KeyboardShortcuts.isPaused = false
+			endRecording()
 		}
 
 		/// :nodoc:
 		override public func viewDidMoveToWindow() {
-			guard window != nil else {
+			guard let window else {
+				windowDidResignKeyObserver = nil
+				windowDidBecomeKeyObserver = nil
+				endRecording()
 				return
 			}
 
-			// Prevent the control from receiving the initial focus.
-			DispatchQueue.main.async { [self] in
-				canBecomeKey = true
+			// Ensures the recorder stops when the window is hidden.
+			// This is especially important for Settings windows, which as of macOS 13.5, only hides instead of closes when you click the close button.
+			windowDidResignKeyObserver = NotificationCenter.default.addObserver(forName: NSWindow.didResignKeyNotification, object: window, queue: nil) { [weak self] _ in
+				guard
+					let self,
+					let window = self.window
+				else {
+					return
+				}
+
+				self.endRecording()
+				window.makeFirstResponder(nil)
 			}
+
+			// Ensures the recorder does not receive initial focus when a hidden window becomes unhidden.
+			windowDidBecomeKeyObserver = NotificationCenter.default.addObserver(forName: NSWindow.didBecomeKeyNotification, object: window, queue: nil) { [weak self] _ in
+				self?.preventBecomingKey()
+			}
+
+			preventBecomingKey()
 		}
 
 		/// :nodoc:
