@@ -292,16 +292,15 @@ extension KeyboardShortcuts {
 						// TODO: Add button to offer to open the relevant system settings pane for the user.
 						message: "keyboard_shortcuts_can_be_changed".localized,
 						buttonTitles: [
-							"force_use_shortcut".localized,
-							"Cancel"
+							"ok".localized,
+							"force_use_shortcut".localized
 						]
 					)
 
 					self.focus()
 
-					// first button returned from alert means user wants to continue setting this 
-					// shortcut despite it being used by system.
-					guard modalResponse == .alertFirstButtonReturn else {
+					// If the user has selected "Use Anyway" in the dialog (the second option), we'll continue setting the keyboard shorcut even though it's reserved by the system.
+					guard modalResponse == .alertSecondButtonReturn else {
 						return nil
 					}
 				}

@@ -224,7 +224,7 @@ extension NSAlert {
 		self.messageText = title
 		self.alertStyle = style
 		self.icon = icon
-		
+
 		for buttonTitle in buttonTitles {
 			self.addButton(withTitle: buttonTitle)
 		}
