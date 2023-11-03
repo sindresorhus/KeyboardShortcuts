@@ -100,7 +100,7 @@ You can also find a [real-world example](https://github.com/sindresorhus/Plash/b
 Using [`KeyboardShortcuts.RecorderCocoa`](Sources/KeyboardShortcuts/RecorderCocoa.swift) instead of `KeyboardShortcuts.Recorder`:
 
 ```swift
-import Cocoa
+import AppKit
 import KeyboardShortcuts
 
 final class SettingsViewController: NSViewController {

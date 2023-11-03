@@ -1,4 +1,4 @@
-import Cocoa
+import AppKit
 import Carbon.HIToolbox
 
 extension KeyboardShortcuts {

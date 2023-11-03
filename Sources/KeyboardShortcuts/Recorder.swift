@@ -149,15 +149,18 @@ extension KeyboardShortcuts.Recorder {
 }
 
 @available(macOS 10.15, *)
-struct SwiftUI_Previews: PreviewProvider {
-	static var previews: some View {
-		Group {
-			KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
-				.environment(\.locale, .init(identifier: "en"))
-			KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
-				.environment(\.locale, .init(identifier: "zh-Hans"))
-			KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
-				.environment(\.locale, .init(identifier: "ru"))
-		}
-	}
+#Preview {
+	KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
+		.environment(\.locale, .init(identifier: "en"))
+}
+
+@available(macOS 10.15, *)
+#Preview {
+	KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
+		.environment(\.locale, .init(identifier: "zh-Hans"))
+}
+@available(macOS 10.15, *)
+#Preview {
+	KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
+		.environment(\.locale, .init(identifier: "ru"))
 }

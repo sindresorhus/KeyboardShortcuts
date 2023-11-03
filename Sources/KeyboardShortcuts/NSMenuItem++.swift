@@ -25,7 +25,7 @@ extension NSMenuItem {
 	This method overrides `.keyEquivalent` and `.keyEquivalentModifierMask`.
 
 	```swift
-	import Cocoa
+	import AppKit
 	import KeyboardShortcuts
 
 	extension KeyboardShortcuts.Name {

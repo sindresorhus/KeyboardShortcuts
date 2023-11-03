@@ -1,4 +1,4 @@
-import Cocoa
+import AppKit
 import Carbon.HIToolbox
 
 extension KeyboardShortcuts {
@@ -12,7 +12,7 @@ extension KeyboardShortcuts {
 	It takes care of storing the keyboard shortcut in `UserDefaults` for you.
 
 	```swift
-	import Cocoa
+	import AppKit
 	import KeyboardShortcuts
 
 	final class SettingsViewController: NSViewController {

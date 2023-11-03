@@ -395,15 +395,15 @@ enum AssociationPolicy {
 	var rawValue: objc_AssociationPolicy {
 		switch self {
 		case .assign:
-			return .OBJC_ASSOCIATION_ASSIGN
+			.OBJC_ASSOCIATION_ASSIGN
 		case .retainNonatomic:
-			return .OBJC_ASSOCIATION_RETAIN_NONATOMIC
+			.OBJC_ASSOCIATION_RETAIN_NONATOMIC
 		case .copyNonatomic:
-			return .OBJC_ASSOCIATION_COPY_NONATOMIC
+			.OBJC_ASSOCIATION_COPY_NONATOMIC
 		case .retain:
-			return .OBJC_ASSOCIATION_RETAIN
+			.OBJC_ASSOCIATION_RETAIN
 		case .copy:
-			return .OBJC_ASSOCIATION_COPY
+			.OBJC_ASSOCIATION_COPY
 		}
 	}
 }

@@ -362,7 +362,7 @@ public enum KeyboardShortcuts {
 	You can safely call this even if the user has not yet set a keyboard shortcut. It will just be inactive until they do.
 
 	```swift
-	import Cocoa
+	import AppKit
 	import KeyboardShortcuts
 
 	@main
@@ -388,7 +388,7 @@ public enum KeyboardShortcuts {
 	You can safely call this even if the user has not yet set a keyboard shortcut. It will just be inactive until they do.
 
 	```swift
-	import Cocoa
+	import AppKit
 	import KeyboardShortcuts
 
 	@main
