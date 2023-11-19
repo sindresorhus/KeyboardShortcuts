@@ -1,3 +1,4 @@
+#if os(macOS)
 extension KeyboardShortcuts {
 	/**
 	The strongly-typed name of the keyboard shortcut.
@@ -56,3 +57,4 @@ extension KeyboardShortcuts.Name: RawRepresentable {
 		self.init(rawValue)
 	}
 }
+#endif

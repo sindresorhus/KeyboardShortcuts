@@ -1,3 +1,4 @@
+#if os(macOS)
 import AppKit
 import Carbon.HIToolbox
 
@@ -324,3 +325,4 @@ extension KeyboardShortcuts.Shortcut: CustomStringConvertible {
 		modifiers.description + (keyToCharacter()?.capitalized ?? "�")
 	}
 }
+#endif

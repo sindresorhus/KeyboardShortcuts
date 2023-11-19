@@ -1,3 +1,4 @@
+#if os(macOS)
 import Carbon.HIToolbox
 
 private func carbonKeyboardShortcutsEventHandler(eventHandlerCall: EventHandlerCallRef?, event: EventRef?, userData: UnsafeMutableRawPointer?) -> OSStatus {
@@ -345,3 +346,4 @@ extension CarbonKeyboardShortcuts {
 		}
 	}
 }
+#endif

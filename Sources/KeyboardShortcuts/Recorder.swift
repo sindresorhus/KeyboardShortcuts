@@ -1,3 +1,4 @@
+#if os(macOS)
 import SwiftUI
 
 @available(macOS 10.15, *)
@@ -164,3 +165,4 @@ extension KeyboardShortcuts.Recorder {
 	KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
 		.environment(\.locale, .init(identifier: "ru"))
 }
+#endif

@@ -1,3 +1,4 @@
+#if os(macOS)
 import AppKit
 import Carbon.HIToolbox
 
@@ -323,3 +324,4 @@ extension KeyboardShortcuts {
 		}
 	}
 }
+#endif
