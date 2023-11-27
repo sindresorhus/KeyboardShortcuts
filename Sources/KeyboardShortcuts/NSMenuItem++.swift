@@ -47,6 +47,7 @@ extension NSMenuItem {
 	public func setShortcut(for name: KeyboardShortcuts.Name?) {
 		guard let name else {
 			clearShortcut()
+            NotificationCenter.default.removeObserver(AssociatedKeys.observer[self] as Any)
 			AssociatedKeys.observer[self] = nil
 			return
 		}
