@@ -1,3 +1,4 @@
+#if os(macOS)
 import AppKit.NSMenu
 
 /**
@@ -589,3 +590,4 @@ extension KeyboardShortcuts {
 extension Notification.Name {
 	static let shortcutByNameDidChange = Self("KeyboardShortcuts_shortcutByNameDidChange")
 }
+#endif

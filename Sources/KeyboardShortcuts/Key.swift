@@ -1,3 +1,4 @@
+#if os(macOS)
 import Carbon.HIToolbox
 
 extension KeyboardShortcuts {
@@ -192,3 +193,4 @@ extension KeyboardShortcuts.Key {
 	*/
 	var isFunctionKey: Bool { Self.functionKeys.contains(self) }
 }
+#endif

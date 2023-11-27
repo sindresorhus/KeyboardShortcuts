@@ -1,3 +1,4 @@
+#if os(macOS)
 import Carbon.HIToolbox
 import SwiftUI
 
@@ -470,3 +471,4 @@ extension View {
 			.alignmentGuide(.leading) { $0[.controlAlignment] }
 	}
 }
+#endif
