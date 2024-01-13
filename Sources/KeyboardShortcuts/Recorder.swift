@@ -174,18 +174,18 @@ extension KeyboardShortcuts.Recorder {
 
 @available(macOS 10.15, *)
 #Preview {
-	KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
+	KeyboardShortcuts.Recorder("record_shortcut", name: .init("xcodePreview"))
 		.environment(\.locale, .init(identifier: "en"))
 }
 
 @available(macOS 10.15, *)
 #Preview {
-	KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
+	KeyboardShortcuts.Recorder("record_shortcut", name: .init("xcodePreview"))
 		.environment(\.locale, .init(identifier: "zh-Hans"))
 }
 @available(macOS 10.15, *)
 #Preview {
-	KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
+	KeyboardShortcuts.Recorder("record_shortcut", name: .init("xcodePreview"))
 		.environment(\.locale, .init(identifier: "ru"))
 }
 #endif
