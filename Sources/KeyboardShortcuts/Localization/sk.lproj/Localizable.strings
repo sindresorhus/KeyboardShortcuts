@@ -1,0 +1,7 @@
+"record_shortcut" = "Nahrajte klávesovú skratku";
+"press_shortcut" = "Stlačte klávesovú skratku";
+"keyboard_shortcut_used_by_menu_item" = "Túto klávesovú skratku nemožno použiť, pretože ju už používa položka menu “%@”.";
+"keyboard_shortcut_used_by_system" = "Túto klávesovú skratku nemožno použiť, pretože ide o klávesovú skratku použivanú pre celý systém.";
+"keyboard_shortcuts_can_be_changed" = "Väčšinu klávesových skratiek pre celý systém je možné zmeniť v časti “Systémové nastavenia › Klávesnica › Klávesové skratky”.";
+"force_use_shortcut" = "Napriek tomu použiť";
+"ok" = "OK";
