@@ -136,11 +136,11 @@ extension KeyboardShortcuts.Recorder<Text> {
   - Parameter onChange: Callback which will be called when the keyboard shortcut is changed/removed by the user. This can be useful when you need more control. For example, when migrating from a different keyboard shortcut solution and you need to store the keyboard shortcut somewhere yourself instead of relying on the built-in storage. However, it's strongly recommended to just rely on the built-in storage when possible.
   */
   @_disfavoredOverload
-  public init<S>(
-    _ title: S,
+  public init(
+    _ title: String,
     name: KeyboardShortcuts.Name,
     onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil
-  ) where S : StringProtocol {
+  ) {
     self.init(
       for: name,
       onChange: onChange,
