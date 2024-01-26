@@ -114,6 +114,29 @@ extension KeyboardShortcuts.Recorder<Text> {
 	- Parameter onChange: Callback which will be called when the keyboard shortcut is changed/removed by the user. This can be useful when you need more control. For example, when migrating from a different keyboard shortcut solution and you need to store the keyboard shortcut somewhere yourself instead of relying on the built-in storage. However, it's strongly recommended to just rely on the built-in storage when possible.
 	*/
 	public init(
+		_ title: LocalizedStringKey,
+		name: KeyboardShortcuts.Name,
+		onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil
+	) {
+		self.init(
+			for: name,
+			onChange: onChange,
+			hasLabel: true
+		) {
+			Text(title)
+		}
+	}
+}
+
+@available(macOS 10.15, *)
+extension KeyboardShortcuts.Recorder<Text> {
+	/**
+	- Parameter title: The title of the keyboard shortcut recorder, describing its purpose.
+	- Parameter name: Strongly-typed keyboard shortcut name.
+	- Parameter onChange: Callback which will be called when the keyboard shortcut is changed/removed by the user. This can be useful when you need more control. For example, when migrating from a different keyboard shortcut solution and you need to store the keyboard shortcut somewhere yourself instead of relying on the built-in storage. However, it's strongly recommended to just rely on the built-in storage when possible.
+	*/
+	@_disfavoredOverload
+	public init(
 		_ title: String,
 		name: KeyboardShortcuts.Name,
 		onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil
@@ -151,18 +174,18 @@ extension KeyboardShortcuts.Recorder {
 
 @available(macOS 10.15, *)
 #Preview {
-	KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
+	KeyboardShortcuts.Recorder("record_shortcut", name: .init("xcodePreview"))
 		.environment(\.locale, .init(identifier: "en"))
 }
 
 @available(macOS 10.15, *)
 #Preview {
-	KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
+	KeyboardShortcuts.Recorder("record_shortcut", name: .init("xcodePreview"))
 		.environment(\.locale, .init(identifier: "zh-Hans"))
 }
 @available(macOS 10.15, *)
 #Preview {
-	KeyboardShortcuts.Recorder(for: .init("xcodePreview"))
+	KeyboardShortcuts.Recorder("record_shortcut", name: .init("xcodePreview"))
 		.environment(\.locale, .init(identifier: "ru"))
 }
 #endif
