@@ -458,7 +458,7 @@ public enum KeyboardShortcuts {
 
 extension KeyboardShortcuts {
 	@available(macOS 10.15, *)
-	public enum EventType {
+	public enum EventType: Sendable {
 		case keyDown
 		case keyUp
 	}
