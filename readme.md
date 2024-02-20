@@ -12,7 +12,7 @@ I'm happy to accept more configurability and features. PR welcome! What you see 
 
 ## Requirements
 
-macOS 10.13+
+macOS 10.15+
 
 ## Install
 

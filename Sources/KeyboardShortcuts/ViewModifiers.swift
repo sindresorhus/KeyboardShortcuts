@@ -13,7 +13,10 @@ extension View {
 	- Note: This method is not affected by `.removeAllHandlers()`.
 	*/
 	@MainActor
-	public func onKeyboardShortcut(_ shortcut: KeyboardShortcuts.Name, perform: @escaping (KeyboardShortcuts.EventType) -> Void) -> some View {
+	public func onKeyboardShortcut(
+		_ shortcut: KeyboardShortcuts.Name,
+		perform: @escaping (KeyboardShortcuts.EventType) -> Void
+	) -> some View {
 		task {
 			for await eventType in KeyboardShortcuts.events(for: shortcut) {
 				perform(eventType)
@@ -31,7 +34,11 @@ extension View {
 	- Note: This method is not affected by `.removeAllHandlers()`.
 	*/
 	@MainActor
-	public func onKeyboardShortcut(_ shortcut: KeyboardShortcuts.Name, type: KeyboardShortcuts.EventType, perform: @escaping () -> Void) -> some View {
+	public func onKeyboardShortcut(
+		_ shortcut: KeyboardShortcuts.Name,
+		type: KeyboardShortcuts.EventType,
+		perform: @escaping () -> Void
+	) -> some View {
 		task {
 			for await _ in KeyboardShortcuts.events(type, for: shortcut) {
 				perform()
