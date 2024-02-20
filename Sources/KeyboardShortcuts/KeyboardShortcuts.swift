@@ -550,37 +550,6 @@ extension KeyboardShortcuts {
 	public static func events(_ type: EventType, for name: Name) -> AsyncFilterSequence<AsyncStream<EventType>> {
 		events(for: name).filter { $0 == type }
 	}
-
-	@available(*, deprecated, renamed: "events(_:for:)")
-	public static func on(_ type: EventType, for name: Name) -> AsyncStream<Void> {
-		AsyncStream { continuation in
-			let id = UUID()
-
-			switch type {
-			case .keyDown:
-				streamKeyDownHandlers[name, default: [:]][id] = {
-					continuation.yield()
-				}
-			case .keyUp:
-				streamKeyUpHandlers[name, default: [:]][id] = {
-					continuation.yield()
-				}
-			}
-
-			registerShortcutIfNeeded(for: name)
-
-			continuation.onTermination = { _ in
-				switch type {
-				case .keyDown:
-					streamKeyDownHandlers[name]?[id] = nil
-				case .keyUp:
-					streamKeyUpHandlers[name]?[id] = nil
-				}
-
-				unregisterShortcutIfNeeded(for: name)
-			}
-		}
-	}
 }
 
 extension Notification.Name {
