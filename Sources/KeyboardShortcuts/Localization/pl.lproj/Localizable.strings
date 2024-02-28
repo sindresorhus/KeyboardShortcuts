@@ -1,0 +1,5 @@
+"record_shortcut" = "Nagraj skrót";
+"press_shortcut" = "Naciśnij skrót";
+"keyboard_shortcut_used_by_menu_item" = "Ten skrót nie może być użyty, bo jest używany przez pozycję w menu “%@”.";
+"keyboard_shortcut_used_by_system" = "Ten skrót nie może być użyty, bo jest skrótem systemowym.";
+"keyboard_shortcuts_can_be_changed" = "Większość skrótów systemowych może być zmienione w “Ustawienia › Klawiatura › Skróty klawiszowe.";
