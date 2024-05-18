@@ -5,7 +5,7 @@ import AppKit.NSMenu
 Global keyboard shortcuts for your macOS app.
 */
 public enum KeyboardShortcuts {
-	private static var registeredShortcuts = Set<Shortcut>()
+    public static var registeredShortcuts = Set<Shortcut>() // made public by Michel Storms (stormychel @ GH)
 
 	private static var legacyKeyDownHandlers = [Name: [() -> Void]]()
 	private static var legacyKeyUpHandlers = [Name: [() -> Void]]()
