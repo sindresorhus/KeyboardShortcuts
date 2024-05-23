@@ -4,3 +4,4 @@
 "keyboard_shortcut_used_by_system" = "Este atajo de teclado no se puede utilizar ya que está siendo utilizado por un atajo del sistema operativo.";
 "keyboard_shortcuts_can_be_changed" = "La mayoría de los atajos de teclado del sistema operativo pueden ser modificados en “Configuración del sistema › Teclado › Atajos de teclado“.";
 "ok" = "Aceptar";
+"space_key" = "Espacio";

@@ -4,3 +4,4 @@
 "keyboard_shortcut_used_by_system" = "此快速鍵無法使用，因為它已被系統使用。";
 "keyboard_shortcuts_can_be_changed" = "可以在「系統設定 › 鍵盤 › 鍵盤快速鍵」中更改大多數的系統快速鍵。";
 "ok" = "好";
+"space_key" = "空格";

@@ -161,7 +161,7 @@ private let keyToCharacterMapping: [KeyboardShortcuts.Key: String] = [
 	.escape: "⎋",
 	.help: "?⃝",
 	.home: "↖",
-	.space: "Space", // This matches what macOS uses.
+	.space: "space_key".localized, // This matches what macOS uses.
 	.tab: "⇥",
 	.pageUp: "⇞",
 	.pageDown: "⇟",
