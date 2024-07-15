@@ -324,7 +324,7 @@ extension KeyboardShortcuts.Shortcut: CustomStringConvertible {
 	@MainActor
 	public var description: String {
 		// We use `.capitalized` so it correctly handles “⌘Space”.
-		modifiers.description + (keyToCharacter()?.capitalized ?? "�")
+		modifiers.presentableDescription + (keyToCharacter()?.capitalized ?? "�")
 	}
 }
 #endif

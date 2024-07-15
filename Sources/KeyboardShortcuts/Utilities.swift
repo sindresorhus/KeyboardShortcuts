@@ -14,7 +14,7 @@ extension String {
 
 
 extension Data {
-	var toString: String? { String(data: self, encoding: .utf8) }
+	var toString: String? { String(data: self, encoding: .utf8) } // swiftlint:disable:this non_optional_string_data_conversion
 }
 
 
@@ -227,7 +227,7 @@ extension NSAlert {
 		self.icon = icon
 
 		for buttonTitle in buttonTitles {
-			self.addButton(withTitle: buttonTitle)
+			addButton(withTitle: buttonTitle)
 		}
 
 		if let message {
@@ -305,8 +305,7 @@ extension NSEvent.ModifierFlags {
 	}
 }
 
-/// :nodoc:
-extension NSEvent.ModifierFlags: CustomStringConvertible {
+extension NSEvent.ModifierFlags {
 	/**
 	The string representation of the modifier flags.
 
@@ -315,7 +314,7 @@ extension NSEvent.ModifierFlags: CustomStringConvertible {
 	//=> "⇧⌘"
 	```
 	*/
-	public var description: String {
+	var presentableDescription: String {
 		var description = ""
 
 		if contains(.control) {

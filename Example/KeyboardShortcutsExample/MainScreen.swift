@@ -22,7 +22,7 @@ private struct DynamicShortcutRecorder: View {
 			Text("Pressed? \(isPressed ? "👍" : "👎")")
 				.frame(width: 100, alignment: .leading)
 		}
-			.onChange(of: name) { _ in
+			.onChange(of: name) {
 				isFocused = true
 			}
 	}
@@ -61,8 +61,8 @@ private struct DynamicShortcut: View {
 			.frame(maxWidth: 300)
 			.padding()
 			.padding(.bottom, 20)
-			.onChange(of: shortcut) { [oldValue = shortcut] in
-				onShortcutChange(oldValue: oldValue, newValue: $0)
+			.onChange(of: shortcut) { oldValue, newValue in
+				onShortcutChange(oldValue: oldValue, newValue: newValue)
 			}
 	}
 
