@@ -199,6 +199,8 @@ extension KeyboardShortcuts {
 			preventBecomingKey()
 		}
 
+		private var existingNSMenuForUs: NSMenuItem? = nil
+		
 		/// :nodoc:
 		override public func becomeFirstResponder() -> Bool {
 			let shouldBecomeFirstResponder = super.becomeFirstResponder()
@@ -211,15 +213,30 @@ extension KeyboardShortcuts {
 			showsCancelButton = !stringValue.isEmpty
 			hideCaret()
 			KeyboardShortcuts.isPaused = true // The position here matters.
+			
+			if let existingShortcut = getShortcut(for: shortcutName) {
+				// Assuming we have a consisten NSMenuItem state, find the NSMenuItem instance that represents us right now
+				// This works only if SwiftUI has updated the NSMenuItem.  It seems (macOS 15) that even if the shortcut state is updated on KeyboardShortcutView, that the actual NSMenuItem isn't refreshed
+				// This means that if we change it multiple times in a row, this lookup returns nil.
+				// What seems to work is just hanging onto the last found reference...
+				if let foundMenu = existingShortcut.takenByMainMenu {
+					existingNSMenuForUs = foundMenu
+				}
+			}
+//			print("existingNSMenuForUs: \(existingNSMenuForUs)")
 
-			eventMonitor = LocalEventMonitor(events: [.keyDown, .leftMouseUp, .rightMouseUp]) { [weak self] event in
+			// Unregsiter the shortcut by this name, so that when we search the menus, we don't find ourselves and think that it's already taken
+			// This doesn't always work for SwiftUI generated NSMenuItems (from .keyboardShortcut()) - so we also use existingNSMenuForUs, above
+			KeyboardShortcuts.userDefaultsDisable(name: shortcutName)
+
+			self.eventMonitor = LocalEventMonitor(events: [.keyDown, .leftMouseUp, .rightMouseUp]) { [weak self] event in
 				guard let self else {
 					return nil
 				}
-
+				
 				let clickPoint = self.convert(event.locationInWindow, from: nil)
 				let clickMargin = 3.0
-
+				
 				if
 					event.type == .leftMouseUp || event.type == .rightMouseUp,
 					!self.bounds.insetBy(dx: -clickMargin, dy: -clickMargin).contains(clickPoint)
@@ -227,21 +244,21 @@ extension KeyboardShortcuts {
 					self.blur()
 					return event
 				}
-
+				
 				guard event.isKeyEvent else {
 					return nil
 				}
-
+				
 				if
 					event.modifiers.isEmpty,
 					event.specialKey == .tab
 				{
 					self.blur()
-
+					
 					// We intentionally bubble up the event so it can focus the next responder.
 					return event
 				}
-
+				
 				if
 					event.modifiers.isEmpty,
 					event.keyCode == kVK_Escape // TODO: Make this strongly typed.
@@ -249,7 +266,7 @@ extension KeyboardShortcuts {
 					self.blur()
 					return nil
 				}
-
+				
 				if
 					event.modifiers.isEmpty,
 					event.specialKey == .delete
@@ -259,7 +276,7 @@ extension KeyboardShortcuts {
 					self.clear()
 					return nil
 				}
-
+				
 				// The “shift” key is not allowed without other modifiers or a function key, since it doesn't actually work.
 				guard
 					!event.modifiers.subtracting(.shift).isEmpty
@@ -269,24 +286,28 @@ extension KeyboardShortcuts {
 					NSSound.beep()
 					return nil
 				}
-
+				
+				
 				if let menuItem = shortcut.takenByMainMenu {
-					// TODO: Find a better way to make it possible to dismiss the alert by pressing "Enter". How can we make the input automatically temporarily lose focus while the alert is open?
-					self.blur()
-
-					NSAlert.showModal(
-						for: self.window,
-						title: String.localizedStringWithFormat("keyboard_shortcut_used_by_menu_item".localized, menuItem.title)
-					)
-
-					self.focus()
-
-					return nil
+					let isOurOwnMenuInstance = existingNSMenuForUs != nil ? existingNSMenuForUs === menuItem : false
+					if !isOurOwnMenuInstance {
+						// TODO: Find a better way to make it possible to dismiss the alert by pressing "Enter". How can we make the input automatically temporarily lose focus while the alert is open?
+						self.blur()
+						
+						NSAlert.showModal(
+							for: self.window,
+							title: String.localizedStringWithFormat("keyboard_shortcut_used_by_menu_item".localized, menuItem.title)
+						)
+						
+						self.focus()
+						
+						return nil
+					}
 				}
-
+				
 				if shortcut.isTakenBySystem {
 					self.blur()
-
+					
 					let modalResponse = NSAlert.showModal(
 						for: self.window,
 						title: "keyboard_shortcut_used_by_system".localized,
@@ -297,21 +318,21 @@ extension KeyboardShortcuts {
 							"force_use_shortcut".localized
 						]
 					)
-
+					
 					self.focus()
-
+					
 					// If the user has selected "Use Anyway" in the dialog (the second option), we'll continue setting the keyboard shorcut even though it's reserved by the system.
 					guard modalResponse == .alertSecondButtonReturn else {
 						return nil
 					}
 				}
-
+				
 				self.stringValue = "\(shortcut)"
 				self.showsCancelButton = true
-
+				
 				self.saveShortcut(shortcut)
 				self.blur()
-
+				
 				return nil
 			}.start()
 
