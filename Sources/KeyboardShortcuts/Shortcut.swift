@@ -153,6 +153,12 @@ extension KeyboardShortcuts.Shortcut {
 	}
 }
 
+extension KeyboardShortcuts.Key {
+	public var specialCharacterMapping: String? {
+		keyToCharacterMapping[self]
+	}
+}
+
 private let keyToCharacterMapping: [KeyboardShortcuts.Key: String] = [
 	.return: "↩",
 	.delete: "⌫",
