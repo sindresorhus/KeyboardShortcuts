@@ -242,12 +242,6 @@ private let keyToKeyEquivalentString: [KeyboardShortcuts.Key: String] = [
 	.f20: stringFromKeyCode(NSF20FunctionKey)
 ]
 
-extension KeyboardShortcuts.Key {
-	public var keyToCharacter: String? {
-		keyToCharacterMapping[self]
-	}
-}
-
 extension KeyboardShortcuts.Shortcut {
 	@MainActor // `TISGetInputSourceProperty` crashes if called on a non-main thread.
 	/**

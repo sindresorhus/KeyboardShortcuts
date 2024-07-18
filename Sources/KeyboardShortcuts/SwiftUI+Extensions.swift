@@ -6,10 +6,9 @@ import Foundation
 import SwiftUI
 import Carbon
 
-// Provides a SwiftUI like wrapper func, that feels the same as the normal SwiftUI keyboardShortcut
+// Provides a SwiftUI like wrapper function, that feels the same as the normal SwiftUI .keyboardShortcut view extension
 @available(macOS 12.3, *)
 extension View {
-	@ViewBuilder
 	public func keyboardShortcut(_ shortcutName: KeyboardShortcuts.Name) -> some View {
 		KeyboardShortcutView(shortcutName: shortcutName) {
 			self
@@ -60,7 +59,6 @@ struct KeyboardShortcutView<Content: View>: View {
 					// this updates the shortcut state locally, refreshing the View, thus updating the SwiftUI menu item
 					// It's also fine if it is nil (which happens when you set the shortcut, in RecorderCocoa).
 					// See the comment on becomeFirstResponder (in short: so that you can reassign the SAME keypress to a shortcut, without it whining that it's already in use)
-//					print("Shortcut \(shortcutName) updated to: \(current?.description ?? "nil")")
 					shortcut = current
 				}
 	}
