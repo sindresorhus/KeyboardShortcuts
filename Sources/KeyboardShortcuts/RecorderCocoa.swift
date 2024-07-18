@@ -215,7 +215,7 @@ extension KeyboardShortcuts {
 			KeyboardShortcuts.isPaused = true // The position here matters.
 			
 			if let existingShortcut = getShortcut(for: shortcutName) {
-				// Assuming we have a consisten NSMenuItem state, find the NSMenuItem instance that represents us right now
+				// Assuming we have a consistent NSMenuItem state, find the NSMenuItem instance that represents us right now
 				// This works only if SwiftUI has updated the NSMenuItem.  It seems (macOS 15) that even if the shortcut state is updated on KeyboardShortcutView, that the actual NSMenuItem isn't refreshed
 				// This means that if we change it multiple times in a row, this lookup returns nil.
 				// What seems to work is just hanging onto the last found reference...
