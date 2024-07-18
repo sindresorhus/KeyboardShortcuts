@@ -199,8 +199,8 @@ extension KeyboardShortcuts {
 			preventBecomingKey()
 		}
 
-		private var existingNSMenuForUs: NSMenuItem? = nil
-		
+		private var existingNSMenuForUs: NSMenuItem?
+
 		/// :nodoc:
 		override public func becomeFirstResponder() -> Bool {
 			let shouldBecomeFirstResponder = super.becomeFirstResponder()
@@ -233,10 +233,10 @@ extension KeyboardShortcuts {
 				guard let self else {
 					return nil
 				}
-				
+
 				let clickPoint = self.convert(event.locationInWindow, from: nil)
 				let clickMargin = 3.0
-				
+
 				if
 					event.type == .leftMouseUp || event.type == .rightMouseUp,
 					!self.bounds.insetBy(dx: -clickMargin, dy: -clickMargin).contains(clickPoint)
@@ -244,21 +244,21 @@ extension KeyboardShortcuts {
 					self.blur()
 					return event
 				}
-				
+
 				guard event.isKeyEvent else {
 					return nil
 				}
-				
+
 				if
 					event.modifiers.isEmpty,
 					event.specialKey == .tab
 				{
 					self.blur()
-					
+
 					// We intentionally bubble up the event so it can focus the next responder.
 					return event
 				}
-				
+
 				if
 					event.modifiers.isEmpty,
 					event.keyCode == kVK_Escape // TODO: Make this strongly typed.
@@ -266,7 +266,7 @@ extension KeyboardShortcuts {
 					self.blur()
 					return nil
 				}
-				
+
 				if
 					event.modifiers.isEmpty,
 					event.specialKey == .delete
@@ -276,7 +276,7 @@ extension KeyboardShortcuts {
 					self.clear()
 					return nil
 				}
-				
+
 				// The “shift” key is not allowed without other modifiers or a function key, since it doesn't actually work.
 				guard
 					!event.modifiers.subtracting(.shift).isEmpty
@@ -286,8 +286,8 @@ extension KeyboardShortcuts {
 					NSSound.beep()
 					return nil
 				}
-				
-				
+
+
 				if let menuItem = shortcut.takenByMainMenu {
 					let isOurOwnMenuInstance = existingNSMenuForUs != nil ? existingNSMenuForUs === menuItem : false
 					if !isOurOwnMenuInstance {
@@ -304,10 +304,10 @@ extension KeyboardShortcuts {
 						return nil
 					}
 				}
-				
+
 				if shortcut.isTakenBySystem {
 					self.blur()
-					
+
 					let modalResponse = NSAlert.showModal(
 						for: self.window,
 						title: "keyboard_shortcut_used_by_system".localized,
@@ -318,21 +318,20 @@ extension KeyboardShortcuts {
 							"force_use_shortcut".localized
 						]
 					)
-					
+
 					self.focus()
-					
+
 					// If the user has selected "Use Anyway" in the dialog (the second option), we'll continue setting the keyboard shorcut even though it's reserved by the system.
 					guard modalResponse == .alertSecondButtonReturn else {
 						return nil
 					}
 				}
-				
+
 				self.stringValue = "\(shortcut)"
 				self.showsCancelButton = true
-				
+
 				self.saveShortcut(shortcut)
 				self.blur()
-				
 				return nil
 			}.start()
 
