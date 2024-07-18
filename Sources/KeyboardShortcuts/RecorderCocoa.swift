@@ -229,7 +229,7 @@ extension KeyboardShortcuts {
 			// This doesn't always work for SwiftUI generated NSMenuItems (from .keyboardShortcut()) - so we also use existingNSMenuForUs, above
 			KeyboardShortcuts.userDefaultsDisable(name: shortcutName)
 
-			self.eventMonitor = LocalEventMonitor(events: [.keyDown, .leftMouseUp, .rightMouseUp]) { [weak self] event in
+			eventMonitor = LocalEventMonitor(events: [.keyDown, .leftMouseUp, .rightMouseUp]) { [weak self] event in
 				guard let self else {
 					return nil
 				}

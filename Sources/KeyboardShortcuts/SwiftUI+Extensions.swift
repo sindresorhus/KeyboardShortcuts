@@ -42,7 +42,6 @@ struct KeyboardShortcutView<Content: View>: View {
 		self.content = content
 	}
 
-	@ViewBuilder
 	var shortcutBody: some View {
 		content()
 			.keyboardShortcut(shortcut?.swiftKeyboardShortcut)
