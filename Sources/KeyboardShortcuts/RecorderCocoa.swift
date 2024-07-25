@@ -199,6 +199,8 @@ extension KeyboardShortcuts {
 			preventBecomingKey()
 		}
 
+		private var existingNSMenuForUs: NSMenuItem?
+
 		/// :nodoc:
 		override public func becomeFirstResponder() -> Bool {
 			let shouldBecomeFirstResponder = super.becomeFirstResponder()
@@ -211,6 +213,21 @@ extension KeyboardShortcuts {
 			showsCancelButton = !stringValue.isEmpty
 			hideCaret()
 			KeyboardShortcuts.isPaused = true // The position here matters.
+			
+			if let existingShortcut = getShortcut(for: shortcutName) {
+				// Assuming we have a consistent NSMenuItem state, find the NSMenuItem instance that represents us right now
+				// This works only if SwiftUI has updated the NSMenuItem.  It seems (macOS 15) that even if the shortcut state is updated on KeyboardShortcutView, that the actual NSMenuItem isn't refreshed
+				// This means that if we change it multiple times in a row, this lookup returns nil.
+				// What seems to work is just hanging onto the last found reference...
+				if let foundMenu = existingShortcut.takenByMainMenu {
+					existingNSMenuForUs = foundMenu
+				}
+			}
+//			print("existingNSMenuForUs: \(existingNSMenuForUs)")
+
+			// Unregsiter the shortcut by this name, so that when we search the menus, we don't find ourselves and think that it's already taken
+			// This doesn't always work for SwiftUI generated NSMenuItems (from .keyboardShortcut()) - so we also use existingNSMenuForUs, above
+			KeyboardShortcuts.userDefaultsDisable(name: shortcutName)
 
 			eventMonitor = LocalEventMonitor(events: [.keyDown, .leftMouseUp, .rightMouseUp]) { [weak self] event in
 				guard let self else {
@@ -270,18 +287,22 @@ extension KeyboardShortcuts {
 					return nil
 				}
 
+
 				if let menuItem = shortcut.takenByMainMenu {
-					// TODO: Find a better way to make it possible to dismiss the alert by pressing "Enter". How can we make the input automatically temporarily lose focus while the alert is open?
-					self.blur()
-
-					NSAlert.showModal(
-						for: self.window,
-						title: String.localizedStringWithFormat("keyboard_shortcut_used_by_menu_item".localized, menuItem.title)
-					)
-
-					self.focus()
-
-					return nil
+					let isOurOwnMenuInstance = existingNSMenuForUs != nil ? existingNSMenuForUs === menuItem : false
+					if !isOurOwnMenuInstance {
+						// TODO: Find a better way to make it possible to dismiss the alert by pressing "Enter". How can we make the input automatically temporarily lose focus while the alert is open?
+						self.blur()
+						
+						NSAlert.showModal(
+							for: self.window,
+							title: String.localizedStringWithFormat("keyboard_shortcut_used_by_menu_item".localized, menuItem.title)
+						)
+						
+						self.focus()
+						
+						return nil
+					}
 				}
 
 				if shortcut.isTakenBySystem {
@@ -311,7 +332,6 @@ extension KeyboardShortcuts {
 
 				self.saveShortcut(shortcut)
 				self.blur()
-
 				return nil
 			}.start()
 
