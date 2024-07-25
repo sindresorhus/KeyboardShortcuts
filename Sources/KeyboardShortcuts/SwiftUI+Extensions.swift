@@ -9,6 +9,7 @@ import Carbon
 // Provides a SwiftUI like wrapper function, that feels the same as the normal SwiftUI .keyboardShortcut view extension
 @available(macOS 12.3, *)
 extension View {
+	@MainActor
 	public func keyboardShortcut(_ shortcutName: KeyboardShortcuts.Name) -> some View {
 		KeyboardShortcutView(shortcutName: shortcutName) {
 			self
