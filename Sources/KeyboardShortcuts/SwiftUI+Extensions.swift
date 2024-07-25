@@ -30,6 +30,7 @@ extension KeyboardShortcuts.Shortcut {
 // Holds the state of the shortcut, and changes that state when the shortcut changes
 // This causes the related NSMenuItem to also update (yipeee)
 @available(macOS 12.3, *)
+@MainActor
 struct KeyboardShortcutView<Content: View>: View {
 	@State private var shortcutName: KeyboardShortcuts.Name
 	@State private var shortcut: KeyboardShortcuts.Shortcut?
