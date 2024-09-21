@@ -127,7 +127,7 @@ public enum KeyboardShortcuts {
 		unregisterIfNeeded(shortcut)
 	}
 
-	private static func unregisterAll() {
+	public static func unregisterAll() {
 		CarbonKeyboardShortcuts.unregisterAll()
 		registeredShortcuts.removeAll()
 
