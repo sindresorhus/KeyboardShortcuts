@@ -130,8 +130,11 @@ public enum KeyboardShortcuts {
 	public static func unregisterAll() {
 		CarbonKeyboardShortcuts.unregisterAll()
 		registeredShortcuts.removeAll()
-
-		// TODO: Should remove user defaults too.
+		
+		// remove user defaults too
+		for key in userDefaults.dictionaryRepresentation().keys where key.hasPrefix("KeyboardShortcuts_") {
+			UserDefaults.standard.removeObject(forKey: key)
+		}
 	}
 
 	static func initialize() {
