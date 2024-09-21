@@ -132,8 +132,10 @@ public enum KeyboardShortcuts {
 		registeredShortcuts.removeAll()
 		
 		// remove user defaults too
+		let userDefaults = UserDefaults.standard
+
 		for key in userDefaults.dictionaryRepresentation().keys where key.hasPrefix("KeyboardShortcuts_") {
-			UserDefaults.standard.removeObject(forKey: key)
+			userDefaults.removeObject(forKey: key)
 		}
 	}
 
