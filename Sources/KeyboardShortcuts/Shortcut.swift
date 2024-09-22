@@ -1,6 +1,7 @@
 #if os(macOS)
 import AppKit
 import Carbon.HIToolbox
+import SwiftUI
 
 extension KeyboardShortcuts {
 	/**
@@ -325,6 +326,21 @@ extension KeyboardShortcuts.Shortcut: CustomStringConvertible {
 	public var description: String {
 		// We use `.capitalized` so it correctly handles “⌘Space”.
 		modifiers.presentableDescription + (keyToCharacter()?.capitalized ?? "�")
+	}
+}
+
+extension KeyboardShortcuts.Shortcut {
+	@available(macOS 11, *)
+	@MainActor
+	var toSwiftUI: KeyboardShortcut? {
+		guard
+			let string = keyToCharacter(),
+			let character = string.first
+		else {
+			return nil
+		}
+
+		return KeyboardShortcut(.init(character), modifiers: modifiers.toEventModifiers)
 	}
 }
 #endif

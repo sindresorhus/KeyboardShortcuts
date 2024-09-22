@@ -138,6 +138,7 @@ extension KeyboardShortcuts {
 			showsCancelButton = !stringValue.isEmpty
 			restoreCaret()
 			KeyboardShortcuts.isPaused = false
+			NotificationCenter.default.post(name: .recorderActiveStatusDidChange, object: nil, userInfo: ["isActive": false])
 		}
 
 		private func preventBecomingKey() {
@@ -211,6 +212,7 @@ extension KeyboardShortcuts {
 			showsCancelButton = !stringValue.isEmpty
 			hideCaret()
 			KeyboardShortcuts.isPaused = true // The position here matters.
+			NotificationCenter.default.post(name: .recorderActiveStatusDidChange, object: nil, userInfo: ["isActive": true])
 
 			eventMonitor = LocalEventMonitor(events: [.keyDown, .leftMouseUp, .rightMouseUp]) { [weak self] event in
 				guard let self else {
@@ -323,5 +325,9 @@ extension KeyboardShortcuts {
 			onChange?(shortcut)
 		}
 	}
+}
+
+extension Notification.Name {
+	static let recorderActiveStatusDidChange = Self("KeyboardShortcuts_recorderActiveStatusDidChange")
 }
 #endif
