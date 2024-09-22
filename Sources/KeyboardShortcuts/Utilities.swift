@@ -480,4 +480,11 @@ extension View {
 			.alignmentGuide(.leading) { $0[.controlAlignment] }
 	}
 }
+
+
+extension Dictionary {
+	func hasKey(_ key: Key) -> Bool {
+		index(forKey: key) != nil
+	}
+}
 #endif

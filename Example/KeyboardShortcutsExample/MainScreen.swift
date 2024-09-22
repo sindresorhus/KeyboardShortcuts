@@ -106,10 +106,10 @@ private struct DoubleShortcut: View {
 			.frame(maxWidth: 300)
 			.padding()
 			.padding()
-			.onKeyboardShortcut(.testShortcut1) {
+			.onGlobalKeyboardShortcut(.testShortcut1) {
 				isPressed1 = $0 == .keyDown
 			}
-			.onKeyboardShortcut(.testShortcut2, type: .keyDown) {
+			.onGlobalKeyboardShortcut(.testShortcut2, type: .keyDown) {
 				isPressed2 = true
 			}
 			.task {

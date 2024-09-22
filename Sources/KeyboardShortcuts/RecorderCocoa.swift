@@ -286,6 +286,19 @@ extension KeyboardShortcuts {
 					return nil
 				}
 
+				// See: https://developer.apple.com/forums/thread/763878?answerId=804374022#804374022
+				if shortcut.isDisallowed {
+					blur()
+
+					NSAlert.showModal(
+						for: window,
+						title: "keyboard_shortcut_disallowed".localized
+					)
+
+					focus()
+					return nil
+				}
+
 				if shortcut.isTakenBySystem {
 					blur()
 

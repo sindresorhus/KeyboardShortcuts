@@ -84,7 +84,7 @@ extension View {
 	/**
 	Associates a global keyboard shortcut with a control.
 
-	This is mostly useful to have the keyboard shortcut show for a `Button` in a `Menu`.
+	This is mostly useful to have the keyboard shortcut show for a `Button` in a `Menu` or `MenuBarExtra`.
 
 	It does not trigger the control's action.
 

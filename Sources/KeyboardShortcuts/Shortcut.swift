@@ -88,12 +88,32 @@ extension KeyboardShortcuts {
 	}
 }
 
+enum Constants {
+	static let isSandboxed = ProcessInfo.processInfo.environment.hasKey("APP_SANDBOX_CONTAINER_ID")
+}
+
 extension KeyboardShortcuts.Shortcut {
 	/**
 	System-defined keyboard shortcuts.
 	*/
 	static var system: [Self] {
 		CarbonKeyboardShortcuts.system
+	}
+
+	/**
+	Check whether the keyboard shortcut is disallowed.
+	*/
+	var isDisallowed: Bool {
+		let disallowedModifiers: NSEvent.ModifierFlags = [.option, [.option, .shift]]
+		if
+			#available(macOS 15, *),
+			Constants.isSandboxed,
+			disallowedModifiers.contains(modifiers)
+		{
+			return true
+		}
+
+		return false
 	}
 
 	/**
