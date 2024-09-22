@@ -78,4 +78,44 @@ extension View {
 		}
 	}
 }
+
+@available(macOS 12.3, *)
+extension View {
+	/**
+	Associates a global keyboard shortcut with a control.
+
+	This is mostly useful to have the keyboard shortcut show for a `Button` in a `Menu`.
+
+	It does not trigger the control's action.
+
+	- Important: Do not use it in a `CommandGroup` as the shortcut recorder will think the shortcut is already taken. It does remove the shortcut while the recorder is active, but because of a bug in macOS 15, the state is not reflected correctly in the underlying menu item.
+	*/
+	public func globalKeyboardShortcut(_ name: KeyboardShortcuts.Name) -> some View {
+		modifier(GlobalKeyboardShortcutViewModifier(name: name))
+	}
+}
+
+@available(macOS 12.3, *)
+private struct GlobalKeyboardShortcutViewModifier: ViewModifier {
+	@State private var isRecorderActive = false
+	@State private var triggerRefresh = false
+
+	let name: KeyboardShortcuts.Name
+
+	func body(content: Content) -> some View {
+		content
+			.keyboardShortcut(isRecorderActive ? nil : name.shortcut?.toSwiftUI)
+			.id(triggerRefresh)
+			.onReceive(NotificationCenter.default.publisher(for: .shortcutByNameDidChange)) {
+				guard $0.userInfo?["name"] as? KeyboardShortcuts.Name == name else {
+					return
+				}
+
+				triggerRefresh.toggle()
+			}
+			.onReceive(NotificationCenter.default.publisher(for: .recorderActiveStatusDidChange)) {
+				isRecorderActive = $0.userInfo?["isActive"] as? Bool ?? false
+			}
+	}
+}
 #endif
