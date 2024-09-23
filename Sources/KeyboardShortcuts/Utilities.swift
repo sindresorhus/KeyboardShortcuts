@@ -477,7 +477,7 @@ extension View {
 			labelsHidden()
 				.alignmentGuide(.controlAlignment) { $0[.leading] }
 		}
-			.alignmentGuide(.leading) { $0[.controlAlignment] }
+		.alignmentGuide(.leading) { $0[.controlAlignment] }
 	}
 }
 

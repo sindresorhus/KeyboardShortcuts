@@ -65,7 +65,7 @@ import KeyboardShortcuts
 
 @main
 struct YourApp: App {
-	@StateObject private var appState = AppState()
+	@State private var appState = AppState()
 
 	var body: some Scene {
 		WindowGroup {
@@ -78,7 +78,8 @@ struct YourApp: App {
 }
 
 @MainActor
-final class AppState: ObservableObject {
+@Observable
+final class AppState {
 	init() {
 		KeyboardShortcuts.onKeyUp(for: .toggleUnicornMode) { [self] in
 			isUnicornMode.toggle()
