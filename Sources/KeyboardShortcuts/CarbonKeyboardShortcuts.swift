@@ -147,6 +147,7 @@ enum CarbonKeyboardShortcuts {
 			registerError == noErr,
 			let carbonHotKey = eventHotKey
 		else {
+			print("Error registering hotkey \(shortcut):", registerError)
 			return
 		}
 
@@ -181,6 +182,7 @@ enum CarbonKeyboardShortcuts {
 				error == noErr,
 				let eventHotKey
 			else {
+				print("Error registering hotkey \(hotKey.shortcut):", error)
 				hotKeys.removeValue(forKey: hotKey.carbonHotKeyId)
 				continue
 			}

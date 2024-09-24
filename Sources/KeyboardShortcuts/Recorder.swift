@@ -38,6 +38,8 @@ extension KeyboardShortcuts {
 		}
 	}
 	```
+
+	- Note: Since macOS 15, for sandboxed apps, it's [no longer possible](https://developer.apple.com/forums/thread/763878?answerId=804374022#804374022) to specify the `Option` key without also using `Command` or `Control`.
 	*/
 	public struct Recorder<Label: View>: View { // swiftlint:disable:this type_name
 		private let name: Name
