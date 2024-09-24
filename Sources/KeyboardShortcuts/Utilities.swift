@@ -306,6 +306,38 @@ extension NSEvent.ModifierFlags {
 }
 
 extension NSEvent.ModifierFlags {
+	var toEventModifiers: SwiftUI.EventModifiers {
+		var modifiers = SwiftUI.EventModifiers()
+
+		if contains(.capsLock) {
+			modifiers.insert(.capsLock)
+		}
+
+		if contains(.command) {
+			modifiers.insert(.command)
+		}
+
+		if contains(.control) {
+			modifiers.insert(.control)
+		}
+
+		if contains(.numericPad) {
+			modifiers.insert(.numericPad)
+		}
+
+		if contains(.option) {
+			modifiers.insert(.option)
+		}
+
+		if contains(.shift) {
+			modifiers.insert(.shift)
+		}
+
+		return modifiers
+	}
+}
+
+extension NSEvent.ModifierFlags {
 	/**
 	The string representation of the modifier flags.
 
@@ -445,7 +477,14 @@ extension View {
 			labelsHidden()
 				.alignmentGuide(.controlAlignment) { $0[.leading] }
 		}
-			.alignmentGuide(.leading) { $0[.controlAlignment] }
+		.alignmentGuide(.leading) { $0[.controlAlignment] }
+	}
+}
+
+
+extension Dictionary {
+	func hasKey(_ key: Key) -> Bool {
+		index(forKey: key) != nil
 	}
 }
 #endif

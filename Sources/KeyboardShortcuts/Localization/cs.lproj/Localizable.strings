@@ -3,5 +3,6 @@
 "keyboard_shortcut_used_by_menu_item" = "Tuto zkratku nelze použít, protože je již využívána položkou „%@“";
 "keyboard_shortcut_used_by_system" = "Tuto zkratku nelze použít, protože už ji používá systém.";
 "keyboard_shortcuts_can_be_changed" = "Většinu systémových zkratek můžete změnit v „Nastavení systému › Klávesnice › Klávesové zkratky“.";
+"keyboard_shortcut_disallowed" = "Modifikátor Option musí být kombinován s klávesou Command nebo Control.";
 "ok" = "OK";
 "space_key" = "Mezera";
