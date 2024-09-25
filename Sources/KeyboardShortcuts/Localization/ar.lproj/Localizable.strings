@@ -3,5 +3,6 @@
 "keyboard_shortcut_used_by_menu_item" = "لا يمكن استخدام اختصار لوحة المفاتيح هذا لأنه مستخدم بواسطة عنصر القائمة “%@”.";
 "keyboard_shortcut_used_by_system" = "لا يمكن استخدام اختصار لوحة المفاتيح هذا لأنه مستخدم مسبقاً على مستوى النظام.";
 "keyboard_shortcuts_can_be_changed" = "يمكن تغيير معظم اختصارات لوحة المفاتيح على مستوى النظام في “تفضيلات النظام > لوحة المفاتيح > الاختصارات ”.";
+"keyboard_shortcut_disallowed" = "يجب دمج مفتاح Option مع Command أو Control.";
 "ok" = "موافق";
 "space_key" = "مسافة";

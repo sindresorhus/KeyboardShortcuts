@@ -3,5 +3,6 @@
 "keyboard_shortcut_used_by_menu_item" = "Ez a billentyűparancs nem használható mert már a “%@” menü elem használja.";
 "keyboard_shortcut_used_by_system" = "Ez a billentyűparancs nem használható mert már egy rendszerszintü billentyűparancs.";
 "keyboard_shortcuts_can_be_changed" = "A legtöbb rendszerszintü billentyűparancsot a “Rendszerbeállítások › Billentyűzet › Billentyűparancsok“ menüben meg lehet változtatni";
+"keyboard_shortcut_disallowed" = "Az Option módosítót a Command vagy Control billentyűvel együtt kell használni.";
 "ok" = "OK";
 "space_key" = "Szóköz";
