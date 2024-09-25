@@ -294,7 +294,7 @@ extension KeyboardShortcuts.Shortcut {
 	- Note: Don't forget to also pass `.modifiers` to `NSMenuItem#keyEquivalentModifierMask`.
 	*/
 	@MainActor
-	var keyEquivalent: String {
+	public var keyEquivalent: String {
 		let keyString = keyToCharacter() ?? ""
 
 		guard keyString.count <= 1 else {
