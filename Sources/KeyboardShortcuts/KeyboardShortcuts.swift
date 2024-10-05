@@ -127,18 +127,6 @@ public enum KeyboardShortcuts {
 		unregisterIfNeeded(shortcut)
 	}
 
-	public static func unregisterAll() {
-		CarbonKeyboardShortcuts.unregisterAll()
-		registeredShortcuts.removeAll()
-		
-		// remove user defaults too
-		let userDefaults = UserDefaults.standard
-
-		for key in userDefaults.dictionaryRepresentation().keys where key.hasPrefix("KeyboardShortcuts_") {
-			userDefaults.removeObject(forKey: key)
-		}
-	}
-
 	static func initialize() {
 		guard !isInitialized else {
 			return
@@ -246,7 +234,7 @@ public enum KeyboardShortcuts {
 			setShortcut(name.defaultShortcut, for: name)
 		}
 	}
-
+	
 	/**
 	Reset the keyboard shortcut for one or more names.
 
@@ -275,6 +263,29 @@ public enum KeyboardShortcuts {
 		reset(names)
 	}
 
+	/**
+	Unregister all keyboard shortcuts and remove their stored values from `UserDefaults`.
+
+	This method unregisters all keyboard shortcuts registered via `KeyboardShortcuts` and removes any associated data stored in `UserDefaults`.
+
+	Use this method to completely reset the state of all keyboard shortcuts in your app, including removing any saved user-defined shortcuts and default shortcuts.
+
+	- Note: This action cannot be undone. All shortcuts will be removed, including any default shortcuts defined in `Name`. If you want to reset shortcuts back to their default values, consider using `.reset(_:)` instead.
+
+	- Important: This method affects all shortcuts registered with `KeyboardShortcuts` and should be used with caution.
+	*/
+	public static func unregisterAll() {
+		CarbonKeyboardShortcuts.unregisterAll()
+		registeredShortcuts.removeAll()
+		
+		// remove user defaults too
+		let userDefaults = UserDefaults.standard
+
+		for key in userDefaults.dictionaryRepresentation().keys where key.hasPrefix("KeyboardShortcuts_") {
+			userDefaults.removeObject(forKey: key)
+		}
+	}
+	
 	/**
 	Set the keyboard shortcut for a name.
 
