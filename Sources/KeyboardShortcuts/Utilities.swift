@@ -176,8 +176,8 @@ extension NSEvent {
 		modifierFlags
 			.intersection(.deviceIndependentFlagsMask)
 			// We remove `capsLock` as it shouldn't affect the modifiers.
-			// We remove `numericPad`/`function` as arrow keys trigger it, use `event.specialKeys` instead.
-			.subtracting([.capsLock, .numericPad, .function])
+			// We remove `numericPad` as arrow keys trigger it, use `event.specialKeys` instead.
+			.subtracting([.capsLock, .numericPad])
 	}
 }
 
@@ -305,6 +305,11 @@ extension NSEvent.ModifierFlags {
 	}
 }
 
+extension SwiftUI.EventModifiers {
+	// `.function` is deprecated, so we use the raw value.
+	fileprivate static let function_nonDeprecated = Self(rawValue: 64)
+}
+
 extension NSEvent.ModifierFlags {
 	var toEventModifiers: SwiftUI.EventModifiers {
 		var modifiers = SwiftUI.EventModifiers()
@@ -331,6 +336,10 @@ extension NSEvent.ModifierFlags {
 
 		if contains(.shift) {
 			modifiers.insert(.shift)
+		}
+
+		if contains(.function) {
+			modifiers.insert(.function_nonDeprecated)
 		}
 
 		return modifiers
