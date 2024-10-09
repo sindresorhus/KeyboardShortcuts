@@ -57,6 +57,11 @@ private struct DynamicShortcut: View {
 				Divider()
 				DynamicShortcutRecorder(name: $shortcut.name, isPressed: $isPressed)
 			}
+			Divider()
+				.padding(.vertical)
+			Button("Reset All") {
+				KeyboardShortcuts.resetAll()
+			}
 		}
 		.frame(maxWidth: 300)
 		.padding()
@@ -98,9 +103,6 @@ private struct DoubleShortcut: View {
 					.offset(x: 90)
 			}
 			Spacer()
-			Button("Reset All") {
-				KeyboardShortcuts.reset(.testShortcut1, .testShortcut2)
-			}
 		}
 		.offset(x: -40)
 		.frame(maxWidth: 300)

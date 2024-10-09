@@ -58,6 +58,19 @@ public enum KeyboardShortcuts {
 		}
 	}
 
+	static var allNames: Set<Name> {
+		UserDefaults.standard.dictionaryRepresentation()
+			.compactMap { key, _ in
+				guard key.hasPrefix(userDefaultsPrefix) else {
+					return nil
+				}
+
+				let name = key.replacingPrefix(userDefaultsPrefix, with: "")
+				return .init(name)
+			}
+			.toSet()
+	}
+
 	/**
 	Enable keyboard shortcuts to work even when an `NSMenu` is open by setting this property when the menu opens and closes.
 
@@ -225,11 +238,8 @@ public enum KeyboardShortcuts {
 		var body: some View {
 			VStack {
 				// …
-				Button("Reset All") {
-					KeyboardShortcuts.reset(
-						.toggleUnicornMode,
-						.showRainbow
-					)
+				Button("Reset") {
+					KeyboardShortcuts.reset(.toggleUnicornMode)
 				}
 			}
 		}
@@ -255,11 +265,8 @@ public enum KeyboardShortcuts {
 		var body: some View {
 			VStack {
 				// …
-				Button("Reset All") {
-					KeyboardShortcuts.reset(
-						.toggleUnicornMode,
-						.showRainbow
-					)
+				Button("Reset") {
+					KeyboardShortcuts.reset(.toggleUnicornMode)
 				}
 			}
 		}
@@ -268,6 +275,31 @@ public enum KeyboardShortcuts {
 	*/
 	public static func reset(_ names: Name...) {
 		reset(names)
+	}
+
+	/**
+	Reset the keyboard shortcut for all the names.
+
+	Unlike `reset(…)`, this resets all the shortcuts to `nil`, not the `defaultValue`.
+
+	```swift
+	import SwiftUI
+	import KeyboardShortcuts
+
+	struct SettingsScreen: View {
+		var body: some View {
+			VStack {
+				// …
+				Button("Reset All") {
+					KeyboardShortcuts.resetAll()
+				}
+			}
+		}
+	}
+	```
+	*/
+	public static func resetAll() {
+		reset(allNames.toArray())
 	}
 
 	/**

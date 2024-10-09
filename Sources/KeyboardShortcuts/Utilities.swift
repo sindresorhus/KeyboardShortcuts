@@ -14,7 +14,7 @@ extension String {
 
 
 extension Data {
-	var toString: String? { String(data: self, encoding: .utf8) } // swiftlint:disable:this non_optional_string_data_conversion
+	var toString: String? { String(data: self, encoding: .utf8) }
 }
 
 
@@ -497,3 +497,30 @@ extension Dictionary {
 	}
 }
 #endif
+
+
+extension Sequence where Element: Hashable {
+	/**
+	Convert a `Sequence` with `Hashable` elements to a `Set`.
+	*/
+	func toSet() -> Set<Element> { Set(self) }
+}
+
+
+extension Set {
+	/**
+	Convert a `Set` to an `Array`.
+	*/
+	func toArray() -> [Element] { Array(self) }
+}
+
+
+extension StringProtocol {
+	func replacingPrefix(_ prefix: String, with replacement: String) -> String {
+		guard hasPrefix(prefix) else {
+			return String(self)
+		}
+
+		return replacement + dropFirst(prefix.count)
+	}
+}
