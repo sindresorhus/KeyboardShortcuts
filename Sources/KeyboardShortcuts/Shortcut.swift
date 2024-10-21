@@ -117,7 +117,7 @@ extension KeyboardShortcuts.Shortcut {
 
 		// If Option is present, ensure there's at least one modifier other than Option and Shift
 		let otherModifiers: NSEvent.ModifierFlags = [.command, .control, .function, .capsLock]
-		return !modifiers.isDisjoint(with: otherModifiers)
+		return modifiers.isDisjoint(with: otherModifiers)
 	}
 
 	/**
