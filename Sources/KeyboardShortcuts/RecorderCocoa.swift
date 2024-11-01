@@ -264,7 +264,7 @@ extension KeyboardShortcuts {
 
 				// The “shift” key is not allowed without other modifiers or a function key, since it doesn't actually work.
 				guard
-					!event.modifiers.subtracting(.shift).isEmpty
+					!event.modifiers.subtracting([.shift, .function]).isEmpty
 						|| event.specialKey?.isFunctionKey == true,
 					let shortcut = Shortcut(event: event)
 				else {

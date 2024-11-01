@@ -152,8 +152,8 @@ extension NSEvent {
 		modifierFlags
 			.intersection(.deviceIndependentFlagsMask)
 			// We remove `capsLock` as it shouldn't affect the modifiers.
-			// We remove `numericPad`/`function` as arrow keys trigger it, use `event.specialKeys` instead.
-			.subtracting([.capsLock, .numericPad, .function])
+			// We remove `numericPad` as arrow keys trigger it, use `event.specialKeys` instead.
+			.subtracting([.capsLock, .numericPad])
 	}
 
 	/**
@@ -262,6 +262,9 @@ enum UnicodeSymbols {
 
 
 extension NSEvent.ModifierFlags {
+	// Not documented anywhere, but reverse-engineered by me.
+	private static let functionKey = 1 << 17 // 131072 (0x20000)
+
 	var carbon: Int {
 		var modifierFlags = 0
 
@@ -279,6 +282,10 @@ extension NSEvent.ModifierFlags {
 
 		if contains(.command) {
 			modifierFlags |= cmdKey
+		}
+
+		if contains(.function) {
+			modifierFlags |= Self.functionKey
 		}
 
 		return modifierFlags
@@ -301,6 +308,10 @@ extension NSEvent.ModifierFlags {
 
 		if carbon & cmdKey == cmdKey {
 			insert(.command)
+		}
+
+		if carbon & Self.functionKey == Self.functionKey {
+			insert(.function)
 		}
 	}
 }
