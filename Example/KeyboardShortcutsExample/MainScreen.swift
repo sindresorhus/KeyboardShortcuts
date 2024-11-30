@@ -66,7 +66,7 @@ private struct DynamicShortcut: View {
 		.frame(maxWidth: 300)
 		.padding()
 		.padding(.bottom, 20)
-		.onChange(of: shortcut) { oldValue, newValue in
+		.onChange(of: shortcut, initial: true) { oldValue, newValue in
 			onShortcutChange(oldValue: oldValue, newValue: newValue)
 		}
 	}
