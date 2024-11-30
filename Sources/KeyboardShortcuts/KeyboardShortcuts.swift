@@ -7,8 +7,8 @@ Global keyboard shortcuts for your macOS app.
 public enum KeyboardShortcuts {
 	private static var registeredShortcuts = Set<Shortcut>()
 
-	private static var legacyKeyDownHandlers = [Name: [() -> Void]]()
-	private static var legacyKeyUpHandlers = [Name: [() -> Void]]()
+	internal static var legacyKeyDownHandlers = [Name: [() -> Void]]()
+	internal static var legacyKeyUpHandlers = [Name: [() -> Void]]()
 
 	private static var streamKeyDownHandlers = [Name: [UUID: () -> Void]]()
 	private static var streamKeyUpHandlers = [Name: [UUID: () -> Void]]()
@@ -179,6 +179,34 @@ public enum KeyboardShortcuts {
 
 		legacyKeyDownHandlers = [:]
 		legacyKeyUpHandlers = [:]
+	}
+
+	/**
+	 Remove all handlers for one or more names. Includes both "key down" and "key up" handlers.
+	 */
+	public static func removeHandlers(for names: [Name]) {
+		for name in names {
+			legacyKeyDownHandlers[name, default: []].removeAll()
+			legacyKeyUpHandlers[name, default: []].removeAll()
+		}
+	}
+
+	/**
+	 Remove all "key down" handlers for one or more names.
+	 */
+	public static func removeKeyDownHandlers(for names: [Name]) {
+		for name in names {
+			legacyKeyDownHandlers[name, default: []].removeAll()
+		}
+	}
+
+	/**
+	 Remove all "key up" handlers for one or more names.
+	 */
+	public static func removeKeyUpHandlers(for names: [Name]) {
+		for name in names {
+			legacyKeyUpHandlers[name, default: []].removeAll()
+		}
 	}
 
 	// TODO: Also add `.isEnabled(_ name: Name)`.
