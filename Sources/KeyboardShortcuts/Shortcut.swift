@@ -179,11 +179,11 @@ extension KeyboardShortcuts.Shortcut {
 	}
 }
 
-// An enumeration of special keys that need special treatment, when used in
-// connection with `RecorderCocoa`, AppKit’s NSMenuItem, and SwiftUI’s
-// `.keyboardShortcut(_:modifiers:)`. Why an enumeration rather than a
-// Dictionary? The enumeration ensures that all cases are exhaustively addressed
-// in all three contexts
+/*
+An enumeration of special keys requiring specific handling when used with `RecorderCocoa`, AppKit’s `NSMenuItem`, and SwiftUI’s `.keyboardShortcut(_:modifiers:)`.  
+
+Using an enumeration ensures all cases are exhaustively addressed in all three contexts, providing compile-time safety and reducing the risk of unhandled keys.
+*/
 private enum SpecialKey {
 	case `return`
 	case delete
@@ -699,13 +699,17 @@ extension KeyboardShortcuts.Shortcut {
 	*/
 	@MainActor
 	var keyEquivalent: String? {
-		if let key, let specialKey = keyToSpecialKeyMapping[key] {
+		if
+			let key,
+			let specialKey = keyToSpecialKeyMapping[key]
+		{
 			if let keyEquivalent = specialKey.appKitMenuItemKeyEquivalent {
 				return String(keyEquivalent)
 			}
 		} else if let character = keyToCharacter() {
 			return String(character)
 		}
+
 		return nil
 	}
 }
@@ -722,9 +726,13 @@ extension KeyboardShortcuts.Shortcut: CustomStringConvertible {
 
 	@MainActor
 	var presentableDescription: String {
-		if let key, let specialKey = keyToSpecialKeyMapping[key] {
+		if
+			let key,
+			let specialKey = keyToSpecialKeyMapping[key]
+		{
 			return modifiers.presentableDescription + specialKey.presentableDescription
 		}
+
 		return modifiers.presentableDescription + String(keyToCharacter() ?? "�").capitalized
 	}
 
@@ -739,13 +747,17 @@ extension KeyboardShortcuts.Shortcut {
 	@available(macOS 11, *)
 	@MainActor
 	var toSwiftUI: KeyboardShortcut? {
-		if let key, let specialKey = keyToSpecialKeyMapping[key] {
+		if
+			let key,
+			let specialKey = keyToSpecialKeyMapping[key]
+		{
 			if let keyEquivalent = specialKey.swiftUIKeyEquivalent {
 				return KeyboardShortcut(keyEquivalent, modifiers: modifiers.toEventModifiers)
 			}
 		} else if let character = keyToCharacter() {
 			return KeyboardShortcut(KeyEquivalent(character), modifiers: modifiers.toEventModifiers)
 		}
+
 		return nil
 	}
 }
