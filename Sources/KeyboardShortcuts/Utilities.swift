@@ -539,20 +539,20 @@ extension StringProtocol {
 @available(macOS 11.0, *)
 extension KeyEquivalent {
 	init?(unicodeScalarValue value: Int) {
-		if let character = Character(unicodeScalarValue: value) {
-			self = KeyEquivalent(character)
-		} else {
+		guard let character = Character(unicodeScalarValue: value) else {
 			return nil
 		}
+
+		self = KeyEquivalent(character)
 	}
 }
 
 extension Character {
 	init?(unicodeScalarValue value: Int) {
-		if let content = UnicodeScalar(value) {
-			self = Character(content)
-		} else {
+		guard let content = UnicodeScalar(value) else {
 			return nil
 		}
+
+		self = Character(content)
 	}
 }
