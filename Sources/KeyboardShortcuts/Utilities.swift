@@ -535,3 +535,24 @@ extension StringProtocol {
 		return replacement + dropFirst(prefix.count)
 	}
 }
+
+@available(macOS 11.0, *)
+extension KeyEquivalent {
+	init?(unicodeScalarValue value: Int) {
+		guard let character = Character(unicodeScalarValue: value) else {
+			return nil
+		}
+
+		self = KeyEquivalent(character)
+	}
+}
+
+extension Character {
+	init?(unicodeScalarValue value: Int) {
+		guard let content = UnicodeScalar(value) else {
+			return nil
+		}
+
+		self = Character(content)
+	}
+}
