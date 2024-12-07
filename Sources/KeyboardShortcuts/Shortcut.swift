@@ -427,7 +427,7 @@ extension SpecialKey {
 		case .escape:
 			.escape
 		case .help:
-			UnicodeScalar(NSHelpFunctionKey).map { KeyEquivalent(Character($0)) }
+			KeyEquivalent(unicodeScalarValue: NSHelpFunctionKey)
 		case .home:
 			.home
 		case .space:
@@ -447,45 +447,45 @@ extension SpecialKey {
 		case .leftArrow:
 			.leftArrow
 		case .f1:
-			UnicodeScalar(NSF1FunctionKey).map { KeyEquivalent(Character($0)) }
+			KeyEquivalent(unicodeScalarValue: NSF1FunctionKey)
 		case .f2:
-			UnicodeScalar(NSF2FunctionKey).map { KeyEquivalent(Character($0)) }
+			KeyEquivalent(unicodeScalarValue: NSF2FunctionKey)
 		case .f3:
-			UnicodeScalar(NSF3FunctionKey).map { KeyEquivalent(Character($0)) }
+			KeyEquivalent(unicodeScalarValue: NSF3FunctionKey)
 		case .f4:
-			UnicodeScalar(NSF4FunctionKey).map { KeyEquivalent(Character($0)) }
+			KeyEquivalent(unicodeScalarValue: NSF4FunctionKey)
 		case .f5:
-			UnicodeScalar(NSF5FunctionKey).map { KeyEquivalent(Character($0)) }
+			KeyEquivalent(unicodeScalarValue: NSF5FunctionKey)
 		case .f6:
-			UnicodeScalar(NSF6FunctionKey).map { KeyEquivalent(Character($0)) }
+			KeyEquivalent(unicodeScalarValue: NSF6FunctionKey)
 		case .f7:
-			UnicodeScalar(NSF7FunctionKey).map { KeyEquivalent(Character($0)) }
+			KeyEquivalent(unicodeScalarValue: NSF7FunctionKey)
 		case .f8:
-			UnicodeScalar(NSF8FunctionKey).map { KeyEquivalent(Character($0)) }
+			KeyEquivalent(unicodeScalarValue: NSF8FunctionKey)
 		case .f9:
-			UnicodeScalar(NSF9FunctionKey).map { KeyEquivalent(Character($0)) }
+			KeyEquivalent(unicodeScalarValue: NSF9FunctionKey)
 		case .f10:
-			UnicodeScalar(NSF10FunctionKey).map { KeyEquivalent(Character($0)) }
+			KeyEquivalent(unicodeScalarValue: NSF10FunctionKey)
 		case .f11:
-			UnicodeScalar(NSF11FunctionKey).map { KeyEquivalent(Character($0)) }
+			KeyEquivalent(unicodeScalarValue: NSF11FunctionKey)
 		case .f12:
-			UnicodeScalar(NSF12FunctionKey).map { KeyEquivalent(Character($0)) }
+			KeyEquivalent(unicodeScalarValue: NSF12FunctionKey)
 		case .f13:
-			UnicodeScalar(NSF13FunctionKey).map { KeyEquivalent(Character($0)) }
+			KeyEquivalent(unicodeScalarValue: NSF13FunctionKey)
 		case .f14:
-			UnicodeScalar(NSF14FunctionKey).map { KeyEquivalent(Character($0)) }
+			KeyEquivalent(unicodeScalarValue: NSF14FunctionKey)
 		case .f15:
-			UnicodeScalar(NSF15FunctionKey).map { KeyEquivalent(Character($0)) }
+			KeyEquivalent(unicodeScalarValue: NSF15FunctionKey)
 		case .f16:
-			UnicodeScalar(NSF16FunctionKey).map { KeyEquivalent(Character($0)) }
+			KeyEquivalent(unicodeScalarValue: NSF16FunctionKey)
 		case .f17:
-			UnicodeScalar(NSF17FunctionKey).map { KeyEquivalent(Character($0)) }
+			KeyEquivalent(unicodeScalarValue: NSF17FunctionKey)
 		case .f18:
-			UnicodeScalar(NSF18FunctionKey).map { KeyEquivalent(Character($0)) }
+			KeyEquivalent(unicodeScalarValue: NSF18FunctionKey)
 		case .f19:
-			UnicodeScalar(NSF19FunctionKey).map { KeyEquivalent(Character($0)) }
+			KeyEquivalent(unicodeScalarValue: NSF19FunctionKey)
 		case .f20:
-			UnicodeScalar(NSF20FunctionKey).map { KeyEquivalent(Character($0)) }
+			KeyEquivalent(unicodeScalarValue: NSF20FunctionKey)
 		// Neither the " ⃣" enclosed characters (e.g. "7⃣") nor regular
 		// characters with the `.numpad` modifier produce `SwiftUI` buttons that
 		// will capture the only the number pad's keys (last checked: MacOS 14).
@@ -562,45 +562,45 @@ extension SpecialKey {
 		case .leftArrow:
 			"←"
 		case .f1:
-			UnicodeScalar(NSF1FunctionKey).map { Character($0) }
+			Character(unicodeScalarValue: NSF1FunctionKey)
 		case .f2:
-			UnicodeScalar(NSF2FunctionKey).map { Character($0) }
+			Character(unicodeScalarValue: NSF2FunctionKey)
 		case .f3:
-			UnicodeScalar(NSF3FunctionKey).map { Character($0) }
+			Character(unicodeScalarValue: NSF3FunctionKey)
 		case .f4:
-			UnicodeScalar(NSF4FunctionKey).map { Character($0) }
+			Character(unicodeScalarValue: NSF4FunctionKey)
 		case .f5:
-			UnicodeScalar(NSF5FunctionKey).map { Character($0) }
+			Character(unicodeScalarValue: NSF5FunctionKey)
 		case .f6:
-			UnicodeScalar(NSF6FunctionKey).map { Character($0) }
+			Character(unicodeScalarValue: NSF6FunctionKey)
 		case .f7:
-			UnicodeScalar(NSF7FunctionKey).map { Character($0) }
+			Character(unicodeScalarValue: NSF7FunctionKey)
 		case .f8:
-			UnicodeScalar(NSF8FunctionKey).map { Character($0) }
+			Character(unicodeScalarValue: NSF8FunctionKey)
 		case .f9:
-			UnicodeScalar(NSF9FunctionKey).map { Character($0) }
+			Character(unicodeScalarValue: NSF9FunctionKey)
 		case .f10:
-			UnicodeScalar(NSF10FunctionKey).map { Character($0) }
+			Character(unicodeScalarValue: NSF10FunctionKey)
 		case .f11:
-			UnicodeScalar(NSF11FunctionKey).map { Character($0) }
+			Character(unicodeScalarValue: NSF11FunctionKey)
 		case .f12:
-			UnicodeScalar(NSF12FunctionKey).map { Character($0) }
+			Character(unicodeScalarValue: NSF12FunctionKey)
 		case .f13:
-			UnicodeScalar(NSF13FunctionKey).map { Character($0) }
+			Character(unicodeScalarValue: NSF13FunctionKey)
 		case .f14:
-			UnicodeScalar(NSF14FunctionKey).map { Character($0) }
+			Character(unicodeScalarValue: NSF14FunctionKey)
 		case .f15:
-			UnicodeScalar(NSF15FunctionKey).map { Character($0) }
+			Character(unicodeScalarValue: NSF15FunctionKey)
 		case .f16:
-			UnicodeScalar(NSF16FunctionKey).map { Character($0) }
+			Character(unicodeScalarValue: NSF16FunctionKey)
 		case .f17:
-			UnicodeScalar(NSF17FunctionKey).map { Character($0) }
+			Character(unicodeScalarValue: NSF17FunctionKey)
 		case .f18:
-			UnicodeScalar(NSF18FunctionKey).map { Character($0) }
+			Character(unicodeScalarValue: NSF18FunctionKey)
 		case .f19:
-			UnicodeScalar(NSF19FunctionKey).map { Character($0) }
+			Character(unicodeScalarValue: NSF19FunctionKey)
 		case .f20:
-			UnicodeScalar(NSF20FunctionKey).map { Character($0) }
+			Character(unicodeScalarValue: NSF20FunctionKey)
 		// Neither the " ⃣" enclosed characters (e.g. "7⃣") nor regular
 		// characters with the `.numericPad` modifier produce a `MenuItem` that
 		// will capture the only the number pad's keys (last checked: MacOS 14).
