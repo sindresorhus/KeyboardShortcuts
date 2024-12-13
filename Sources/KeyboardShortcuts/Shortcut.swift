@@ -105,8 +105,11 @@ extension KeyboardShortcuts.Shortcut {
 	Check whether the keyboard shortcut is disallowed.
 	*/
 	var isDisallowed: Bool {
+		let osVersion = ProcessInfo().operatingSystemVersion
+		
 		guard
-			#available(macOS 15, *),
+			osVersion.majorVersion == 15,
+			(osVersion.minorVersion == 0 || osVersion.minorVersion == 1),
 			Constants.isSandboxed
 		else {
 			return false
