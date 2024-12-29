@@ -1,6 +1,7 @@
+import SwiftUI
+
 #if os(macOS)
 import Carbon.HIToolbox
-import SwiftUI
 
 
 extension String {
@@ -507,7 +508,9 @@ extension Dictionary {
 		index(forKey: key) != nil
 	}
 }
+#endif
 
+@available(iOS 14.0, *)
 @available(macOS 11.0, *)
 extension KeyEquivalent {
 	init?(unicodeScalarValue value: Int) {
@@ -518,7 +521,6 @@ extension KeyEquivalent {
 		self = KeyEquivalent(character)
 	}
 }
-#endif
 
 
 extension Sequence where Element: Hashable {
