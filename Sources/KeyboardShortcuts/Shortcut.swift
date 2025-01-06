@@ -61,7 +61,8 @@ extension KeyboardShortcuts {
 
 			self.init(
 				carbonKeyCode: Int(event.keyCode),
-				carbonModifiers: event.modifierFlags.carbon
+				// Note: We could potentially support users specifying shortcuts with the Fn key, but I haven't found a reliable way to differentate when to display the Fn key and not. For example, with Fn+F1 we only want to display F1, but with Fn+V, we want to display both. I cannot just specialize it for F keys as it applies to other keys too, like Fn+arrowup.
+				carbonModifiers: event.modifierFlags.subtracting(.function).carbon
 			)
 		}
 
@@ -104,16 +105,23 @@ extension KeyboardShortcuts.Shortcut {
 	Check whether the keyboard shortcut is disallowed.
 	*/
 	var isDisallowed: Bool {
-		let disallowedModifiers: NSEvent.ModifierFlags = [.option, [.option, .shift]]
-		if
-			#available(macOS 15, *),
-			Constants.isSandboxed,
-			disallowedModifiers.contains(modifiers)
-		{
-			return true
+		let osVersion = ProcessInfo.processInfo.operatingSystemVersion
+
+		guard
+			osVersion.majorVersion == 15,
+			osVersion.minorVersion == 0 || osVersion.minorVersion == 1,
+			Constants.isSandboxed
+		else {
+			return false
 		}
 
-		return false
+		if !modifiers.contains(.option) {
+			return false // Allowed if Option is not involved
+		}
+
+		// If Option is present, ensure there's at least one modifier other than Option and Shift
+		let otherModifiers: NSEvent.ModifierFlags = [.command, .control, .function, .capsLock]
+		return modifiers.isDisjoint(with: otherModifiers)
 	}
 
 	/**
@@ -144,8 +152,8 @@ extension KeyboardShortcuts.Shortcut {
 			}
 
 			if
-				keyToCharacter() == keyEquivalent,
-				modifiers == keyEquivalentModifierMask
+				self.keyEquivalent == keyEquivalent, // Note `nil != ""`
+				self.modifiers == keyEquivalentModifierMask
 			{
 				return item
 			}
@@ -174,110 +182,484 @@ extension KeyboardShortcuts.Shortcut {
 	}
 }
 
-private let keyToCharacterMapping: [KeyboardShortcuts.Key: String] = [
-	.return: "↩",
-	.delete: "⌫",
-	.deleteForward: "⌦",
-	.end: "↘",
-	.escape: "⎋",
-	.help: "?⃝",
-	.home: "↖",
-	.space: "space_key".localized, // This matches what macOS uses.
-	.tab: "⇥",
-	.pageUp: "⇞",
-	.pageDown: "⇟",
-	.upArrow: "↑",
-	.rightArrow: "→",
-	.downArrow: "↓",
-	.leftArrow: "←",
-	.f1: "F1",
-	.f2: "F2",
-	.f3: "F3",
-	.f4: "F4",
-	.f5: "F5",
-	.f6: "F6",
-	.f7: "F7",
-	.f8: "F8",
-	.f9: "F9",
-	.f10: "F10",
-	.f11: "F11",
-	.f12: "F12",
-	.f13: "F13",
-	.f14: "F14",
-	.f15: "F15",
-	.f16: "F16",
-	.f17: "F17",
-	.f18: "F18",
-	.f19: "F19",
-	.f20: "F20",
+/*
+An enumeration of special keys requiring specific handling when used with `RecorderCocoa`, AppKit’s `NSMenuItem`, and SwiftUI’s `.keyboardShortcut(_:modifiers:)`.  
 
-	// Representations for numeric keypad keys with   ⃣  Unicode U+20e3 'COMBINING ENCLOSING KEYCAP'
-	.keypad0: "0\u{20e3}",
-	.keypad1: "1\u{20e3}",
-	.keypad2: "2\u{20e3}",
-	.keypad3: "3\u{20e3}",
-	.keypad4: "4\u{20e3}",
-	.keypad5: "5\u{20e3}",
-	.keypad6: "6\u{20e3}",
-	.keypad7: "7\u{20e3}",
-	.keypad8: "8\u{20e3}",
-	.keypad9: "9\u{20e3}",
-	// There's "⌧“ 'X In A Rectangle Box' (U+2327), "☒" 'Ballot Box with X' (U+2612), "×" 'Multiplication Sign' (U+00d7), "⨯" 'Vector or Cross Product' (U+2a2f), or a plain small x. All combined symbols appear bigger.
-	.keypadClear: "☒\u{20e3}", // The combined symbol appears bigger than the other combined 'keycaps'
-	// TODO: Respect locale decimal separator ("." or ",")
-	.keypadDecimal: ".\u{20e3}",
-	.keypadDivide: "/\u{20e3}",
-	// "⏎" 'Return Symbol' (U+23CE) but "↩" 'Leftwards Arrow with Hook' (U+00d7) seems to be more common on macOS.
-	.keypadEnter: "↩\u{20e3}", // The combined symbol appears bigger than the other combined 'keycaps'
-	.keypadEquals: "=\u{20e3}",
-	.keypadMinus: "-\u{20e3}",
-	.keypadMultiply: "*\u{20e3}",
-	.keypadPlus: "+\u{20e3}"
-]
-
-private func stringFromKeyCode(_ keyCode: Int) -> String {
-	String(format: "%C", keyCode)
+Using an enumeration ensures all cases are exhaustively addressed in all three contexts, providing compile-time safety and reducing the risk of unhandled keys.
+*/
+private enum SpecialKey {
+	case `return`
+	case delete
+	case deleteForward
+	case end
+	case escape
+	case help
+	case home
+	case space
+	case tab
+	case pageUp
+	case pageDown
+	case upArrow
+	case rightArrow
+	case downArrow
+	case leftArrow
+	case f1
+	case f2
+	case f3
+	case f4
+	case f5
+	case f6
+	case f7
+	case f8
+	case f9
+	case f10
+	case f11
+	case f12
+	case f13
+	case f14
+	case f15
+	case f16
+	case f17
+	case f18
+	case f19
+	case f20
+	case keypad0
+	case keypad1
+	case keypad2
+	case keypad3
+	case keypad4
+	case keypad5
+	case keypad6
+	case keypad7
+	case keypad8
+	case keypad9
+	case keypadClear
+	case keypadDecimal
+	case keypadDivide
+	case keypadEnter
+	case keypadEquals
+	case keypadMinus
+	case keypadMultiply
+	case keypadPlus
 }
 
-private let keyToKeyEquivalentString: [KeyboardShortcuts.Key: String] = [
-	.space: stringFromKeyCode(0x20),
-	.f1: stringFromKeyCode(NSF1FunctionKey),
-	.f2: stringFromKeyCode(NSF2FunctionKey),
-	.f3: stringFromKeyCode(NSF3FunctionKey),
-	.f4: stringFromKeyCode(NSF4FunctionKey),
-	.f5: stringFromKeyCode(NSF5FunctionKey),
-	.f6: stringFromKeyCode(NSF6FunctionKey),
-	.f7: stringFromKeyCode(NSF7FunctionKey),
-	.f8: stringFromKeyCode(NSF8FunctionKey),
-	.f9: stringFromKeyCode(NSF9FunctionKey),
-	.f10: stringFromKeyCode(NSF10FunctionKey),
-	.f11: stringFromKeyCode(NSF11FunctionKey),
-	.f12: stringFromKeyCode(NSF12FunctionKey),
-	.f13: stringFromKeyCode(NSF13FunctionKey),
-	.f14: stringFromKeyCode(NSF14FunctionKey),
-	.f15: stringFromKeyCode(NSF15FunctionKey),
-	.f16: stringFromKeyCode(NSF16FunctionKey),
-	.f17: stringFromKeyCode(NSF17FunctionKey),
-	.f18: stringFromKeyCode(NSF18FunctionKey),
-	.f19: stringFromKeyCode(NSF19FunctionKey),
-	.f20: stringFromKeyCode(NSF20FunctionKey)
+private let keyToSpecialKeyMapping: [KeyboardShortcuts.Key: SpecialKey] = [
+	.return: .return,
+	.delete: .delete,
+	.deleteForward: .deleteForward,
+	.end: .end,
+	.escape: .escape,
+	.help: .help,
+	.home: .home,
+	.space: .space,
+	.tab: .tab,
+	.pageUp: .pageUp,
+	.pageDown: .pageDown,
+	.upArrow: .upArrow,
+	.rightArrow: .rightArrow,
+	.downArrow: .downArrow,
+	.leftArrow: .leftArrow,
+	.f1: .f1,
+	.f2: .f2,
+	.f3: .f3,
+	.f4: .f4,
+	.f5: .f5,
+	.f6: .f6,
+	.f7: .f7,
+	.f8: .f8,
+	.f9: .f9,
+	.f10: .f10,
+	.f11: .f11,
+	.f12: .f12,
+	.f13: .f13,
+	.f14: .f14,
+	.f15: .f15,
+	.f16: .f16,
+	.f17: .f17,
+	.f18: .f18,
+	.f19: .f19,
+	.f20: .f20,
+	.keypad0: .keypad0,
+	.keypad1: .keypad1,
+	.keypad2: .keypad2,
+	.keypad3: .keypad3,
+	.keypad4: .keypad4,
+	.keypad5: .keypad5,
+	.keypad6: .keypad6,
+	.keypad7: .keypad7,
+	.keypad8: .keypad8,
+	.keypad9: .keypad9,
+	.keypadClear: .keypadClear,
+	.keypadDecimal: .keypadDecimal,
+	.keypadDivide: .keypadDivide,
+	.keypadEnter: .keypadEnter,
+	.keypadEquals: .keypadEquals,
+	.keypadMinus: .keypadMinus,
+	.keypadMultiply: .keypadMultiply,
+	.keypadPlus: .keypadPlus
 ]
+
+extension SpecialKey {
+	fileprivate var presentableDescription: String {
+		switch self {
+		case .return:
+			"↩"
+		case .delete:
+			"⌫"
+		case .deleteForward:
+			"⌦"
+		case .end:
+			"↘"
+		case .escape:
+			"⎋"
+		case .help:
+			"?⃝"
+		case .home:
+			"↖"
+		case .space:
+			"space_key".localized.capitalized // This matches what macOS uses.
+		case .tab:
+			"⇥"
+		case .pageUp:
+			"⇞"
+		case .pageDown:
+			"⇟"
+		case .upArrow:
+			"↑"
+		case .rightArrow:
+			"→"
+		case .downArrow:
+			"↓"
+		case .leftArrow:
+			"←"
+		case .f1:
+			"F1"
+		case .f2:
+			"F2"
+		case .f3:
+			"F3"
+		case .f4:
+			"F4"
+		case .f5:
+			"F5"
+		case .f6:
+			"F6"
+		case .f7:
+			"F7"
+		case .f8:
+			"F8"
+		case .f9:
+			"F9"
+		case .f10:
+			"F10"
+		case .f11:
+			"F11"
+		case .f12:
+			"F12"
+		case .f13:
+			"F13"
+		case .f14:
+			"F14"
+		case .f15:
+			"F15"
+		case .f16:
+			"F16"
+		case .f17:
+			"F17"
+		case .f18:
+			"F18"
+		case .f19:
+			"F19"
+		case .f20:
+			"F20"
+
+		// Representations for numeric keypad keys with   ⃣  Unicode U+20e3 'COMBINING ENCLOSING KEYCAP'
+		case .keypad0:
+			"0\u{20e3}"
+		case .keypad1:
+			"1\u{20e3}"
+		case .keypad2:
+			"2\u{20e3}"
+		case .keypad3:
+			"3\u{20e3}"
+		case .keypad4:
+			"4\u{20e3}"
+		case .keypad5:
+			"5\u{20e3}"
+		case .keypad6:
+			"6\u{20e3}"
+		case .keypad7:
+			"7\u{20e3}"
+		case .keypad8:
+			"8\u{20e3}"
+		case .keypad9:
+			"9\u{20e3}"
+		// There's "⌧“ 'X In A Rectangle Box' (U+2327), "☒" 'Ballot Box with X' (U+2612), "×" 'Multiplication Sign' (U+00d7), "⨯" 'Vector or Cross Product' (U+2a2f), or a plain small x. All combined symbols appear bigger.
+		case .keypadClear:
+			"☒\u{20e3}" // The combined symbol appears bigger than the other combined 'keycaps'
+		// TODO: Respect locale decimal separator ("." or ",")
+		case .keypadDecimal:
+			".\u{20e3}"
+		case .keypadDivide:
+			"/\u{20e3}"
+		// "⏎" 'Return Symbol' (U+23CE) but "↩" 'Leftwards Arrow with Hook' (U+00d7) seems to be more common on macOS.
+		case .keypadEnter:
+			"↩\u{20e3}" // The combined symbol appears bigger than the other combined 'keycaps'
+		case .keypadEquals:
+			"=\u{20e3}"
+		case .keypadMinus:
+			"-\u{20e3}"
+		case .keypadMultiply:
+			"*\u{20e3}"
+		case .keypadPlus:
+			"+\u{20e3}"
+		}
+	}
+
+	@available(macOS 11.0, *)
+	fileprivate var swiftUIKeyEquivalent: SwiftUI.KeyEquivalent? {
+		switch self {
+		case .return:
+			.return
+		case .delete:
+			.delete
+		case .deleteForward:
+			.deleteForward
+		case .end:
+			.end
+		case .escape:
+			.escape
+		case .help:
+			KeyEquivalent(unicodeScalarValue: NSHelpFunctionKey)
+		case .home:
+			.home
+		case .space:
+			.space
+		case .tab:
+			.tab
+		case .pageUp:
+			.pageUp
+		case .pageDown:
+			.pageDown
+		case .upArrow:
+			.upArrow
+		case .rightArrow:
+			.rightArrow
+		case .downArrow:
+			.downArrow
+		case .leftArrow:
+			.leftArrow
+		case .f1:
+			KeyEquivalent(unicodeScalarValue: NSF1FunctionKey)
+		case .f2:
+			KeyEquivalent(unicodeScalarValue: NSF2FunctionKey)
+		case .f3:
+			KeyEquivalent(unicodeScalarValue: NSF3FunctionKey)
+		case .f4:
+			KeyEquivalent(unicodeScalarValue: NSF4FunctionKey)
+		case .f5:
+			KeyEquivalent(unicodeScalarValue: NSF5FunctionKey)
+		case .f6:
+			KeyEquivalent(unicodeScalarValue: NSF6FunctionKey)
+		case .f7:
+			KeyEquivalent(unicodeScalarValue: NSF7FunctionKey)
+		case .f8:
+			KeyEquivalent(unicodeScalarValue: NSF8FunctionKey)
+		case .f9:
+			KeyEquivalent(unicodeScalarValue: NSF9FunctionKey)
+		case .f10:
+			KeyEquivalent(unicodeScalarValue: NSF10FunctionKey)
+		case .f11:
+			KeyEquivalent(unicodeScalarValue: NSF11FunctionKey)
+		case .f12:
+			KeyEquivalent(unicodeScalarValue: NSF12FunctionKey)
+		case .f13:
+			KeyEquivalent(unicodeScalarValue: NSF13FunctionKey)
+		case .f14:
+			KeyEquivalent(unicodeScalarValue: NSF14FunctionKey)
+		case .f15:
+			KeyEquivalent(unicodeScalarValue: NSF15FunctionKey)
+		case .f16:
+			KeyEquivalent(unicodeScalarValue: NSF16FunctionKey)
+		case .f17:
+			KeyEquivalent(unicodeScalarValue: NSF17FunctionKey)
+		case .f18:
+			KeyEquivalent(unicodeScalarValue: NSF18FunctionKey)
+		case .f19:
+			KeyEquivalent(unicodeScalarValue: NSF19FunctionKey)
+		case .f20:
+			KeyEquivalent(unicodeScalarValue: NSF20FunctionKey)
+		// Neither the " ⃣" enclosed characters (e.g. "7⃣") nor regular
+		// characters with the `.numpad` modifier produce `SwiftUI` buttons that
+		// will capture the only the number pad's keys (last checked: MacOS 14).
+		// Return `nil` to prevent definition of incorrect shortcuts.
+		case .keypad0:
+			nil
+		case .keypad1:
+			nil
+		case .keypad2:
+			nil
+		case .keypad3:
+			nil
+		case .keypad4:
+			nil
+		case .keypad5:
+			nil
+		case .keypad6:
+			nil
+		case .keypad7:
+			nil
+		case .keypad8:
+			nil
+		case .keypad9:
+			nil
+		case .keypadClear:
+			nil
+		case .keypadDecimal:
+			nil
+		case .keypadDivide:
+			nil
+		case .keypadEnter:
+			nil
+		case .keypadEquals:
+			nil
+		case .keypadMinus:
+			nil
+		case .keypadMultiply:
+			nil
+		case .keypadPlus:
+			nil
+		}
+	}
+
+	fileprivate var appKitMenuItemKeyEquivalent: Character? {
+		switch self {
+		case .return:
+			"↩"
+		case .delete:
+			"⌫"
+		case .deleteForward:
+			"⌦"
+		case .end:
+			"↘"
+		case .escape:
+			"⎋"
+		case .help:
+			"?⃝"
+		case .home:
+			"↖"
+		case .space:
+			"\u{0020}"
+		case .tab:
+			"⇥"
+		case .pageUp:
+			"⇞"
+		case .pageDown:
+			"⇟"
+		case .upArrow:
+			"↑"
+		case .rightArrow:
+			"→"
+		case .downArrow:
+			"↓"
+		case .leftArrow:
+			"←"
+		case .f1:
+			Character(unicodeScalarValue: NSF1FunctionKey)
+		case .f2:
+			Character(unicodeScalarValue: NSF2FunctionKey)
+		case .f3:
+			Character(unicodeScalarValue: NSF3FunctionKey)
+		case .f4:
+			Character(unicodeScalarValue: NSF4FunctionKey)
+		case .f5:
+			Character(unicodeScalarValue: NSF5FunctionKey)
+		case .f6:
+			Character(unicodeScalarValue: NSF6FunctionKey)
+		case .f7:
+			Character(unicodeScalarValue: NSF7FunctionKey)
+		case .f8:
+			Character(unicodeScalarValue: NSF8FunctionKey)
+		case .f9:
+			Character(unicodeScalarValue: NSF9FunctionKey)
+		case .f10:
+			Character(unicodeScalarValue: NSF10FunctionKey)
+		case .f11:
+			Character(unicodeScalarValue: NSF11FunctionKey)
+		case .f12:
+			Character(unicodeScalarValue: NSF12FunctionKey)
+		case .f13:
+			Character(unicodeScalarValue: NSF13FunctionKey)
+		case .f14:
+			Character(unicodeScalarValue: NSF14FunctionKey)
+		case .f15:
+			Character(unicodeScalarValue: NSF15FunctionKey)
+		case .f16:
+			Character(unicodeScalarValue: NSF16FunctionKey)
+		case .f17:
+			Character(unicodeScalarValue: NSF17FunctionKey)
+		case .f18:
+			Character(unicodeScalarValue: NSF18FunctionKey)
+		case .f19:
+			Character(unicodeScalarValue: NSF19FunctionKey)
+		case .f20:
+			Character(unicodeScalarValue: NSF20FunctionKey)
+		// Neither the " ⃣" enclosed characters (e.g. "7⃣") nor regular
+		// characters with the `.numericPad` modifier produce a `MenuItem` that
+		// will capture the only the number pad's keys (last checked: MacOS 14).
+		// Return `nil` to prevent definition of incorrect shortcuts.
+		case .keypad0:
+			nil
+		case .keypad1:
+			nil
+		case .keypad2:
+			nil
+		case .keypad3:
+			nil
+		case .keypad4:
+			nil
+		case .keypad5:
+			nil
+		case .keypad6:
+			nil
+		case .keypad7:
+			nil
+		case .keypad8:
+			nil
+		case .keypad9:
+			nil
+		case .keypadClear:
+			nil
+		case .keypadDecimal:
+			nil
+		case .keypadDivide:
+			nil
+		case .keypadEnter:
+			nil
+		case .keypadEquals:
+			nil
+		case .keypadMinus:
+			nil
+		case .keypadMultiply:
+			nil
+		case .keypadPlus:
+			nil
+		}
+	}
+}
 
 extension KeyboardShortcuts.Shortcut {
 	@MainActor // `TISGetInputSourceProperty` crashes if called on a non-main thread.
-	fileprivate func keyToCharacter() -> String? {
-		// Some characters cannot be automatically translated.
-		if
-			let key,
-			let character = keyToCharacterMapping[key]
-		{
-			return character
-		}
-
+	fileprivate func keyToCharacter() -> Character? {
 		guard
 			let source = TISCopyCurrentASCIICapableKeyboardLayoutInputSource()?.takeRetainedValue(),
 			let layoutDataPointer = TISGetInputSourceProperty(source, kTISPropertyUnicodeKeyLayoutData)
 		else {
+			return nil
+		}
+
+		guard key.flatMap({ keyToSpecialKeyMapping[$0] }) == nil else {
+			assertionFailure("Special keys should get special treatment and should not be translated using keyToCharacter()")
 			return nil
 		}
 
@@ -305,7 +687,11 @@ extension KeyboardShortcuts.Shortcut {
 			return nil
 		}
 
-		return String(utf16CodeUnits: characters, count: length)
+		let string = String(utf16CodeUnits: characters, count: length)
+		if string.count == 1 {
+			return string.first
+		}
+		return nil
 	}
 
 	// This can be exposed if anyone needs it, but I prefer to keep the API surface small for now.
@@ -315,21 +701,19 @@ extension KeyboardShortcuts.Shortcut {
 	- Note: Don't forget to also pass `.modifiers` to `NSMenuItem#keyEquivalentModifierMask`.
 	*/
 	@MainActor
-	public var keyEquivalent: String {
-		let keyString = keyToCharacter() ?? ""
-
-		guard keyString.count <= 1 else {
-			guard
-				let key,
-				let string = keyToKeyEquivalentString[key]
-			else {
-				return ""
+	public var keyEquivalent: String? {
+		if
+			let key,
+			let specialKey = keyToSpecialKeyMapping[key]
+		{
+			if let keyEquivalent = specialKey.appKitMenuItemKeyEquivalent {
+				return String(keyEquivalent)
 			}
-
-			return string
+		} else if let character = keyToCharacter() {
+			return String(character)
 		}
 
-		return keyString
+		return nil
 	}
 }
 
@@ -342,10 +726,23 @@ extension KeyboardShortcuts.Shortcut: CustomStringConvertible {
 	//=> "⌘A"
 	```
 	*/
+
+	@MainActor
+	var presentableDescription: String {
+		if
+			let key,
+			let specialKey = keyToSpecialKeyMapping[key]
+		{
+			return modifiers.presentableDescription + specialKey.presentableDescription
+		}
+
+		return modifiers.presentableDescription + String(keyToCharacter() ?? "�").capitalized
+	}
+
 	@MainActor
 	public var description: String {
-		// We use `.capitalized` so it correctly handles “⌘Space”.
-		modifiers.presentableDescription + (keyToCharacter()?.capitalized ?? "�")
+		// TODO: `description` needs to be `nonisolated`
+		presentableDescription
 	}
 }
 
@@ -353,14 +750,18 @@ extension KeyboardShortcuts.Shortcut {
 	@available(macOS 11, *)
 	@MainActor
 	var toSwiftUI: KeyboardShortcut? {
-		guard
-			let string = keyToCharacter(),
-			let character = string.first
-		else {
-			return nil
+		if
+			let key,
+			let specialKey = keyToSpecialKeyMapping[key]
+		{
+			if let keyEquivalent = specialKey.swiftUIKeyEquivalent {
+				return KeyboardShortcut(keyEquivalent, modifiers: modifiers.toEventModifiers)
+			}
+		} else if let character = keyToCharacter() {
+			return KeyboardShortcut(KeyEquivalent(character), modifiers: modifiers.toEventModifiers)
 		}
 
-		return KeyboardShortcut(.init(character), modifiers: modifiers.toEventModifiers)
+		return nil
 	}
 }
 #endif
