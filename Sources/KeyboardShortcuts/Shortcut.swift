@@ -694,14 +694,13 @@ extension KeyboardShortcuts.Shortcut {
 		return nil
 	}
 
-	// This can be exposed if anyone needs it, but I prefer to keep the API surface small for now.
 	/**
 	This can be used to show the keyboard shortcut in a `NSMenuItem` by assigning it to `NSMenuItem#keyEquivalent`.
 
 	- Note: Don't forget to also pass `.modifiers` to `NSMenuItem#keyEquivalentModifierMask`.
 	*/
 	@MainActor
-	var keyEquivalent: String? {
+	public var keyEquivalent: String? {
 		if
 			let key,
 			let specialKey = keyToSpecialKeyMapping[key]
