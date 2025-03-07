@@ -152,7 +152,7 @@ extension KeyboardShortcuts.Shortcut {
 			}
 
 			if
-				self.keyEquivalent == keyEquivalent, // Note `nil != ""`
+				self.nsMenuItemKeyEquivalent == keyEquivalent, // Note `nil != ""`
 				self.modifiers == keyEquivalentModifierMask
 			{
 				return item
@@ -691,17 +691,19 @@ extension KeyboardShortcuts.Shortcut {
 		if string.count == 1 {
 			return string.first
 		}
+
 		return nil
 	}
 
-	// This can be exposed if anyone needs it, but I prefer to keep the API surface small for now.
 	/**
+	Key equivalent string in `NSMenuItem` format.
+
 	This can be used to show the keyboard shortcut in a `NSMenuItem` by assigning it to `NSMenuItem#keyEquivalent`.
 
-	- Note: Don't forget to also pass `.modifiers` to `NSMenuItem#keyEquivalentModifierMask`.
+	- Note: Don't forget to also pass ``Shortcut/modifiers`` to `NSMenuItem#keyEquivalentModifierMask`.
 	*/
 	@MainActor
-	var keyEquivalent: String? {
+	public var nsMenuItemKeyEquivalent: String? {
 		if
 			let key,
 			let specialKey = keyToSpecialKeyMapping[key]

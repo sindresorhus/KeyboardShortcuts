@@ -96,7 +96,7 @@ extension NSMenuItem {
 			return
 		}
 
-		keyEquivalent = shortcut.keyEquivalent ?? ""
+		keyEquivalent = shortcut.nsMenuItemKeyEquivalent ?? ""
 		keyEquivalentModifierMask = shortcut.modifiers
 
 		if #available(macOS 12, *) {
