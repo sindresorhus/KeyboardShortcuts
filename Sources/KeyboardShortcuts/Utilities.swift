@@ -1,6 +1,7 @@
+import SwiftUI
+
 #if os(macOS)
 import Carbon.HIToolbox
-import SwiftUI
 
 
 extension String {
@@ -510,6 +511,19 @@ extension Dictionary {
 #endif
 
 
+@available(iOS 14.0, *)
+@available(macOS 11.0, *)
+extension KeyEquivalent {
+	init?(unicodeScalarValue value: Int) {
+		guard let character = Character(unicodeScalarValue: value) else {
+			return nil
+		}
+
+		self = KeyEquivalent(character)
+	}
+}
+
+
 extension Sequence where Element: Hashable {
 	/**
 	Convert a `Sequence` with `Hashable` elements to a `Set`.
@@ -533,17 +547,6 @@ extension StringProtocol {
 		}
 
 		return replacement + dropFirst(prefix.count)
-	}
-}
-
-@available(macOS 11.0, *)
-extension KeyEquivalent {
-	init?(unicodeScalarValue value: Int) {
-		guard let character = Character(unicodeScalarValue: value) else {
-			return nil
-		}
-
-		self = KeyEquivalent(character)
 	}
 }
 
