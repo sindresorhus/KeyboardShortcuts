@@ -37,6 +37,24 @@ public enum KeyboardShortcuts {
 
 	private static var openMenuObserver: NSObjectProtocol?
 	private static var closeMenuObserver: NSObjectProtocol?
+	
+	public static var customDefaults: UserDefaults? {
+		get {
+			_customDefaults
+		}
+
+		set {
+			_customDefaults = newValue
+		}
+	}
+
+	static var _customDefaults: UserDefaults? {
+		didSet {
+			userDefaults = _customDefaults ?? .standard
+		}
+	}
+
+	static var userDefaults: UserDefaults = .standard
 
 	/**
 	When `true`, event handlers will not be called for registered keyboard shortcuts.
@@ -59,7 +77,7 @@ public enum KeyboardShortcuts {
 	}
 
 	static var allNames: Set<Name> {
-		UserDefaults.standard.dictionaryRepresentation()
+		KeyboardShortcuts.userDefaults.dictionaryRepresentation()
 			.compactMap { key, _ in
 				guard key.hasPrefix(userDefaultsPrefix) else {
 					return nil
@@ -370,7 +388,7 @@ public enum KeyboardShortcuts {
 	*/
 	public static func getShortcut(for name: Name) -> Shortcut? {
 		guard
-			let data = UserDefaults.standard.string(forKey: userDefaultsKey(for: name))?.data(using: .utf8),
+			let data = KeyboardShortcuts.userDefaults.string(forKey: userDefaultsKey(for: name))?.data(using: .utf8),
 			let decoded = try? JSONDecoder().decode(Shortcut.self, from: data)
 		else {
 			return nil
@@ -507,7 +525,7 @@ public enum KeyboardShortcuts {
 		}
 
 		register(shortcut)
-		UserDefaults.standard.set(encoded, forKey: userDefaultsKey(for: name))
+		KeyboardShortcuts.userDefaults.set(encoded, forKey: userDefaultsKey(for: name))
 		userDefaultsDidChange(name: name)
 	}
 
@@ -516,7 +534,7 @@ public enum KeyboardShortcuts {
 			return
 		}
 
-		UserDefaults.standard.set(false, forKey: userDefaultsKey(for: name))
+		KeyboardShortcuts.userDefaults.set(false, forKey: userDefaultsKey(for: name))
 		unregister(shortcut)
 		userDefaultsDidChange(name: name)
 	}
@@ -526,13 +544,13 @@ public enum KeyboardShortcuts {
 			return
 		}
 
-		UserDefaults.standard.removeObject(forKey: userDefaultsKey(for: name))
+		KeyboardShortcuts.userDefaults.removeObject(forKey: userDefaultsKey(for: name))
 		unregister(shortcut)
 		userDefaultsDidChange(name: name)
 	}
 
 	static func userDefaultsContains(name: Name) -> Bool {
-		UserDefaults.standard.object(forKey: userDefaultsKey(for: name)) != nil
+		KeyboardShortcuts.userDefaults.object(forKey: userDefaultsKey(for: name)) != nil
 	}
 }
 
