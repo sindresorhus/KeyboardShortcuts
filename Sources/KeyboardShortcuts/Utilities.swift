@@ -559,3 +559,104 @@ extension Character {
 		self = Character(content)
 	}
 }
+
+final class UserDefaultsObservation: NSObject {
+	typealias Callback = (_ name: KeyboardShortcuts.Name, _ newKeyValue: String?) -> Void
+	
+	private let name: KeyboardShortcuts.Name
+	private let key: String
+	static var observationContext = 0
+	private weak var suite: UserDefaults?
+	private var isObserving = false
+	private let callback: Callback
+	private var lock = NSLock()
+	
+	init(
+		suite: UserDefaults,
+		name: KeyboardShortcuts.Name,
+		key: String,
+		_ callback: @escaping Callback
+	) {
+		self.suite = suite
+		self.name = name
+		self.key = key
+		self.callback = callback
+	}
+	
+	deinit {
+		invalidate()
+	}
+	
+	func start() {
+		lock.lock()
+		
+		guard !isObserving else {
+			return
+		}
+		
+		suite?.addObserver(
+			self,
+			forKeyPath: key,
+			options: [.new],
+			context: &Self.observationContext
+		)
+		isObserving = true
+		
+		lock.unlock()
+	}
+	
+	func invalidate() {
+		lock.lock()
+		
+		guard isObserving else {
+			return
+		}
+		
+		suite?.removeObserver(
+			self,
+			forKeyPath: key
+		)
+		isObserving = false
+		suite = nil
+		
+		lock.unlock()
+	}
+	
+	override func observeValue(
+		forKeyPath keyPath: String?,
+		of object: Any?,
+		change: [NSKeyValueChangeKey : Any]?,
+		context: UnsafeMutableRawPointer?
+	) {
+		guard
+			context == &Self.observationContext
+		else {
+			super.observeValue(
+				forKeyPath: keyPath,
+				of: object,
+				change: change,
+				context: context
+			)
+			return
+		}
+		
+		guard let selfSuite = suite else {
+			invalidate()
+			return
+		}
+		
+		guard
+			selfSuite == (object as? UserDefaults),
+			let change
+		else {
+			return
+		}
+		
+		guard keyPath == key else {
+			return
+		}
+		
+		let encodedString = change[.newKey] as? String
+		callback(self.name, encodedString)
+	}
+}
