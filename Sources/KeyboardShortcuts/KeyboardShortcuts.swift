@@ -37,6 +37,7 @@ public enum KeyboardShortcuts {
 
 	private static var openMenuObserver: NSObjectProtocol?
 	private static var closeMenuObserver: NSObjectProtocol?
+	private static var userDefaultsObservers = [UserDefaultsObservation]()
 	
 	public static var customDefaults: UserDefaults? {
 		get {
@@ -428,6 +429,7 @@ public enum KeyboardShortcuts {
 	*/
 	public static func onKeyDown(for name: Name, action: @escaping () -> Void) {
 		legacyKeyDownHandlers[name, default: []].append(action)
+		startObservingShortcut(for: name)
 		registerShortcutIfNeeded(for: name)
 	}
 
@@ -454,14 +456,40 @@ public enum KeyboardShortcuts {
 	*/
 	public static func onKeyUp(for name: Name, action: @escaping () -> Void) {
 		legacyKeyUpHandlers[name, default: []].append(action)
+		startObservingShortcut(for: name)
 		registerShortcutIfNeeded(for: name)
 	}
 
 	private static let userDefaultsPrefix = "KeyboardShortcuts_"
 
-	private static func userDefaultsKey(for shortcutName: Name) -> String { "\(userDefaultsPrefix)\(shortcutName.rawValue)"
+	private static func userDefaultsKey(for shortcutName: Name) -> String { 
+		"\(userDefaultsPrefix)\(shortcutName.rawValue)"
 	}
-
+	
+	/**
+	Start observing UserDefaults changes for a specific shortcut name.
+	Only starts observation if the shortcut is not already being observed.
+	*/
+	private static func startObservingShortcut(for name: Name) {
+		let key = userDefaultsKey(for: name)
+		
+		let observation = UserDefaultsObservation(
+			suite: userDefaults,
+			name: name,
+			key: key
+		) { name, value in
+			if value == nil {
+				self.unregisterShortcutIfNeeded(for: name)
+			} else {
+				self.registerShortcutIfNeeded(for: name)
+			}
+		}
+		
+		observation.start()
+		
+		userDefaultsObservers.append(observation)
+	}
+	
 	static func userDefaultsDidChange(name: Name) {
 		// TODO: Use proper UserDefaults observation instead of this.
 		NotificationCenter.default.post(name: .shortcutByNameDidChange, object: nil, userInfo: ["name": name])
