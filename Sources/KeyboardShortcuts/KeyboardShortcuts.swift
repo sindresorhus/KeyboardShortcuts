@@ -39,23 +39,24 @@ public enum KeyboardShortcuts {
 	private static var closeMenuObserver: NSObjectProtocol?
 	private static var userDefaultsObservers = [UserDefaultsObservation]()
 	
-	public static var customDefaults: UserDefaults? {
-		get {
-			_customDefaults
-		}
-
-		set {
-			_customDefaults = newValue
-		}
-	}
-
-	static var _customDefaults: UserDefaults? {
-		didSet {
-			userDefaults = _customDefaults ?? .standard
-		}
-	}
-
-	static var userDefaults: UserDefaults = .standard
+	/**
+	The UserDefaults instance used to store and retrieve keyboard shortcut configurations.
+	
+	By default, this uses the standard UserDefaults instance. You can customize this to use a different UserDefaults instance,
+	for example, to store shortcuts in a specific app group or to use a custom UserDefaults instance for testing.
+	
+	```swift
+	// Example: Using a custom UserDefaults instance
+	KeyboardShortcuts.userDefaults = UserDefaults(suiteName: "com.example.appgroup")!
+	
+	// Example: Using a custom UserDefaults instance for testing
+	KeyboardShortcuts.userDefaults = UserDefaults(suiteName: "test")!
+	```
+	
+	- Important: Changing this property will not migrate existing shortcuts from the previous UserDefaults instance.
+	- Note: All keyboard shortcut configurations are stored with the prefix "KeyboardShortcuts_" to avoid conflicts with other app data.
+	*/
+	public static var userDefaults: UserDefaults = .standard
 
 	/**
 	When `true`, event handlers will not be called for registered keyboard shortcuts.
