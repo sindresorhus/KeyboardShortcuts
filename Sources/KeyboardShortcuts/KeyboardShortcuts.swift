@@ -38,7 +38,7 @@ public enum KeyboardShortcuts {
 	private static var openMenuObserver: NSObjectProtocol?
 	private static var closeMenuObserver: NSObjectProtocol?
 	private static var userDefaultsObservers = [UserDefaultsObservation]()
-	
+
 	/**
 	The `UserDefaults` instance used to store and retrieve keyboard shortcut configurations.
 	
@@ -78,7 +78,7 @@ public enum KeyboardShortcuts {
 	}
 
 	static var allNames: Set<Name> {
-		KeyboardShortcuts.userDefaults.dictionaryRepresentation()
+		Self.userDefaults.dictionaryRepresentation()
 			.compactMap { key, _ in
 				guard key.hasPrefix(userDefaultsPrefix) else {
 					return nil
@@ -389,7 +389,7 @@ public enum KeyboardShortcuts {
 	*/
 	public static func getShortcut(for name: Name) -> Shortcut? {
 		guard
-			let data = KeyboardShortcuts.userDefaults.string(forKey: userDefaultsKey(for: name))?.data(using: .utf8),
+			let data = Self.userDefaults.string(forKey: userDefaultsKey(for: name))?.data(using: .utf8),
 			let decoded = try? JSONDecoder().decode(Shortcut.self, from: data)
 		else {
 			return nil
@@ -510,17 +510,17 @@ public enum KeyboardShortcuts {
 
 	private static let userDefaultsPrefix = "KeyboardShortcuts_"
 
-	private static func userDefaultsKey(for shortcutName: Name) -> String { 
+	private static func userDefaultsKey(for shortcutName: Name) -> String {
 		"\(userDefaultsPrefix)\(shortcutName.rawValue)"
 	}
-	
+
 	/**
 	Start observing UserDefaults changes for a specific shortcut name.
 	Only starts observation if the shortcut is not already being observed.
 	*/
 	private static func startObservingShortcut(for name: Name) {
 		let key = userDefaultsKey(for: name)
-		
+
 		let observation = UserDefaultsObservation(
 			suite: userDefaults,
 			name: name,
@@ -532,12 +532,12 @@ public enum KeyboardShortcuts {
 				self.registerShortcutIfNeeded(for: name)
 			}
 		}
-		
+
 		observation.start()
-		
+
 		userDefaultsObservers.append(observation)
 	}
-	
+
 	static func userDefaultsDidChange(name: Name) {
 		// TODO: Use proper UserDefaults observation instead of this.
 		NotificationCenter.default.post(name: .shortcutByNameDidChange, object: nil, userInfo: ["name": name])
@@ -553,7 +553,7 @@ public enum KeyboardShortcuts {
 		}
 
 		register(shortcut)
-		KeyboardShortcuts.userDefaults.set(encoded, forKey: userDefaultsKey(for: name))
+		Self.userDefaults.set(encoded, forKey: userDefaultsKey(for: name))
 		userDefaultsDidChange(name: name)
 	}
 
@@ -562,7 +562,7 @@ public enum KeyboardShortcuts {
 			return
 		}
 
-		KeyboardShortcuts.userDefaults.set(false, forKey: userDefaultsKey(for: name))
+		Self.userDefaults.set(false, forKey: userDefaultsKey(for: name))
 		unregister(shortcut)
 		userDefaultsDidChange(name: name)
 	}
@@ -572,13 +572,13 @@ public enum KeyboardShortcuts {
 			return
 		}
 
-		KeyboardShortcuts.userDefaults.removeObject(forKey: userDefaultsKey(for: name))
+		Self.userDefaults.removeObject(forKey: userDefaultsKey(for: name))
 		unregister(shortcut)
 		userDefaultsDidChange(name: name)
 	}
 
 	static func userDefaultsContains(name: Name) -> Bool {
-		KeyboardShortcuts.userDefaults.object(forKey: userDefaultsKey(for: name)) != nil
+		Self.userDefaults.object(forKey: userDefaultsKey(for: name)) != nil
 	}
 }
 
