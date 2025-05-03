@@ -563,7 +563,8 @@ extension Character {
 final class UserDefaultsObservation: NSObject {
 	typealias Callback = (_ newKeyValue: String?) -> Void
 
-	private let key: String
+	let key: String
+
 	static var observationContext = 0
 	private weak var suite: UserDefaults?
 	private var isObserving = false
@@ -613,6 +614,12 @@ final class UserDefaultsObservation: NSObject {
 			isObserving = false
 			suite = nil
 		}
+	}
+
+	func update(suite new: UserDefaults) {
+		invalidate()
+		suite = new
+		start()
 	}
 
 	// swiftlint:disable:next block_based_kvo
