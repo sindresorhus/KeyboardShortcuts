@@ -55,7 +55,13 @@ public enum KeyboardShortcuts {
 	- Important: Changing this property will not migrate existing shortcuts from the previous `UserDefaults` instance.
 	- Note: All keyboard shortcut configurations are stored with the prefix `KeyboardShortcuts_` to avoid conflicts with other app data.
 	*/
-	public static var userDefaults = UserDefaults.standard
+	public static var userDefaults = UserDefaults.standard {
+		didSet {
+			for observer in userDefaultsObservers {
+				observer.update(suite: userDefaults)
+			}
+		}
+	}
 
 	/**
 	When `true`, event handlers will not be called for registered keyboard shortcuts.
@@ -198,6 +204,12 @@ public enum KeyboardShortcuts {
 
 		legacyKeyDownHandlers = [:]
 		legacyKeyUpHandlers = [:]
+
+		// invalidate and remove all elements of userDefaultsObservers
+		for observation in userDefaultsObservers {
+			observation.invalidate()
+		}
+		userDefaultsObservers.removeAll()
 	}
 
 	/**
@@ -475,7 +487,7 @@ public enum KeyboardShortcuts {
 	*/
 	public static func onKeyDown(for name: Name, action: @escaping () -> Void) {
 		legacyKeyDownHandlers[name, default: []].append(action)
-		startObservingShortcut(for: name)
+		startObservingShortcutIfNeeded(for: name)
 		registerShortcutIfNeeded(for: name)
 	}
 
@@ -504,7 +516,7 @@ public enum KeyboardShortcuts {
 	*/
 	public static func onKeyUp(for name: Name, action: @escaping () -> Void) {
 		legacyKeyUpHandlers[name, default: []].append(action)
-		startObservingShortcut(for: name)
+		startObservingShortcutIfNeeded(for: name)
 		registerShortcutIfNeeded(for: name)
 	}
 
@@ -516,12 +528,28 @@ public enum KeyboardShortcuts {
 
 	/**
 	Start observing UserDefaults changes for a specific shortcut name.
-	Only starts observation if the shortcut is not already being observed.
+	
+	This function manages the lifecycle of observations for keyboard shortcuts in the given suite (e.g. UserDefaults):
+	- Checks if the shortcut is already being observed
+	- If already observed, restarts the observation
+	- If not observed, creates a new observation and adds it to the observers list
+	
+	The observation handles changes to the shortcut configuration in the suite:
+	- When the shortcut is removed (value becomes nil), unregisters the shortcut
+	- When the shortcut is added or modified, registers the new shortcut
+	
+	- Parameter name: The name of the shortcut to observe
 	*/
-	private static func startObservingShortcut(for name: Name) {
+	private static func startObservingShortcutIfNeeded(for name: Name) {
 		let key = userDefaultsKey(for: name)
 
-		let observation = UserDefaultsObservation(
+		// check userDefaultsObservers to see if we are already observing this key
+		if let observer = userDefaultsObservers.first(where: { $0.key == key }) {
+			observer.start()
+			return
+		}
+
+		let observer = UserDefaultsObservation(
 			suite: userDefaults,
 			key: key
 		) { value in
@@ -532,9 +560,9 @@ public enum KeyboardShortcuts {
 			}
 		}
 
-		observation.start()
+		observer.start()
 
-		userDefaultsObservers.append(observation)
+		userDefaultsObservers.append(observer)
 	}
 
 	static func userDefaultsDidChange(name: Name) {
