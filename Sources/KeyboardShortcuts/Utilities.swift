@@ -561,9 +561,8 @@ extension Character {
 }
 
 final class UserDefaultsObservation: NSObject {
-	typealias Callback = (_ name: KeyboardShortcuts.Name, _ newKeyValue: String?) -> Void
+	typealias Callback = (_ newKeyValue: String?) -> Void
 
-	private let name: KeyboardShortcuts.Name
 	private let key: String
 	static var observationContext = 0
 	private weak var suite: UserDefaults?
@@ -571,16 +570,12 @@ final class UserDefaultsObservation: NSObject {
 	private let callback: Callback
 	private var lock = NSLock()
 
-	private var token: NSKeyValueObservation? = nil
-
 	init(
 		suite: UserDefaults,
-		name: KeyboardShortcuts.Name,
 		key: String,
 		_ callback: @escaping Callback
 	) {
 		self.suite = suite
-		self.name = name
 		self.key = key
 		self.callback = callback
 	}
@@ -590,44 +585,41 @@ final class UserDefaultsObservation: NSObject {
 	}
 
 	func start() {
-		lock.lock()
+		lock.withLock {
+			guard !isObserving else {
+				return
+			}
 
-		guard !isObserving else {
-			return
+			suite?.addObserver(
+				self,
+				forKeyPath: key,
+				options: [.new],
+				context: &Self.observationContext
+			)
+			isObserving = true
 		}
-
-		suite?.addObserver(
-			self,
-			forKeyPath: key,
-			options: [.new],
-			context: &Self.observationContext
-		)
-		isObserving = true
-
-		lock.unlock()
 	}
 
 	func invalidate() {
-		lock.lock()
+		lock.withLock {
+			guard isObserving else {
+				return
+			}
 
-		guard isObserving else {
-			return
+			suite?.removeObserver(
+				self,
+				forKeyPath: key
+			)
+			isObserving = false
+			suite = nil
 		}
-
-		suite?.removeObserver(
-			self,
-			forKeyPath: key
-		)
-		isObserving = false
-		suite = nil
-
-		lock.unlock()
 	}
 
+	// swiftlint:disable:next block_based_kvo
 	override func observeValue(
 		forKeyPath keyPath: String?,
 		of object: Any?,
-		change: [NSKeyValueChangeKey: Any]?,
+		change: [NSKeyValueChangeKey: Any]?, // swiftlint:disable:this discouraged_optional_collection
 		context: UnsafeMutableRawPointer?
 	) {
 		guard
@@ -659,6 +651,6 @@ final class UserDefaultsObservation: NSObject {
 		}
 
 		let encodedString = change[.newKey] as? String
-		callback(self.name, encodedString)
+		callback(encodedString)
 	}
 }
