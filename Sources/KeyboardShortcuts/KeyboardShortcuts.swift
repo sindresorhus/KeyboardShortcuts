@@ -475,9 +475,8 @@ public enum KeyboardShortcuts {
 
 		let observation = UserDefaultsObservation(
 			suite: userDefaults,
-			name: name,
 			key: key
-		) { name, value in
+		) { value in
 			if value == nil {
 				self.unregisterShortcutIfNeeded(for: name)
 			} else {
