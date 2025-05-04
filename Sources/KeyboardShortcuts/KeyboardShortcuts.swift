@@ -88,6 +88,29 @@ public enum KeyboardShortcuts {
 		}
 	}
 
+	/**
+	Check if a keyboard shortcut is enabled for the given name.
+
+	This method checks if the shortcut associated with the given name is currently registered and enabled. Use `enable` or `disable` methods
+
+	- Parameter name: The name of the keyboard shortcut to check.
+	- Returns: `true` if the shortcut is enabled and registered, `false` otherwise.
+
+	- Note: A keyboard shortcut's enablement status can be manually adjusted through the `enable(_:)` or `disable(_:)` methods.
+
+	```swift
+	// Check if the "toggleUnicornMode" shortcut is enabled
+	let isEnabled = KeyboardShortcuts.isEnabled(for: .toggleUnicornMode)
+	```
+	*/
+	public static func isEnabled(for name: Name) -> Bool {
+		guard let shortcut = getShortcut(for: name) else {
+			return false
+		}
+
+		return registeredShortcuts.contains(shortcut)
+	}
+
 	private static func register(_ shortcut: Shortcut) {
 		guard !registeredShortcuts.contains(shortcut) else {
 			return
