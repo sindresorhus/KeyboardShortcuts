@@ -206,8 +206,8 @@ public enum KeyboardShortcuts {
 		legacyKeyUpHandlers = [:]
 
 		// invalidate and remove all elements of userDefaultsObservers
-		for observation in userDefaultsObservers {
-			observation.invalidate()
+		for observer in userDefaultsObservers {
+			observer.invalidate()
 		}
 		userDefaultsObservers.removeAll()
 	}
@@ -441,8 +441,10 @@ public enum KeyboardShortcuts {
 	*/
 	public static func onKeyDown(for name: Name, action: @escaping () -> Void) {
 		legacyKeyDownHandlers[name, default: []].append(action)
-		startObservingShortcutIfNeeded(for: name)
 		registerShortcutIfNeeded(for: name)
+
+		// observe changes to the UserDefaults instance for the given shortcut name
+		startObservingShortcutIfNeeded(for: name)
 	}
 
 	/**
@@ -468,8 +470,10 @@ public enum KeyboardShortcuts {
 	*/
 	public static func onKeyUp(for name: Name, action: @escaping () -> Void) {
 		legacyKeyUpHandlers[name, default: []].append(action)
-		startObservingShortcutIfNeeded(for: name)
 		registerShortcutIfNeeded(for: name)
+
+		// observe changes to the UserDefaults instance for the given shortcut name
+		startObservingShortcutIfNeeded(for: name)
 	}
 
 	private static let userDefaultsPrefix = "KeyboardShortcuts_"
@@ -479,9 +483,9 @@ public enum KeyboardShortcuts {
 	}
 
 	/**
-	Start observing UserDefaults changes for a specific shortcut name.
-	
-	This function manages the lifecycle of observations for keyboard shortcuts in the given suite (e.g. UserDefaults):
+	Start observing changes to the `UserDefaults` instance for a specific shortcut name.
+
+	This function manages the lifecycle of observations for keyboard shortcuts in the given `UserDefaults` instance (set by `userDefaults` property):
 	- Checks if the shortcut is already being observed
 	- If already observed, restarts the observation
 	- If not observed, creates a new observation and adds it to the observers list
@@ -610,6 +614,9 @@ extension KeyboardShortcuts {
 				}
 
 				registerShortcutIfNeeded(for: name)
+
+				// observe changes to the UserDefaults instance for the given shortcut name
+				startObservingShortcutIfNeeded(for: name)
 			}
 
 			continuation.onTermination = { _ in
