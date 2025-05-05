@@ -181,6 +181,23 @@ public enum KeyboardShortcuts {
 		legacyKeyUpHandlers = [:]
 	}
 
+	/**
+	Remove the keyboard shortcut handler for the given name.
+	
+	This can be used to reset the handler before re-creating it to avoid having multiple handlers for the same shortcut.
+	
+	- Parameter name: The name of the keyboard shortcut to remove handlers for.
+	*/
+	public static func removeHandler(for name: Name) {
+		legacyKeyDownHandlers[name] = nil
+		legacyKeyUpHandlers[name] = nil
+
+		// make sure not to unregister stream handlers
+		if let shortcut = getShortcut(for: name), !shortcutsForStreamHandlers.contains(shortcut) {
+			unregister(shortcut)
+		}
+	}
+
 	// TODO: Also add `.isEnabled(_ name: Name)`.
 
 	/**
