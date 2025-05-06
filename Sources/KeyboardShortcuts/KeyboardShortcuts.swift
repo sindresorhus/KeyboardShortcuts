@@ -197,6 +197,10 @@ public enum KeyboardShortcuts {
 	 ```
 	 */
 	public static func isEnabled(for name: Name) -> Bool {
+		guard isEnabled else {
+			return false
+		}
+		
 		guard let shortcut = getShortcut(for: name) else {
 			return false
 		}
