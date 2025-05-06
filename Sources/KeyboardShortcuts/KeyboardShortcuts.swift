@@ -200,7 +200,7 @@ public enum KeyboardShortcuts {
 		guard isEnabled else {
 			return false
 		}
-		
+
 		guard let shortcut = getShortcut(for: name) else {
 			return false
 		}
