@@ -192,8 +192,8 @@ public enum KeyboardShortcuts {
 	 - Note: A keyboard shortcut's enablement status can be manually adjusted through the `enable(_:)` or `disable(_:)` methods.
 
 	 ```swift
-	 // Check if the "toggleUnicornMode" shortcut is enabled
-	 let isEnabled = KeyboardShortcuts.isEnabled(for: .toggleUnicornMode)
+	 	// Check if the "toggleUnicornMode" shortcut is enabled
+		let isEnabled = KeyboardShortcuts.isEnabled(for: .toggleUnicornMode)
 	 ```
 	 */
 	public static func isEnabled(for name: Name) -> Bool {
