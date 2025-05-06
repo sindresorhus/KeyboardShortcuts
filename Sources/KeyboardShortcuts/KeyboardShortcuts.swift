@@ -183,10 +183,12 @@ public enum KeyboardShortcuts {
 
 	/**
 	Remove the keyboard shortcut handler for the given name.
-	
+
 	This can be used to reset the handler before re-creating it to avoid having multiple handlers for the same shortcut.
-	
+
 	- Parameter name: The name of the keyboard shortcut to remove handlers for.
+
+	- Note: This method does not affect listeners using `.on()`.
 	*/
 	public static func removeHandler(for name: Name) {
 		legacyKeyDownHandlers[name] = nil
