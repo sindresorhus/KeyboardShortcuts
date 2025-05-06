@@ -192,10 +192,15 @@ public enum KeyboardShortcuts {
 		legacyKeyDownHandlers[name] = nil
 		legacyKeyUpHandlers[name] = nil
 
-		// make sure not to unregister stream handlers
-		if let shortcut = getShortcut(for: name), !shortcutsForStreamHandlers.contains(shortcut) {
-			unregister(shortcut)
+		// Make sure not to unregister stream handlers.
+		guard
+			let shortcut = getShortcut(for: name),
+			!shortcutsForStreamHandlers.contains(shortcut)
+		else {
+			return
 		}
+
+		unregister(shortcut)
 	}
 
 	// TODO: Also add `.isEnabled(_ name: Name)`.
