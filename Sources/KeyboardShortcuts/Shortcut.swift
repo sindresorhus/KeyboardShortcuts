@@ -757,10 +757,18 @@ extension KeyboardShortcuts.Shortcut {
 			let specialKey = keyToSpecialKeyMapping[key]
 		{
 			if let keyEquivalent = specialKey.swiftUIKeyEquivalent {
-				return KeyboardShortcut(keyEquivalent, modifiers: modifiers.toEventModifiers)
+				if #available(macOS 12.0, *) {
+					return KeyboardShortcut(keyEquivalent, modifiers: modifiers.toEventModifiers, localization: .custom)
+				} else {
+					return KeyboardShortcut(keyEquivalent, modifiers: modifiers.toEventModifiers)
+				}
 			}
 		} else if let character = keyToCharacter() {
-			return KeyboardShortcut(KeyEquivalent(character), modifiers: modifiers.toEventModifiers)
+			if #available(macOS 12.0, *) {
+				return KeyboardShortcut(KeyEquivalent(character), modifiers: modifiers.toEventModifiers, localization: .custom)
+			} else {
+				return KeyboardShortcut(KeyEquivalent(character), modifiers: modifiers.toEventModifiers)
+			}
 		}
 
 		return nil

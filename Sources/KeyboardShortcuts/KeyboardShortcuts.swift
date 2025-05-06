@@ -168,7 +168,7 @@ public enum KeyboardShortcuts {
 
 	This can be used to reset the handlers before re-creating them to avoid having multiple handlers for the same shortcut.
 
-	- Note: This method does not affect listeners using `.on()`.
+	- Note: This method does not affect listeners using ``events(for:)``.
 	*/
 	public static func removeAllHandlers() {
 		let shortcutsToUnregister = shortcutsForLegacyHandlers.subtracting(shortcutsForStreamHandlers)
@@ -188,7 +188,7 @@ public enum KeyboardShortcuts {
 
 	- Parameter name: The name of the keyboard shortcut to remove handlers for.
 
-	- Note: This method does not affect listeners using `.on()`.
+	- Note: This method does not affect listeners using ``events(for:)``.
 	*/
 	public static func removeHandler(for name: Name) {
 		legacyKeyDownHandlers[name] = nil
@@ -208,13 +208,13 @@ public enum KeyboardShortcuts {
 	/**
 	Returns whether the keyboard shortcut for the given name is enabled.
 
-	This checks if the shortcut is registered and will trigger handlers. It respects `KeyboardShortcuts.isEnabled`.
+	This checks if the shortcut is registered and will trigger handlers. It respects the global ``isEnabled``.
 
 	```swift
 	let isEnabled = KeyboardShortcuts.isEnabled(for: .toggleUnicornMode)
 	```
 
-	- Tip: Use ``disable(_:)`` and ``enable(_:)`` to change the status.
+	- Tip: Use ``disable(_:)-(Name...)`` and ``enable(_:)-(Name...)`` to change the status.
 	*/
 	public static func isEnabled(for name: Name) -> Bool {
 		guard
@@ -438,6 +438,8 @@ public enum KeyboardShortcuts {
 
 	You can safely call this even if the user has not yet set a keyboard shortcut. It will just be inactive until they do.
 
+	- Important: This will be deprecated in the future. Prefer ``events(for:)`` for new code.
+
 	```swift
 	import AppKit
 	import KeyboardShortcuts
@@ -463,6 +465,8 @@ public enum KeyboardShortcuts {
 	You can register multiple listeners.
 
 	You can safely call this even if the user has not yet set a keyboard shortcut. It will just be inactive until they do.
+
+	- Important: This will be deprecated in the future. Prefer ``events(for:)`` for new code.
 
 	```swift
 	import AppKit
