@@ -182,28 +182,6 @@ public enum KeyboardShortcuts {
 	}
 
 	/**
-	Returns whether the keyboard shortcut for the given name is enabled.
-
-	This checks if the shortcut is registered and will trigger handlers. It respects `KeyboardShortcuts.isEnabled`.
-
-	```swift
-	let isEnabled = KeyboardShortcuts.isEnabled(for: .toggleUnicornMode)
-	```
-
-	- Tip: Use ``disable(_:)`` and ``enable(_:)`` to change the status.
-	*/
-	public static func isEnabled(for name: Name) -> Bool {
-		guard
-			isEnabled,
-			let shortcut = getShortcut(for: name)
-		else {
-			return false
-		}
-
-		return registeredShortcuts.contains(shortcut)
-	}
-
-	/**
 	Remove the keyboard shortcut handler for the given name.
 
 	This can be used to reset the handler before re-creating it to avoid having multiple handlers for the same shortcut.
@@ -225,6 +203,28 @@ public enum KeyboardShortcuts {
 		}
 
 		unregister(shortcut)
+	}
+
+	/**
+	Returns whether the keyboard shortcut for the given name is enabled.
+
+	This checks if the shortcut is registered and will trigger handlers. It respects `KeyboardShortcuts.isEnabled`.
+
+	```swift
+	let isEnabled = KeyboardShortcuts.isEnabled(for: .toggleUnicornMode)
+	```
+
+	- Tip: Use ``disable(_:)`` and ``enable(_:)`` to change the status.
+	*/
+	public static func isEnabled(for name: Name) -> Bool {
+		guard
+			isEnabled,
+			let shortcut = getShortcut(for: name)
+		else {
+			return false
+		}
+
+		return registeredShortcuts.contains(shortcut)
 	}
 
 	/**
