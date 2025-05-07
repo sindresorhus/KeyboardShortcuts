@@ -559,3 +559,105 @@ extension Character {
 		self = Character(content)
 	}
 }
+
+final class UserDefaultsObservation: NSObject {
+	typealias Callback = (_ newKeyValue: String?) -> Void
+
+	let key: String
+
+	static var observationContext = 0
+	private weak var suite: UserDefaults?
+	private var isObserving = false
+	private let callback: Callback
+	private var lock = NSLock()
+
+	init(
+		suite: UserDefaults,
+		key: String,
+		_ callback: @escaping Callback
+	) {
+		self.suite = suite
+		self.key = key
+		self.callback = callback
+	}
+
+	deinit {
+		invalidate()
+	}
+
+	func start() {
+		lock.withLock {
+			guard !isObserving else {
+				return
+			}
+
+			suite?.addObserver(
+				self,
+				forKeyPath: key,
+				options: [.new],
+				context: &Self.observationContext
+			)
+			isObserving = true
+		}
+	}
+
+	func invalidate() {
+		lock.withLock {
+			guard isObserving else {
+				return
+			}
+
+			suite?.removeObserver(
+				self,
+				forKeyPath: key
+			)
+			isObserving = false
+			suite = nil
+		}
+	}
+
+	func update(suite new: UserDefaults) {
+		invalidate()
+		suite = new
+		start()
+	}
+
+	// swiftlint:disable:next block_based_kvo
+	override func observeValue(
+		forKeyPath keyPath: String?,
+		of object: Any?,
+		change: [NSKeyValueChangeKey: Any]?, // swiftlint:disable:this discouraged_optional_collection
+		context: UnsafeMutableRawPointer?
+	) {
+		guard
+			context == &Self.observationContext
+		else {
+			super.observeValue(
+				forKeyPath: keyPath,
+				of: object,
+				change: change,
+				context: context
+			)
+			return
+		}
+
+		guard let selfSuite = suite else {
+			invalidate()
+			return
+		}
+
+		guard
+			selfSuite == (object as? UserDefaults),
+			let change
+		else {
+			return
+		}
+
+		guard keyPath == key else {
+			return
+		}
+
+		let encodedString = change[.newKey] as? String
+		callback(encodedString)
+	}
+}

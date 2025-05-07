@@ -37,6 +37,31 @@ public enum KeyboardShortcuts {
 
 	private static var openMenuObserver: NSObjectProtocol?
 	private static var closeMenuObserver: NSObjectProtocol?
+	private static var userDefaultsObservers = [UserDefaultsObservation]()
+
+	/**
+	The `UserDefaults` instance used to store and retrieve keyboard shortcut configurations.
+	
+	By default, this uses the standard `UserDefaults` instance. You can customize this to use a different `UserDefaults` instance, for example, to store shortcuts in a specific app group or to use a custom `UserDefaults` instance for testing.
+	
+	```swift
+	// Example: Using a custom UserDefaults instance
+	KeyboardShortcuts.userDefaults = UserDefaults(suiteName: "com.example.suite")!
+	
+	// Example: Using a custom UserDefaults instance for testing
+	KeyboardShortcuts.userDefaults = UserDefaults(suiteName: "test")!
+	```
+	
+	- Important: Changing this property will not migrate existing shortcuts from the previous `UserDefaults` instance.
+	- Note: All keyboard shortcut configurations are stored with the prefix `KeyboardShortcuts_` to avoid conflicts with other app data.
+	*/
+	public static var userDefaults = UserDefaults.standard {
+		didSet {
+			for observer in userDefaultsObservers {
+				observer.update(suite: userDefaults)
+			}
+		}
+	}
 
 	/**
 	When `true`, event handlers will not be called for registered keyboard shortcuts.
@@ -59,7 +84,7 @@ public enum KeyboardShortcuts {
 	}
 
 	static var allNames: Set<Name> {
-		UserDefaults.standard.dictionaryRepresentation()
+		Self.userDefaults.dictionaryRepresentation()
 			.compactMap { key, _ in
 				guard key.hasPrefix(userDefaultsPrefix) else {
 					return nil
@@ -179,6 +204,12 @@ public enum KeyboardShortcuts {
 
 		legacyKeyDownHandlers = [:]
 		legacyKeyUpHandlers = [:]
+
+		// invalidate and remove all elements of userDefaultsObservers
+		for observer in userDefaultsObservers {
+			observer.invalidate()
+		}
+		userDefaultsObservers.removeAll()
 	}
 
 	/**
@@ -370,7 +401,7 @@ public enum KeyboardShortcuts {
 	*/
 	public static func getShortcut(for name: Name) -> Shortcut? {
 		guard
-			let data = UserDefaults.standard.string(forKey: userDefaultsKey(for: name))?.data(using: .utf8),
+			let data = Self.userDefaults.string(forKey: userDefaultsKey(for: name))?.data(using: .utf8),
 			let decoded = try? JSONDecoder().decode(Shortcut.self, from: data)
 		else {
 			return nil
@@ -457,6 +488,9 @@ public enum KeyboardShortcuts {
 	public static func onKeyDown(for name: Name, action: @escaping () -> Void) {
 		legacyKeyDownHandlers[name, default: []].append(action)
 		registerShortcutIfNeeded(for: name)
+
+		// observe changes to the UserDefaults instance for the given shortcut name
+		startObservingShortcutIfNeeded(for: name)
 	}
 
 	/**
@@ -485,11 +519,54 @@ public enum KeyboardShortcuts {
 	public static func onKeyUp(for name: Name, action: @escaping () -> Void) {
 		legacyKeyUpHandlers[name, default: []].append(action)
 		registerShortcutIfNeeded(for: name)
+
+		// observe changes to the UserDefaults instance for the given shortcut name
+		startObservingShortcutIfNeeded(for: name)
 	}
 
 	private static let userDefaultsPrefix = "KeyboardShortcuts_"
 
-	private static func userDefaultsKey(for shortcutName: Name) -> String { "\(userDefaultsPrefix)\(shortcutName.rawValue)"
+	private static func userDefaultsKey(for shortcutName: Name) -> String {
+		"\(userDefaultsPrefix)\(shortcutName.rawValue)"
+	}
+
+	/**
+	Start observing changes to the `UserDefaults` instance for a specific shortcut name.
+
+	This function manages the lifecycle of observations for keyboard shortcuts in the given `UserDefaults` instance (set by `userDefaults` property):
+	- Checks if the shortcut is already being observed
+	- If already observed, restarts the observation
+	- If not observed, creates a new observation and adds it to the observers list
+	
+	The observation handles changes to the shortcut configuration in the suite:
+	- When the shortcut is removed (value becomes nil), unregisters the shortcut
+	- When the shortcut is added or modified, registers the new shortcut
+	
+	- Parameter name: The name of the shortcut to observe
+	*/
+	private static func startObservingShortcutIfNeeded(for name: Name) {
+		let key = userDefaultsKey(for: name)
+
+		// check userDefaultsObservers to see if we are already observing this key
+		if let observer = userDefaultsObservers.first(where: { $0.key == key }) {
+			observer.start()
+			return
+		}
+
+		let observer = UserDefaultsObservation(
+			suite: userDefaults,
+			key: key
+		) { value in
+			if value == nil {
+				self.unregisterShortcutIfNeeded(for: name)
+			} else {
+				self.registerShortcutIfNeeded(for: name)
+			}
+		}
+
+		observer.start()
+
+		userDefaultsObservers.append(observer)
 	}
 
 	static func userDefaultsDidChange(name: Name) {
@@ -507,7 +584,7 @@ public enum KeyboardShortcuts {
 		}
 
 		register(shortcut)
-		UserDefaults.standard.set(encoded, forKey: userDefaultsKey(for: name))
+		Self.userDefaults.set(encoded, forKey: userDefaultsKey(for: name))
 		userDefaultsDidChange(name: name)
 	}
 
@@ -516,7 +593,7 @@ public enum KeyboardShortcuts {
 			return
 		}
 
-		UserDefaults.standard.set(false, forKey: userDefaultsKey(for: name))
+		Self.userDefaults.set(false, forKey: userDefaultsKey(for: name))
 		unregister(shortcut)
 		userDefaultsDidChange(name: name)
 	}
@@ -526,13 +603,13 @@ public enum KeyboardShortcuts {
 			return
 		}
 
-		UserDefaults.standard.removeObject(forKey: userDefaultsKey(for: name))
+		Self.userDefaults.removeObject(forKey: userDefaultsKey(for: name))
 		unregister(shortcut)
 		userDefaultsDidChange(name: name)
 	}
 
 	static func userDefaultsContains(name: Name) -> Bool {
-		UserDefaults.standard.object(forKey: userDefaultsKey(for: name)) != nil
+		Self.userDefaults.object(forKey: userDefaultsKey(for: name)) != nil
 	}
 }
 
@@ -585,6 +662,9 @@ extension KeyboardShortcuts {
 				}
 
 				registerShortcutIfNeeded(for: name)
+
+				// observe changes to the UserDefaults instance for the given shortcut name
+				startObservingShortcutIfNeeded(for: name)
 			}
 
 			continuation.onTermination = { _ in
