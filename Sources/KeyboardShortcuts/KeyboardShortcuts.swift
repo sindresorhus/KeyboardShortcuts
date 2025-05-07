@@ -205,7 +205,27 @@ public enum KeyboardShortcuts {
 		unregister(shortcut)
 	}
 
-	// TODO: Also add `.isEnabled(_ name: Name)`.
+	/**
+	Returns whether the keyboard shortcut for the given name is enabled.
+
+	This checks if the shortcut is registered and will trigger handlers. It respects `KeyboardShortcuts.isEnabled`.
+
+	```swift
+	let isEnabled = KeyboardShortcuts.isEnabled(for: .toggleUnicornMode)
+	```
+
+	- Tip: Use ``disable(_:)`` and ``enable(_:)`` to change the status.
+	*/
+	public static func isEnabled(for name: Name) -> Bool {
+		guard
+			isEnabled,
+			let shortcut = getShortcut(for: name)
+		else {
+			return false
+		}
+
+		return registeredShortcuts.contains(shortcut)
+	}
 
 	/**
 	Disable the keyboard shortcut for one or more names.
