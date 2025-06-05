@@ -104,7 +104,7 @@ extension KeyboardShortcuts.Shortcut {
 	/**
 	Check whether the keyboard shortcut is disallowed.
 	*/
-	var isDisallowed: Bool {
+	public var isDisallowed: Bool {
 		let osVersion = ProcessInfo.processInfo.operatingSystemVersion
 
 		guard
@@ -127,7 +127,7 @@ extension KeyboardShortcuts.Shortcut {
 	/**
 	Check whether the keyboard shortcut is already taken by the system.
 	*/
-	var isTakenBySystem: Bool {
+	public var isTakenBySystem: Bool {
 		guard self != Self(.f12, modifiers: []) else {
 			return false
 		}
@@ -173,7 +173,7 @@ extension KeyboardShortcuts.Shortcut {
 	Returns a menu item in the app's main menu that has a matching key equivalent and modifier.
 	*/
 	@MainActor
-	var takenByMainMenu: NSMenuItem? {
+	public var takenByMainMenu: NSMenuItem? {
 		guard let mainMenu = NSApp.mainMenu else {
 			return nil
 		}
