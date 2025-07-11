@@ -381,6 +381,9 @@ public enum KeyboardShortcuts {
 
 	private static func handleOnKeyDown(_ shortcut: Shortcut) {
 		guard !isPaused else {
+			NSAlert.showModal(
+				for: nil,
+				title: "keyboard_shortcut_used_by_other_action".localized)
 			return
 		}
 
@@ -407,6 +410,9 @@ public enum KeyboardShortcuts {
 
 	private static func handleOnKeyUp(_ shortcut: Shortcut) {
 		guard !isPaused else {
+			NSAlert.showModal(
+				for: nil,
+				title: "keyboard_shortcut_used_by_other_action".localized)
 			return
 		}
 
