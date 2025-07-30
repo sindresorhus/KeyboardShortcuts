@@ -276,14 +276,21 @@ extension KeyboardShortcuts {
 					// TODO: Find a better way to make it possible to dismiss the alert by pressing "Enter". How can we make the input automatically temporarily lose focus while the alert is open?
 					blur()
 
-					NSAlert.showModal(
+					let modalResponse = NSAlert.showModal(
 						for: window,
-						title: String.localizedStringWithFormat("keyboard_shortcut_used_by_menu_item".localized, menuItem.title)
+						title: String.localizedStringWithFormat("keyboard_shortcut_used_by_menu_item".localized, menuItem.title),
+						buttonTitles: [
+							"ok".localized,
+							"force_use_shortcut".localized,
+						]
 					)
 
 					focus()
 
-					return nil
+					// If the user has selected "Use Anyway" in the dialog (the second option), we'll continue setting the keyboard shorcut even though it's reserved by a menu item.
+					guard modalResponse == .alertSecondButtonReturn else {
+						return nil
+					}
 				}
 
 				// See: https://developer.apple.com/forums/thread/763878?answerId=804374022#804374022
