@@ -1,0 +1,9 @@
+"record_shortcut" = "Registra abbreviazione";
+"press_shortcut" = "Premi abbreviazione";
+"keyboard_shortcut_used_by_menu_item" = "Questa abbreviazione non può essere usata perché già assegnata alla voce di menu “%@“.";
+"keyboard_shortcut_used_by_system" = "Questa abbreviazione non può essere usata perché già riservata al sistema.";
+"keyboard_shortcuts_can_be_changed" = "La maggior parte delle abbreviazioni di sistema può essere modificata in “Impostazioni di sistema › Tastiera › Abbreviazioni da tastiera”.";
+"keyboard_shortcut_disallowed" = "Il tasto Opzione deve essere usato insieme a Comando o Controllo.";
+"force_use_shortcut" = "Usa comunque";
+"ok" = "OK";
+"space_key" = "Spazio";
