@@ -1,9 +1,9 @@
-"record_shortcut" = "Record shortcut";
-"press_shortcut" = "Press shortcut";
+"record_shortcut" = "Record Shortcut";
+"press_shortcut" = "Press Shortcut";
 "keyboard_shortcut_used_by_menu_item" = "This keyboard shortcut cannot be used as it’s already used by the “%@” menu item.";
 "keyboard_shortcut_used_by_system" = "This keyboard shortcut cannot be used as it’s already a system-wide keyboard shortcut.";
 "keyboard_shortcuts_can_be_changed" = "Most system-wide keyboard shortcuts can be changed in “System Settings › Keyboard › Keyboard Shortcuts”.";
 "keyboard_shortcut_disallowed" = "Option modifier must be combined with Command or Control.";
-"force_use_shortcut" = "Use anyway";
+"force_use_shortcut" = "Use Anyway";
 "ok" = "OK";
 "space_key" = "Space";
