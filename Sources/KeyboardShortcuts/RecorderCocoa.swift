@@ -27,8 +27,12 @@ extension KeyboardShortcuts {
 	```
 	*/
 	public final class RecorderCocoa: NSSearchField, NSSearchFieldDelegate {
+		public enum StorageMode {
+			case persist(Name, onChange: ((_ shortcut: Shortcut?) -> Void)?)
+			case binding(get: () -> Shortcut?, set: (Shortcut?) -> Void)
+		}
 		private let minimumWidth = 130.0
-		private let onChange: ((_ shortcut: Shortcut?) -> Void)?
+		private let storageMode: StorageMode
 		private var canBecomeKey = false
 		private var eventMonitor: LocalEventMonitor?
 		private var shortcutsNameChangeObserver: NSObjectProtocol?
@@ -86,7 +90,7 @@ extension KeyboardShortcuts {
 			onChange: ((_ shortcut: Shortcut?) -> Void)? = nil
 		) {
 			self.shortcutName = name
-			self.onChange = onChange
+			self.storageMode = .persist(name, onChange: onChange)
 
 			super.init(frame: .zero)
 			self.delegate = self
@@ -106,6 +110,37 @@ extension KeyboardShortcuts {
 			setUpEvents()
 		}
 
+		public init(
+			get: @escaping () -> Shortcut?,
+			set: @escaping (Shortcut?) -> Void
+		) {
+			self.storageMode = .binding(get: get, set: set)
+			// Not used in binding mode, but must be initialized.
+			self.shortcutName = .init("_binding")
+
+			super.init(frame: .zero)
+			self.delegate = self
+			self.placeholderString = "record_shortcut".localized
+			self.alignment = .center
+			(cell as? NSSearchFieldCell)?.searchButtonCell = nil
+
+			self.wantsLayer = true
+			setContentHuggingPriority(.defaultHigh, for: .vertical)
+			setContentHuggingPriority(.defaultHigh, for: .horizontal)
+
+			// Hide the cancel button when not showing the shortcut so the placeholder text is properly centered. Must be last.
+			self.cancelButton = (cell as? NSSearchFieldCell)?.cancelButtonCell
+
+			// Initialize display from binding source
+			if case let .binding(get, _) = storageMode {
+				let current = get()
+				stringValue = current.map { "\($0)" } ?? ""
+				showsCancelButton = !stringValue.isEmpty
+			}
+
+			setUpEvents()
+		}
+
 		@available(*, unavailable)
 		public required init?(coder: NSCoder) {
 			fatalError("init(coder:) has not been implemented")
@@ -119,6 +154,9 @@ extension KeyboardShortcuts {
 		}
 
 		private func setUpEvents() {
+			// Only observe name-based changes when in persist mode.
+			guard case .persist = storageMode else { return }
+
 			shortcutsNameChangeObserver = NotificationCenter.default.addObserver(forName: .shortcutByNameDidChange, object: nil, queue: nil) { [weak self] notification in
 				guard
 					let self,
@@ -129,6 +167,25 @@ extension KeyboardShortcuts {
 				}
 
 				setStringValue(name: nameInNotification)
+			}
+		}
+
+		// Sync the field display from the current storage mode source when not recording.
+		public func syncDisplayedShortcutFromSource() {
+			guard eventMonitor == nil else { return }
+
+			let current: Shortcut?
+			switch storageMode {
+			case .persist:
+				current = getShortcut(for: shortcutName)
+			case .binding(let get, _):
+				current = get()
+			}
+
+			let newString = current.map { "\($0)" } ?? ""
+			if stringValue != newString {
+				stringValue = newString
+				showsCancelButton = !newString.isEmpty
 			}
 		}
 
@@ -334,8 +391,13 @@ extension KeyboardShortcuts {
 		}
 
 		private func saveShortcut(_ shortcut: Shortcut?) {
-			setShortcut(shortcut, for: shortcutName)
-			onChange?(shortcut)
+			switch storageMode {
+			case .persist(_, let onChange):
+				setShortcut(shortcut, for: shortcutName)
+				onChange?(shortcut)
+			case .binding(_, let set):
+				set(shortcut)
+			}
 		}
 	}
 }

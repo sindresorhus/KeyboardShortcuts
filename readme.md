@@ -114,6 +114,35 @@ final class SettingsViewController: NSViewController {
 }
 ```
 
+#### Cocoa binding mode (no built-in persistence)
+
+If you prefer to manage storage yourself (for example, to bind into your own state or model), use the binding initializer:
+
+```swift
+import AppKit
+import KeyboardShortcuts
+
+final class SettingsViewController: NSViewController {
+    var customShortcut: KeyboardShortcuts.Shortcut?
+
+    override func loadView() {
+        view = NSView()
+
+        let recorder = KeyboardShortcuts.RecorderCocoa(
+            get: { [weak self] in self?.customShortcut },
+            set: { [weak self] in self?.customShortcut = $0 }
+        )
+
+        view.addSubview(recorder)
+    }
+}
+```
+
+Note about callbacks:
+
+- `onChange` is only available and triggered in the persist-based APIs (for example, `RecorderCocoa(for:onChange:)` and the SwiftUI `KeyboardShortcuts.Recorder`).
+- In binding mode (`RecorderCocoa(get:set:)`), side-effects should be handled in your `set` closure. There is no `onChange` parameter in this initializer.
+
 ## Localization
 
 This package supports [localizations](/Sources/KeyboardShortcuts/Localization). PR welcome for more!
