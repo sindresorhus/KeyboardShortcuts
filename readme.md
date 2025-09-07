@@ -114,34 +114,34 @@ final class SettingsViewController: NSViewController {
 }
 ```
 
-#### Cocoa binding mode (no built-in persistence)
+#### SwiftUI binding mode (no built-in persistence, supports multi-chord sequences)
 
-If you prefer to manage storage yourself (for example, to bind into your own state or model), use the binding initializer:
+If you prefer to manage storage yourself (for example, to bind into your own state or model) and/or want to support multi-chord shortcuts like “Ctrl-K Ctrl-S”, use `ShortcutRecordView` with a binding. You can enable multi-chord recording by turning on sequences and setting a max length.
 
 ```swift
-import AppKit
+import SwiftUI
 import KeyboardShortcuts
 
-final class SettingsViewController: NSViewController {
-    var customShortcut: KeyboardShortcuts.Shortcut?
+struct SettingsView: View {
+    // Store in your own model/state. This supports multi-chord sequences like Ctrl-K Ctrl-S.
+    @State private var sequence: ShortcutSequence = .init([])
 
-    override func loadView() {
-        view = NSView()
-
-        let recorder = KeyboardShortcuts.RecorderCocoa(
-            get: { [weak self] in self?.customShortcut },
-            set: { [weak self] in self?.customShortcut = $0 }
-        )
-
-        view.addSubview(recorder)
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Shortcut: \(sequence.presentableDescription.isEmpty ? "–" : sequence.presentableDescription)")
+            // Enable multi-chord recording by turning on `enableSequences`.
+            ShortcutRecordView(
+                sequence: $sequence,
+                option: .init(enableSequences: true, maxSequenceLength: 2)
+            )
+        }
+        .padding()
     }
 }
 ```
 
 Note about callbacks:
-
-- `onChange` is only available and triggered in the persist-based APIs (for example, `RecorderCocoa(for:onChange:)` and the SwiftUI `KeyboardShortcuts.Recorder`).
-- In binding mode (`RecorderCocoa(get:set:)`), side-effects should be handled in your `set` closure. There is no `onChange` parameter in this initializer.
+- In binding mode (`ShortcutRecordView(sequence:)`), handle side-effects in your bound state update. There is no `onChange` parameter in these initializers.
 
 ## Localization
 

@@ -8,6 +8,27 @@ extension KeyboardShortcuts.Name {
 	static let testShortcut4 = Self("testShortcut4")
 }
 
+private struct MultiChordRecorder: View {
+    @State private var sequence: ShortcutSequence = .init([])
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Multi-chord Recorder")
+                .bold()
+            Text("Recorded:")
+            Text(sequence.presentableDescription.isEmpty ? "-" : sequence.presentableDescription)
+                .font(.system(.body, design: .monospaced))
+                .foregroundStyle(.secondary)
+            ShortcutRecordView(
+                sequence: $sequence,
+                option: .init(enableSequences: true, maxSequenceLength: 2)
+            )
+        }
+        .frame(maxWidth: 300)
+        .padding()
+    }
+}
+
 private struct DynamicShortcutRecorder: View {
 	@FocusState private var isFocused: Bool
 
@@ -123,14 +144,16 @@ private struct DoubleShortcut: View {
 }
 
 struct MainScreen: View {
-	var body: some View {
-		VStack {
-			DoubleShortcut()
-			Divider()
-			DynamicShortcut()
-		}
-		.frame(width: 400, height: 320)
-	}
+    var body: some View {
+        VStack {
+            DoubleShortcut()
+            Divider()
+            DynamicShortcut()
+            Divider()
+            MultiChordRecorder()
+        }
+        .frame(width: 400, height: 400)
+    }
 }
 
 #Preview {

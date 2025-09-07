@@ -10,9 +10,23 @@ extension KeyboardShortcuts {
 
 			// Check if the keyboard shortcut is already taken by the app's main menu
 			public let checkMenuCollision: Bool
-			public init(allowOnlyShiftModifier: Bool = false, checkMenuCollision: Bool = true) {
+
+			// Allow recording a sequence of shortcuts
+			public let enableSequences: Bool
+
+			// The maximum number of shortcuts in a sequence.
+			public let maxSequenceLength: Int
+
+			public init(
+				allowOnlyShiftModifier: Bool = false,
+				checkMenuCollision: Bool = true,
+				enableSequences: Bool = false,
+				maxSequenceLength: Int = 2
+			) {
 				self.allowOnlyShiftModifier = allowOnlyShiftModifier
 				self.checkMenuCollision = checkMenuCollision
+				self.enableSequences = enableSequences
+				self.maxSequenceLength = maxSequenceLength
 			}
 		}
 
@@ -41,8 +55,10 @@ extension KeyboardShortcuts {
 	*/
 	public final class RecorderCocoa: NSSearchField, NSSearchFieldDelegate {
 		public enum StorageMode {
+			// `.persist` mode does not support sequences.
 			case persist(Name, onChange: ((_ shortcut: Shortcut?) -> Void)?)
-			case binding(get: () -> Shortcut?, set: (Shortcut?) -> Void)
+			// `.binding` mode can support sequences.
+			case binding(get: () -> [Shortcut], set: ([Shortcut]) -> Void)
 		}
 		private let minimumWidth = 130.0
 		private let storageMode: StorageMode
@@ -51,7 +67,11 @@ extension KeyboardShortcuts {
 		private var shortcutsNameChangeObserver: NSObjectProtocol?
 		private var windowDidResignKeyObserver: NSObjectProtocol?
 		private var windowDidBecomeKeyObserver: NSObjectProtocol?
-			private let recorderOption: RecorderOption
+		private let recorderOption: RecorderOption
+
+		// For sequence recording.
+		private var recordedChords: [Shortcut] = []
+		private var recordingTimer: Timer?
 
 		/**
 		The shortcut name for the recorder.
@@ -104,6 +124,7 @@ extension KeyboardShortcuts {
 				onChange: ((_ shortcut: Shortcut?) -> Void)? = nil,
 				option: RecorderOption = RecorderOption()
 		) {
+			precondition(!option.enableSequences, "The `.persist` storage mode for KeyboardShortcuts.RecorderCocoa does not support sequences.")
 			self.shortcutName = name
 			self.storageMode = .persist(name, onChange: onChange)
 				self.recorderOption = option
@@ -127,8 +148,8 @@ extension KeyboardShortcuts {
 		}
 
 		public init(
-			get: @escaping () -> Shortcut?,
-				set: @escaping (Shortcut?) -> Void,
+			get: @escaping () -> [Shortcut],
+				set: @escaping ([Shortcut]) -> Void,
 				option: RecorderOption = RecorderOption()
 		) {
 			self.storageMode = .binding(get: get, set: set)
@@ -152,7 +173,7 @@ extension KeyboardShortcuts {
 			// Initialize display from binding source
 			if case let .binding(get, _) = storageMode {
 				let current = get()
-				stringValue = current.map { "\($0)" } ?? ""
+				stringValue = current.presentableDescription
 				showsCancelButton = !stringValue.isEmpty
 			}
 
@@ -188,25 +209,6 @@ extension KeyboardShortcuts {
 			}
 		}
 
-		// Sync the field display from the current storage mode source when not recording.
-		public func syncDisplayedShortcutFromSource() {
-			guard eventMonitor == nil else { return }
-
-			let current: Shortcut?
-			switch storageMode {
-			case .persist:
-				current = getShortcut(for: shortcutName)
-			case .binding(let get, _):
-				current = get()
-			}
-
-			let newString = current.map { "\($0)" } ?? ""
-			if stringValue != newString {
-				stringValue = newString
-				showsCancelButton = !newString.isEmpty
-			}
-		}
-
 		private func endRecording() {
 			eventMonitor = nil
 			placeholderString = "record_shortcut".localized
@@ -228,7 +230,8 @@ extension KeyboardShortcuts {
 		/// :nodoc:
 		public func controlTextDidChange(_ object: Notification) {
 			if stringValue.isEmpty {
-				saveShortcut(nil)
+				// Pass an empty array for non-optional bindings.
+				saveShortcut([])
 			}
 
 			showsCancelButton = !stringValue.isEmpty
@@ -338,69 +341,65 @@ extension KeyboardShortcuts {
 				}
 
 				guard
-						self.recorderOption.allowOnlyShiftModifier
-							|| (!event.modifiers.subtracting([.shift, .function]).isEmpty
-								|| event.specialKey?.isFunctionKey == true),
-					let shortcut = Shortcut(event: event)
+					self.recorderOption.allowOnlyShiftModifier
+						|| (!event.modifiers.subtracting([.shift, .function]).isEmpty
+							|| event.specialKey?.isFunctionKey == true),
+					let newShortcut = Shortcut(event: event)
 				else {
 					NSSound.beep()
 					return nil
 				}
 
-					if self.recorderOption.checkMenuCollision, let menuItem = shortcut.takenByMainMenu {
-					// TODO: Find a better way to make it possible to dismiss the alert by pressing "Enter". How can we make the input automatically temporarily lose focus while the alert is open?
+				// Perform collision checks for the new chord.
+				if self.recorderOption.checkMenuCollision, let menuItem = newShortcut.takenByMainMenu {
 					blur()
-
-					NSAlert.showModal(
-						for: window,
-						title: String.localizedStringWithFormat("keyboard_shortcut_used_by_menu_item".localized, menuItem.title)
-					)
-
-					focus()
-
-					return nil
-				}
-
-				// See: https://developer.apple.com/forums/thread/763878?answerId=804374022#804374022
-					if !self.recorderOption.allowOnlyShiftModifier && shortcut.isDisallowed {
-					blur()
-
-					NSAlert.showModal(
-						for: window,
-						title: "keyboard_shortcut_disallowed".localized
-					)
-
+					NSAlert.showModal(for: window, title: String.localizedStringWithFormat("keyboard_shortcut_used_by_menu_item".localized, menuItem.title))
 					focus()
 					return nil
 				}
 
-				if shortcut.isTakenBySystem {
+				if !self.recorderOption.allowOnlyShiftModifier && newShortcut.isDisallowed {
 					blur()
-
-					let modalResponse = NSAlert.showModal(
-						for: window,
-						title: "keyboard_shortcut_used_by_system".localized,
-						// TODO: Add button to offer to open the relevant system settings pane for the user.
-						message: "keyboard_shortcuts_can_be_changed".localized,
-						buttonTitles: [
-							"ok".localized,
-							"force_use_shortcut".localized
-						]
-					)
-
+					NSAlert.showModal(for: window, title: "keyboard_shortcut_disallowed".localized)
 					focus()
+					return nil
+				}
 
-					// If the user has selected "Use Anyway" in the dialog (the second option), we'll continue setting the keyboard shorcut even though it's reserved by the system.
+				if newShortcut.isTakenBySystem {
+					blur()
+					let modalResponse = NSAlert.showModal(for: window, title: "keyboard_shortcut_used_by_system".localized, message: "keyboard_shortcuts_can_be_changed".localized, buttonTitles: ["ok".localized, "force_use_shortcut".localized])
+					focus()
 					guard modalResponse == .alertSecondButtonReturn else {
 						return nil
 					}
 				}
 
-				stringValue = "\(shortcut)"
+				// If sequences are not enabled, finalize recording immediately.
+				guard self.recorderOption.enableSequences else {
+					stringValue = newShortcut.description
+					showsCancelButton = true
+					saveShortcut([newShortcut])
+					blur()
+					return nil
+				}
+
+				// If sequences are enabled, append and wait for the next chord or timeout.
+				recordedChords.append(newShortcut)
+
+				// If the sequence reaches its maximum length, finalize the recording immediately.
+				if recordedChords.count >= self.recorderOption.maxSequenceLength {
+					finalizeRecording()
+					return nil
+				}
+
+				stringValue = recordedChords.presentableDescription + "…"
 				showsCancelButton = true
 
-				saveShortcut(shortcut)
-				blur()
+				// Reset the timer. If it fires, the recording is finalized.
+				recordingTimer?.invalidate()
+				recordingTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { [weak self] _ in
+					self?.finalizeRecording()
+				}
 
 				return nil
 			}.start()
@@ -408,14 +407,33 @@ extension KeyboardShortcuts {
 			return shouldBecomeFirstResponder
 		}
 
-		private func saveShortcut(_ shortcut: Shortcut?) {
+		private func saveShortcut(_ shortcuts: [Shortcut]) {
 			switch storageMode {
 			case .persist(_, let onChange):
+				// `.persist` mode only supports single shortcuts.
+				let shortcut = shortcuts.first
 				setShortcut(shortcut, for: shortcutName)
 				onChange?(shortcut)
 			case .binding(_, let set):
-				set(shortcut)
+				set(shortcuts)
 			}
+		}
+
+		private func finalizeRecording() {
+			recordingTimer?.invalidate()
+			recordingTimer = nil
+
+			guard !recordedChords.isEmpty else {
+				blur()
+				return
+			}
+
+			let finalShortcuts = recordedChords
+			recordedChords = []
+
+			stringValue = finalShortcuts.presentableDescription
+			saveShortcut(finalShortcuts)
+			blur()
 		}
 	}
 }

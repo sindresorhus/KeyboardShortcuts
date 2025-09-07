@@ -748,6 +748,30 @@ extension KeyboardShortcuts.Shortcut: CustomStringConvertible {
 	}
 }
 
+
+// Represents a sequence of keyboard shortcuts, like `ctrl-k ctrl-s`.
+// This is useful for recording and representing multi-step shortcuts.
+// For example, a sequence can represent pressing “Control-K” followed by “Control-S”.
+public struct ShortcutSequence: Codable, Hashable, Sendable {
+	public var shortcuts: [KeyboardShortcuts.Shortcut]
+
+	public init(_ shortcuts: [KeyboardShortcuts.Shortcut]) {
+		self.shortcuts = shortcuts
+	}
+
+	@MainActor
+	public var presentableDescription: String {
+		shortcuts.map(\.presentableDescription).joined(separator: " ")
+	}
+}
+
+extension [KeyboardShortcuts.Shortcut] {
+	@MainActor
+	var presentableDescription: String {
+		map(\.presentableDescription).joined(separator: " ")
+	}
+}
+
 extension KeyboardShortcuts.Shortcut {
 	@available(macOS 11, *)
 	@MainActor
