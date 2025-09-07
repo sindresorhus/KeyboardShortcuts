@@ -4,13 +4,18 @@ import SwiftUI
 
 public struct ShortcutRecordView: View {
   @Binding var shortcut: KeyboardShortcuts.Shortcut?
+    let option: KeyboardShortcuts.RecorderOption
 
-  public init(shortcut: Binding<KeyboardShortcuts.Shortcut?>) {
+    public init(
+      shortcut: Binding<KeyboardShortcuts.Shortcut?>,
+      option: KeyboardShortcuts.RecorderOption = KeyboardShortcuts.RecorderOption()
+    ) {
     self._shortcut = shortcut
+      self.option = option
   }
 
   public var body: some View {
-    BindingRecorder(shortcut: $shortcut)
+      BindingRecorder(shortcut: $shortcut, option: option)
   }
 }
 
@@ -18,11 +23,14 @@ private struct BindingRecorder: NSViewRepresentable {
   typealias NSViewType = KeyboardShortcuts.RecorderCocoa
 
   @Binding var shortcut: KeyboardShortcuts.Shortcut?
+    let option: KeyboardShortcuts.RecorderOption
+
 
   func makeNSView(context: Context) -> NSViewType {
     let view = KeyboardShortcuts.RecorderCocoa(
       get: { self.shortcut },
-      set: { self.shortcut = $0 }
+        set: { self.shortcut = $0 },
+        option: option
     )
     return view
   }

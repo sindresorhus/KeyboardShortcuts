@@ -3,6 +3,19 @@ import AppKit
 import Carbon.HIToolbox
 
 extension KeyboardShortcuts {
+		public struct RecorderOption {
+			// Allow recording only the `Shift` modifier key like `shift+a`
+			// The “shift” key is not allowed without other modifiers or a function key after macOS 14
+			public let allowOnlyShiftModifier: Bool
+
+			// Check if the keyboard shortcut is already taken by the app's main menu
+			public let checkMenuCollision: Bool
+			public init(allowOnlyShiftModifier: Bool = false, checkMenuCollision: Bool = true) {
+				self.allowOnlyShiftModifier = allowOnlyShiftModifier
+				self.checkMenuCollision = checkMenuCollision
+			}
+		}
+
 	/**
 	A `NSView` that lets the user record a keyboard shortcut.
 
@@ -38,6 +51,7 @@ extension KeyboardShortcuts {
 		private var shortcutsNameChangeObserver: NSObjectProtocol?
 		private var windowDidResignKeyObserver: NSObjectProtocol?
 		private var windowDidBecomeKeyObserver: NSObjectProtocol?
+			private let recorderOption: RecorderOption
 
 		/**
 		The shortcut name for the recorder.
@@ -87,10 +101,12 @@ extension KeyboardShortcuts {
 		*/
 		public required init(
 			for name: Name,
-			onChange: ((_ shortcut: Shortcut?) -> Void)? = nil
+				onChange: ((_ shortcut: Shortcut?) -> Void)? = nil,
+				option: RecorderOption = RecorderOption()
 		) {
 			self.shortcutName = name
 			self.storageMode = .persist(name, onChange: onChange)
+				self.recorderOption = option
 
 			super.init(frame: .zero)
 			self.delegate = self
@@ -112,11 +128,13 @@ extension KeyboardShortcuts {
 
 		public init(
 			get: @escaping () -> Shortcut?,
-			set: @escaping (Shortcut?) -> Void
+				set: @escaping (Shortcut?) -> Void,
+				option: RecorderOption = RecorderOption()
 		) {
 			self.storageMode = .binding(get: get, set: set)
 			// Not used in binding mode, but must be initialized.
 			self.shortcutName = .init("_binding")
+				self.recorderOption = option
 
 			super.init(frame: .zero)
 			self.delegate = self
@@ -319,17 +337,17 @@ extension KeyboardShortcuts {
 					return nil
 				}
 
-				// The “shift” key is not allowed without other modifiers or a function key, since it doesn't actually work.
 				guard
-					!event.modifiers.subtracting([.shift, .function]).isEmpty
-						|| event.specialKey?.isFunctionKey == true,
+						self.recorderOption.allowOnlyShiftModifier
+							|| (!event.modifiers.subtracting([.shift, .function]).isEmpty
+								|| event.specialKey?.isFunctionKey == true),
 					let shortcut = Shortcut(event: event)
 				else {
 					NSSound.beep()
 					return nil
 				}
 
-				if let menuItem = shortcut.takenByMainMenu {
+					if self.recorderOption.checkMenuCollision, let menuItem = shortcut.takenByMainMenu {
 					// TODO: Find a better way to make it possible to dismiss the alert by pressing "Enter". How can we make the input automatically temporarily lose focus while the alert is open?
 					blur()
 
@@ -344,7 +362,7 @@ extension KeyboardShortcuts {
 				}
 
 				// See: https://developer.apple.com/forums/thread/763878?answerId=804374022#804374022
-				if shortcut.isDisallowed {
+					if !self.recorderOption.allowOnlyShiftModifier && shortcut.isDisallowed {
 					blur()
 
 					NSAlert.showModal(
