@@ -146,14 +146,17 @@ extension KeyboardShortcuts.Shortcut {
 			var keyEquivalent = item.keyEquivalent
 			var keyEquivalentModifierMask = item.keyEquivalentModifierMask
 
-			if modifiers.contains(.shift), keyEquivalent.lowercased() != keyEquivalent {
+			if
+				modifiers.contains(.shift),
+				keyEquivalent.lowercased() != keyEquivalent
+			{
 				keyEquivalent = keyEquivalent.lowercased()
 				keyEquivalentModifierMask.insert(.shift)
 			}
 
 			if
-				self.nsMenuItemKeyEquivalent == keyEquivalent, // Note `nil != ""`
-				self.modifiers == keyEquivalentModifierMask
+				nsMenuItemKeyEquivalent == keyEquivalent, // Note `nil != ""`
+				modifiers == keyEquivalentModifierMask
 			{
 				return item
 			}
@@ -758,6 +761,7 @@ extension KeyboardShortcuts.Shortcut {
 		{
 			if let keyEquivalent = specialKey.swiftUIKeyEquivalent {
 				if #available(macOS 12.0, *) {
+					// We do `localization: .custom)` since the KeyboardShortcuts shortcuts are not localized.
 					return KeyboardShortcut(keyEquivalent, modifiers: modifiers.toEventModifiers, localization: .custom)
 				} else {
 					return KeyboardShortcut(keyEquivalent, modifiers: modifiers.toEventModifiers)
