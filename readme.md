@@ -220,6 +220,10 @@ That is outside the scope of this package. You can either use [`NSEvent.addLocal
 
 No, since it would not work for sandboxed apps. If your app is not sandboxed, you can use [`MediaKeyTap`](https://github.com/nhurden/MediaKeyTap).
 
+#### Can I listen to the Caps Lock key?
+
+No, Caps Lock is a modifier key and cannot be directly listened to using this package's standard event methods. If you need to detect Caps Lock events, you'll need to use lower-level APIs like [`CGEvent.tapCreate`](https://developer.apple.com/documentation/coregraphics/cgevent/1454426-tapcreate).
+
 #### Can you support CocoaPods or Carthage?
 
 No. However, there is nothing stopping you from using Swift Package Manager for just this package even if you normally use CocoaPods or Carthage.
