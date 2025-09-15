@@ -4,5 +4,6 @@
 "keyboard_shortcut_used_by_system" = "Dieses Tastaturkürzel kann nicht verwendet werden, da es bereits systemweit verwendet wird.";
 "keyboard_shortcuts_can_be_changed" = "Die meisten systemweiten Tastaturkürzel können unter „Systemeinstellungen › Tastatur › Tastaturkurzbefehle“ geändert werden.";
 "keyboard_shortcut_disallowed" = "Die Option-Taste muss mit der Befehlstaste oder der Steuerungstaste kombiniert werden.";
+"force_use_shortcut" = "Trotzdem verwenden";
 "ok" = "OK";
 "space_key" = "Leer";
