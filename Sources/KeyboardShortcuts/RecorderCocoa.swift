@@ -202,6 +202,12 @@ extension KeyboardShortcuts {
 
 		/// :nodoc:
 		override public func becomeFirstResponder() -> Bool {
+			// Ensure we have a valid window before attempting to become first responder
+			// This prevents issues in SwiftUI contexts where the view hierarchy might not be fully established
+			guard window != nil else {
+				return false
+			}
+
 			let shouldBecomeFirstResponder = super.becomeFirstResponder()
 
 			guard shouldBecomeFirstResponder else {
