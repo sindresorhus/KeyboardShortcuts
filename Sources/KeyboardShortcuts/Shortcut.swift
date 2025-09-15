@@ -28,7 +28,7 @@ extension KeyboardShortcuts {
 		public var modifiers: NSEvent.ModifierFlags { NSEvent.ModifierFlags(carbon: carbonModifiers) }
 
 		/**
-		Low-level represetation of the key.
+		Low-level representation of the key.
 
 		You most likely don't need this.
 		*/

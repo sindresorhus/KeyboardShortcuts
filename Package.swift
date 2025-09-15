@@ -1,4 +1,4 @@
-// swift-tools-version:5.11
+// swift-tools-version:6.1
 import PackageDescription
 
 let package = Package(
@@ -17,12 +17,18 @@ let package = Package(
 	],
 	targets: [
 		.target(
-			name: "KeyboardShortcuts"
+			name: "KeyboardShortcuts",
+			swiftSettings: [
+				.swiftLanguageMode(.v5)
+			]
 		),
 		.testTarget(
 			name: "KeyboardShortcutsTests",
 			dependencies: [
 				"KeyboardShortcuts"
+			],
+			swiftSettings: [
+				.swiftLanguageMode(.v5)
 			]
 		)
 	]

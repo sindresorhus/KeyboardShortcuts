@@ -29,9 +29,9 @@ extension NSTextField {
 		(currentEditor() as? NSTextView)?.insertionPointColor = .clear
 	}
 
-    func restoreCaret() {
-        (currentEditor() as? NSTextView)?.insertionPointColor = .labelColor
-    }
+	func restoreCaret() {
+		(currentEditor() as? NSTextView)?.insertionPointColor = .labelColor
+	}
 }
 
 
@@ -49,7 +49,7 @@ extension NSView {
 /**
 Listen to local events.
 
-- Important: Don't foret to call `.start()`.
+- Important: Don't forget to call `.start()`.
 
 ```
 eventMonitor = LocalEventMonitor(events: [.leftMouseDown, .rightMouseDown]) { event in
@@ -149,12 +149,16 @@ final class RunLoopLocalEventMonitor {
 
 
 extension NSEvent {
-	static var modifiers: ModifierFlags {
-		modifierFlags
+	private static func normalizedModifiers(from flags: ModifierFlags) -> ModifierFlags {
+		flags
 			.intersection(.deviceIndependentFlagsMask)
 			// We remove `capsLock` as it shouldn't affect the modifiers.
 			// We remove `numericPad` as arrow keys trigger it, use `event.specialKeys` instead.
 			.subtracting([.capsLock, .numericPad])
+	}
+
+	static var modifiers: ModifierFlags {
+		normalizedModifiers(from: modifierFlags)
 	}
 
 	/**
@@ -174,11 +178,7 @@ extension NSEvent {
 	```
 	*/
 	var modifiers: ModifierFlags {
-		modifierFlags
-			.intersection(.deviceIndependentFlagsMask)
-			// We remove `capsLock` as it shouldn't affect the modifiers.
-			// We remove `numericPad` as arrow keys trigger it, use `event.specialKeys` instead.
-			.subtracting([.capsLock, .numericPad])
+		Self.normalizedModifiers(from: modifierFlags)
 	}
 }
 

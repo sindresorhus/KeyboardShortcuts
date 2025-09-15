@@ -4,9 +4,9 @@
 	<br>
 </div>
 
-This package lets you add support for user-customizable global keyboard shortcuts to your macOS app in minutes. It's fully sandbox and Mac App Store compatible. And it's used in production by [Dato](https://sindresorhus.com/dato), [Jiffy](https://sindresorhus.com/jiffy), [Plash](https://github.com/sindresorhus/Plash), and [Lungo](https://sindresorhus.com/lungo).
+This package lets you add support for user-customizable global keyboard shortcuts to your macOS app in minutes. It's fully sandboxed and Mac App Store compatible. And it's used in production by [Dato](https://sindresorhus.com/dato), [Jiffy](https://sindresorhus.com/jiffy), [Plash](https://github.com/sindresorhus/Plash), and [Lungo](https://sindresorhus.com/lungo).
 
-I'm happy to accept more configurability and features. PR welcome! What you see here is just what I needed for my own apps.
+I'm happy to accept more configurability and features. PRs welcome! What you see here is just what I needed for my own apps.
 
 <img src="https://github.com/sindresorhus/KeyboardShortcuts/raw/main/screenshot.png" width="532">
 
@@ -116,7 +116,7 @@ final class SettingsViewController: NSViewController {
 
 ## Localization
 
-This package supports [localizations](/Sources/KeyboardShortcuts/Localization). PR welcome for more!
+This package supports [localizations](/Sources/KeyboardShortcuts/Localization). PRs welcome for more!
 
 1. Fork the repo.
 2. Create a directory that has a name that uses an [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) language code and optional designators, followed by the `.lproj` suffix. [More here.](https://developer.apple.com/documentation/swift_packages/localizing_package_resources)
@@ -139,7 +139,7 @@ See [`NSMenuItem#setShortcut`](https://github.com/sindresorhus/KeyboardShortcuts
 
 #### Dynamic keyboard shortcuts
 
-Your app might need to support keyboard shortcuts for user-defined actions. Normally, you would statically register the keyboard shortcuts upfront in `extension KeyboardShortcuts.Name {}`. However, this is not a requirement. It's only for convenience so that you can use dot-syntax when calling various APIs (for example, `.onKeyDown(.unicornMode) {}`). You can create `KeyboardShortcut.Name`'s dynamically and store them yourself. You can see this in action in the example project.
+Your app might need to support keyboard shortcuts for user-defined actions. Normally, you would statically register the keyboard shortcuts upfront in `extension KeyboardShortcuts.Name {}`. However, this is not a requirement. It's only for convenience so that you can use dot-syntax when calling various APIs (for example, `.onKeyDown(.unicornMode) {}`). You can create `KeyboardShortcuts.Name`'s dynamically and store them yourself. You can see this in action in the example project.
 
 #### Default keyboard shortcuts
 
