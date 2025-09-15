@@ -51,12 +51,13 @@ Listen to local events.
 
 - Important: Don't forget to call `.start()`.
 
-```
+```swift
 eventMonitor = LocalEventMonitor(events: [.leftMouseDown, .rightMouseDown]) { event in
 	// Do something
 
 	return event
-}.start()
+}
+.start()
 ```
 */
 final class LocalEventMonitor {
@@ -166,7 +167,7 @@ extension NSEvent {
 
 	- Note: Prefer this over `.modifierFlags`.
 
-	```
+	```swift
 	// Check if Command is one of possible more modifiers keys
 	event.modifiers.contains(.command)
 
@@ -362,12 +363,29 @@ extension NSEvent.ModifierFlags {
 	/**
 	The string representation of the modifier flags.
 
-	```
-	print(NSEvent.ModifierFlags([.command, .shift]))
+	```swift
+	print(NSEvent.ModifierFlags([.command, .shift]).presentableDescription)
 	//=> "⇧⌘"
 	```
 	*/
+	@available(*, deprecated, renamed: "ks_symbolicRepresentation")
 	var presentableDescription: String {
+		ks_symbolicRepresentation
+	}
+}
+
+
+extension NSEvent.ModifierFlags {
+	/**
+	The symbolic representation of the modifier flags.
+
+	```swift
+	let modifiers = NSEvent.ModifierFlags([.command, .shift])
+	print(modifiers.ks_symbolicRepresentation)
+	//=> "⇧⌘"
+	```
+	*/
+	public var ks_symbolicRepresentation: String {
 		var description = ""
 
 		if contains(.control) {

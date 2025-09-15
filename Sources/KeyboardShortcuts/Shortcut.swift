@@ -738,10 +738,10 @@ extension KeyboardShortcuts.Shortcut: CustomStringConvertible {
 			let key,
 			let specialKey = keyToSpecialKeyMapping[key]
 		{
-			return modifiers.presentableDescription + specialKey.presentableDescription
+			return modifiers.ks_symbolicRepresentation + specialKey.presentableDescription
 		}
 
-		return modifiers.presentableDescription + String(keyToCharacter() ?? "�").capitalized
+		return modifiers.ks_symbolicRepresentation + String(keyToCharacter() ?? "�").capitalized
 	}
 
 	@MainActor

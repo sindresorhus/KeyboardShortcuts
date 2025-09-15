@@ -183,6 +183,24 @@ And to get all the `Name`'s with a set keyboard shortcut:
 print(KeyboardShortcuts.Name.allCases.filter { $0.shortcut != nil })
 ```
 
+#### Convert modifier flags to symbols
+
+You can get a symbolic representation of modifier flags like this:
+
+```swift
+import KeyboardShortcuts
+
+let modifiers = NSEvent.ModifierFlags([.command, .shift])
+print(modifiers.ks_symbolicRepresentation)
+//=> "⇧⌘"
+
+// Also works with shortcuts:
+if let shortcut = KeyboardShortcuts.getShortcut(for: .toggleUnicornMode) {
+	print(shortcut.modifiers.ks_symbolicRepresentation)
+	//=> "⌘⌥"
+}
+```
+
 ## FAQ
 
 #### How is it different from [`MASShortcut`](https://github.com/shpakovski/MASShortcut)?
