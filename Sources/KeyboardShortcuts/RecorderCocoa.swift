@@ -29,6 +29,7 @@ extension KeyboardShortcuts {
 	public final class RecorderCocoa: NSSearchField, NSSearchFieldDelegate {
 		private let minimumWidth = 130.0
 		private let onChange: ((_ shortcut: Shortcut?) -> Void)?
+		private let onError: ((_ title: String, _ message: String?, _ buttonOk: String?, _ buttonForce: String?) -> Bool)?
 		private var canBecomeKey = false
 		private var eventMonitor: LocalEventMonitor?
 		private var shortcutsNameChangeObserver: NSObjectProtocol?
@@ -83,10 +84,12 @@ extension KeyboardShortcuts {
 		*/
 		public required init(
 			for name: Name,
-			onChange: ((_ shortcut: Shortcut?) -> Void)? = nil
+			onChange: ((_ shortcut: Shortcut?) -> Void)? = nil,
+			onError: ((_ title: String, _ message: String?, _ buttonOk: String?, _ buttonForce: String?) -> Bool)? = nil
 		) {
 			self.shortcutName = name
 			self.onChange = onChange
+			self.onError = onError
 
 			super.init(frame: .zero)
 			self.delegate = self
@@ -273,51 +276,85 @@ extension KeyboardShortcuts {
 				}
 
 				if let menuItem = shortcut.takenByMainMenu {
-					// TODO: Find a better way to make it possible to dismiss the alert by pressing "Enter". How can we make the input automatically temporarily lose focus while the alert is open?
-					blur()
-
-					NSAlert.showModal(
-						for: window,
-						title: String.localizedStringWithFormat("keyboard_shortcut_used_by_menu_item".localized, menuItem.title)
-					)
-
-					focus()
-
-					return nil
+					if let onError {
+						if !onError(
+							String.localizedStringWithFormat("keyboard_shortcut_used_by_menu_item".localized, menuItem.title),
+							nil,
+							nil,
+							nil
+						) {
+							return nil
+						}
+					} else {
+						// TODO: Find a better way to make it possible to dismiss the alert by pressing "Enter". How can we make the input automatically temporarily lose focus while the alert is open?
+						blur()
+						
+						NSAlert.showModal(
+							for: window,
+							title: String.localizedStringWithFormat("keyboard_shortcut_used_by_menu_item".localized, menuItem.title)
+						)
+						
+						focus()
+						
+						return nil
+					}
 				}
 
 				// See: https://developer.apple.com/forums/thread/763878?answerId=804374022#804374022
 				if shortcut.isDisallowed {
-					blur()
-
-					NSAlert.showModal(
-						for: window,
-						title: "keyboard_shortcut_disallowed".localized
-					)
-
-					focus()
-					return nil
+					if let onError {
+						if !onError(
+							"keyboard_shortcut_disallowed".localized,
+							nil,
+							nil,
+							nil
+						) {
+							return nil
+						}
+					} else {
+						blur()
+						
+						NSAlert.showModal(
+							for: window,
+							title: "keyboard_shortcut_disallowed".localized
+						)
+						
+						focus()
+						
+						return nil
+					}
 				}
 
 				if shortcut.isTakenBySystem {
-					blur()
-
-					let modalResponse = NSAlert.showModal(
-						for: window,
-						title: "keyboard_shortcut_used_by_system".localized,
-						// TODO: Add button to offer to open the relevant system settings pane for the user.
-						message: "keyboard_shortcuts_can_be_changed".localized,
-						buttonTitles: [
+					if let onError {
+						if !onError(
+							"keyboard_shortcut_used_by_system".localized,
+							"keyboard_shortcuts_can_be_changed".localized,
 							"ok".localized,
 							"force_use_shortcut".localized
-						]
-					)
-
-					focus()
-
-					// If the user has selected "Use Anyway" in the dialog (the second option), we'll continue setting the keyboard shorcut even though it's reserved by the system.
-					guard modalResponse == .alertSecondButtonReturn else {
-						return nil
+						) {
+							return nil
+						}
+					} else {
+						blur()
+						
+						let modalResponse = NSAlert.showModal(
+							for: window,
+							title: "keyboard_shortcut_used_by_system".localized,
+							// TODO: Add button to offer to open the relevant system settings pane for the user.
+							message: "keyboard_shortcuts_can_be_changed".localized,
+							buttonTitles: [
+								"ok".localized,
+								"force_use_shortcut".localized
+							]
+						)
+						
+						focus()
+						
+						// If the user has selected "Use Anyway" in the dialog (the second option), we'll continue setting the keyboard shorcut even though it's reserved by the system.
+						guard modalResponse == .alertSecondButtonReturn else {
+							return nil
+						}
 					}
 				}
 
