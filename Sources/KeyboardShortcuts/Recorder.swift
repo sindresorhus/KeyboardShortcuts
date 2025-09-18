@@ -7,9 +7,10 @@ extension KeyboardShortcuts {
 
 		let name: Name
 		let onChange: ((_ shortcut: Shortcut?) -> Void)?
+		let onError: ((_ title: String, _ message: String?, _ buttonOk: String?, _ buttonForce: String?) -> Bool)?
 
 		func makeNSView(context: Context) -> NSViewType {
-			.init(for: name, onChange: onChange)
+			.init(for: name, onChange: onChange, onError: onError)
 		}
 
 		func updateNSView(_ nsView: NSViewType, context: Context) {
@@ -44,17 +45,20 @@ extension KeyboardShortcuts {
 	public struct Recorder<Label: View>: View { // swiftlint:disable:this type_name
 		private let name: Name
 		private let onChange: ((Shortcut?) -> Void)?
+		private let onError: ((_ title: String, _ message: String?, _ buttonOk: String?, _ buttonForce: String?) -> Bool)?
 		private let hasLabel: Bool
 		private let label: Label
 
 		init(
 			for name: Name,
 			onChange: ((Shortcut?) -> Void)? = nil,
+			onError: ((_ title: String, _ message: String?, _ buttonOk: String?, _ buttonForce: String?) -> Bool)? = nil,
 			hasLabel: Bool,
 			@ViewBuilder label: () -> Label
 		) {
 			self.name = name
 			self.onChange = onChange
+			self.onError = onError
 			self.hasLabel = hasLabel
 			self.label = label()
 		}
@@ -65,7 +69,8 @@ extension KeyboardShortcuts {
 					LabeledContent {
 						_Recorder(
 							name: name,
-							onChange: onChange
+							onChange: onChange,
+							onError: onError
 						)
 					} label: {
 						label
@@ -73,7 +78,8 @@ extension KeyboardShortcuts {
 				} else {
 					_Recorder(
 						name: name,
-						onChange: onChange
+						onChange: onChange,
+						onError: onError
 					)
 						.formLabel {
 							label
@@ -82,7 +88,8 @@ extension KeyboardShortcuts {
 			} else {
 				_Recorder(
 					name: name,
-					onChange: onChange
+					onChange: onChange,
+					onError: onError
 				)
 			}
 		}
@@ -96,11 +103,13 @@ extension KeyboardShortcuts.Recorder<EmptyView> {
 	*/
 	public init(
 		for name: KeyboardShortcuts.Name,
-		onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil
+		onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil,
+		onError: ((_ title: String, _ message: String?, _ buttonOk: String?, _ buttonForce: String?) -> Bool)? = nil
 	) {
 		self.init(
 			for: name,
 			onChange: onChange,
+			onError: onError,
 			hasLabel: false
 		) {}
 	}
@@ -115,11 +124,13 @@ extension KeyboardShortcuts.Recorder<Text> {
 	public init(
 		_ title: LocalizedStringKey,
 		name: KeyboardShortcuts.Name,
-		onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil
+		onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil,
+		onError: ((_ title: String, _ message: String?, _ buttonOk: String?, _ buttonForce: String?) -> Bool)? = nil
 	) {
 		self.init(
 			for: name,
 			onChange: onChange,
+			onError: onError,
 			hasLabel: true
 		) {
 			Text(title)
@@ -137,11 +148,13 @@ extension KeyboardShortcuts.Recorder<Text> {
 	public init(
 		_ title: String,
 		name: KeyboardShortcuts.Name,
-		onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil
+		onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil,
+		onError: ((_ title: String, _ message: String?, _ buttonOk: String?, _ buttonForce: String?) -> Bool)? = nil
 	) {
 		self.init(
 			for: name,
 			onChange: onChange,
+			onError: onError,
 			hasLabel: true
 		) {
 			Text(title)
@@ -158,11 +171,13 @@ extension KeyboardShortcuts.Recorder {
 	public init(
 		for name: KeyboardShortcuts.Name,
 		onChange: ((KeyboardShortcuts.Shortcut?) -> Void)? = nil,
+		onError: ((_ title: String, _ message: String?, _ buttonOk: String?, _ buttonForce: String?) -> Bool)? = nil,
 		@ViewBuilder label: () -> Label
 	) {
 		self.init(
 			for: name,
 			onChange: onChange,
+			onError: onError,
 			hasLabel: true,
 			label: label
 		)
