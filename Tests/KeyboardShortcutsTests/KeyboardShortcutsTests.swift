@@ -3,7 +3,7 @@ import Foundation
 import AppKit
 import KeyboardShortcuts
 
-@Suite("KeyboardShortcuts Tests")
+@Suite("KeyboardShortcuts Tests", .serialized)
 struct KeyboardShortcutsTests {
 	init() {
 		UserDefaults.standard.removeAllKeyboardShortcuts()
@@ -247,7 +247,7 @@ struct KeyboardShortcutsTests {
 
 // MARK: - Modifier Symbol Tests
 
-@Suite("Modifier Symbol Tests")
+@Suite("Modifier Symbol Tests", .serialized)
 struct ModifierSymbolTests {
 	@Test("Individual modifier symbols")
 	func testIndividualModifierSymbols() {

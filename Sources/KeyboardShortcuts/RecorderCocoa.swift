@@ -88,7 +88,9 @@ extension KeyboardShortcuts {
 			self.shortcutName = name
 			self.onChange = onChange
 
-			super.init(frame: .zero)
+			// Use a default frame that matches our intrinsic size to prevent zero-size issues
+			// when added without constraints (issue #209)
+			super.init(frame: NSRect(x: 0, y: 0, width: minimumWidth, height: 24))
 			self.delegate = self
 			self.placeholderString = "record_shortcut".localized
 			self.alignment = .center
