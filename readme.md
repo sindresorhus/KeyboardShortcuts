@@ -114,6 +114,35 @@ final class SettingsViewController: NSViewController {
 }
 ```
 
+#### SwiftUI binding mode (no built-in persistence, supports multi-chord sequences)
+
+If you prefer to manage storage yourself (for example, to bind into your own state or model) and/or want to support multi-chord shortcuts like “Ctrl-K Ctrl-S”, use `ShortcutRecordView` with a binding. You can enable multi-chord recording by turning on sequences and setting a max length.
+
+```swift
+import SwiftUI
+import KeyboardShortcuts
+
+struct SettingsView: View {
+    // Store in your own model/state. This supports multi-chord sequences like Ctrl-K Ctrl-S.
+    @State private var sequence: ShortcutSequence = .init([])
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Shortcut: \(sequence.presentableDescription.isEmpty ? "–" : sequence.presentableDescription)")
+            // Enable multi-chord recording by turning on `enableSequences`.
+            ShortcutRecordView(
+                sequence: $sequence,
+                option: .init(enableSequences: true, maxSequenceLength: 2)
+            )
+        }
+        .padding()
+    }
+}
+```
+
+Note about callbacks:
+- In binding mode (`ShortcutRecordView(sequence:)`), handle side-effects in your bound state update. There is no `onChange` parameter in these initializers.
+
 ## Localization
 
 This package supports [localizations](/Sources/KeyboardShortcuts/Localization). PRs welcome for more!
