@@ -754,7 +754,7 @@ extension KeyboardShortcuts.Shortcut: CustomStringConvertible {
 extension KeyboardShortcuts.Shortcut {
 	@available(macOS 11, *)
 	@MainActor
-	var toSwiftUI: KeyboardShortcut? {
+	public var toSwiftUI: KeyboardShortcut? {
 		if
 			let key,
 			let specialKey = keyToSpecialKeyMapping[key]
