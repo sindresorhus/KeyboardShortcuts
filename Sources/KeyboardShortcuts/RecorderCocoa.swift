@@ -10,7 +10,9 @@ extension KeyboardShortcuts {
 
 	It automatically prevents choosing a keyboard shortcut that is already taken by the system or by the app's main menu by showing a user-friendly alert to the user.
 
-	It takes care of storing the keyboard shortcut in `UserDefaults` for you.
+	It takes care of storing the keyboard shortcut in `UserDefaults` for you when initialized with a name. When initialized with a shortcut value, it reads and writes the shortcut through the `shortcut` property.
+
+	- Note: When initialized with a shortcut value, the shortcut is not automatically registered as a global hotkey. You are responsible for storing and handling the shortcut yourself.
 
 	```swift
 	import AppKit
@@ -27,8 +29,15 @@ extension KeyboardShortcuts {
 	```
 	*/
 	public final class RecorderCocoa: NSSearchField, NSSearchFieldDelegate {
+		private enum StorageMode {
+			case name
+			case binding
+		}
+
 		private let minimumWidth = 130.0
 		private let onChange: ((_ shortcut: Shortcut?) -> Void)?
+		private let storageMode: StorageMode
+		private var bindingShortcut: Shortcut?
 		private var canBecomeKey = false
 		private var eventMonitor: LocalEventMonitor?
 		private var shortcutsNameChangeObserver: NSObjectProtocol?
@@ -39,14 +48,21 @@ extension KeyboardShortcuts {
 		The shortcut name for the recorder.
 
 		Can be dynamically changed at any time.
+
+		This is only used when initialized with a name. In binding mode, changing this has no effect.
 		*/
 		public var shortcutName: Name {
 			didSet {
+				guard storageMode == .name else {
+					assertionFailure("shortcutName is only available when initialized with a name.")
+					return
+				}
+
 				guard shortcutName != oldValue else {
 					return
 				}
 
-				setStringValue(name: shortcutName)
+				updateStringValue()
 
 				// This doesn't seem to be needed anymore, but I cannot test on older OS versions, so keeping it just in case.
 				if #unavailable(macOS 12) {
@@ -55,6 +71,23 @@ extension KeyboardShortcuts {
 						blur()
 					}
 				}
+			}
+		}
+
+		/**
+		The shortcut for the recorder.
+
+		Use this when you manage the shortcut storage yourself.
+		*/
+		public var shortcut: Shortcut? {
+			get { currentShortcut }
+			set {
+				guard newValue != currentShortcut else {
+					return
+				}
+
+				storeShortcut(newValue)
+				updateStringValue()
 			}
 		}
 
@@ -87,25 +120,37 @@ extension KeyboardShortcuts {
 		) {
 			self.shortcutName = name
 			self.onChange = onChange
+			self.storageMode = .name
 
 			// Use a default frame that matches our intrinsic size to prevent zero-size issues
 			// when added without constraints (issue #209)
 			super.init(frame: NSRect(x: 0, y: 0, width: minimumWidth, height: 24))
-			self.delegate = self
-			self.placeholderString = "record_shortcut".localized
-			self.alignment = .center
-			(cell as? NSSearchFieldCell)?.searchButtonCell = nil
+			configureView()
 
-			self.wantsLayer = true
-			setContentHuggingPriority(.defaultHigh, for: .vertical)
-			setContentHuggingPriority(.defaultHigh, for: .horizontal)
-
-			// Hide the cancel button when not showing the shortcut so the placeholder text is properly centered. Must be last.
-			self.cancelButton = (cell as? NSSearchFieldCell)?.cancelButtonCell
-
-			setStringValue(name: name)
+			updateStringValue()
 
 			setUpEvents()
+		}
+
+		/**
+		- Parameter shortcut: The initial keyboard shortcut value.
+		- Parameter onChange: Callback which will be called when the keyboard shortcut is changed/removed by the user.
+		*/
+		public required init(
+			shortcut: Shortcut?,
+			onChange: ((_ shortcut: Shortcut?) -> Void)? = nil
+		) {
+			self.shortcutName = Name(rawValueWithoutInitialization: "")
+			self.onChange = onChange
+			self.storageMode = .binding
+			self.bindingShortcut = shortcut
+
+			// Use a default frame that matches our intrinsic size to prevent zero-size issues
+			// when added without constraints (issue #209)
+			super.init(frame: NSRect(x: 0, y: 0, width: minimumWidth, height: 24))
+			configureView()
+
+			updateStringValue()
 		}
 
 		@available(*, unavailable)
@@ -113,14 +158,69 @@ extension KeyboardShortcuts {
 			fatalError("init(coder:) has not been implemented")
 		}
 
-		private func setStringValue(name: KeyboardShortcuts.Name) {
-			stringValue = getShortcut(for: shortcutName).map { "\($0)" } ?? ""
+		deinit {
+			removeObserver(&shortcutsNameChangeObserver)
+			removeObserver(&windowDidResignKeyObserver)
+			removeObserver(&windowDidBecomeKeyObserver)
+		}
+
+		private func configureView() {
+			delegate = self
+			placeholderString = "record_shortcut".localized
+			alignment = .center
+			(cell as? NSSearchFieldCell)?.searchButtonCell = nil
+
+			wantsLayer = true
+			setContentHuggingPriority(.defaultHigh, for: .vertical)
+			setContentHuggingPriority(.defaultHigh, for: .horizontal)
+
+			// Hide the cancel button when not showing the shortcut so the placeholder text is properly centered. Must be last.
+			cancelButton = (cell as? NSSearchFieldCell)?.cancelButtonCell
+		}
+
+		private func removeObserver(_ observer: inout NSObjectProtocol?) {
+			guard let existingObserver = observer else {
+				return
+			}
+
+			NotificationCenter.default.removeObserver(existingObserver)
+			observer = nil
+		}
+
+		private var currentShortcut: Shortcut? {
+			switch storageMode {
+			case .name:
+				return getShortcut(for: shortcutName)
+			case .binding:
+				return bindingShortcut
+			}
+		}
+
+		private func storeShortcut(_ shortcut: Shortcut?) {
+			switch storageMode {
+			case .name:
+				setShortcut(shortcut, for: shortcutName)
+			case .binding:
+				bindingShortcut = shortcut
+			}
+		}
+
+		private func setStringValue(shortcut: Shortcut?) {
+			stringValue = shortcut.map { "\($0)" } ?? ""
 
 			// If `stringValue` is empty, hide the cancel button to let the placeholder center.
 			showsCancelButton = !stringValue.isEmpty
 		}
 
+		private func updateStringValue() {
+			setStringValue(shortcut: currentShortcut)
+		}
+
 		private func setUpEvents() {
+			guard storageMode == .name else {
+				return
+			}
+
 			shortcutsNameChangeObserver = NotificationCenter.default.addObserver(forName: .shortcutByNameDidChange, object: nil, queue: nil) { [weak self] notification in
 				guard
 					let self,
@@ -130,7 +230,7 @@ extension KeyboardShortcuts {
 					return
 				}
 
-				setStringValue(name: nameInNotification)
+				updateStringValue()
 			}
 		}
 
@@ -174,11 +274,14 @@ extension KeyboardShortcuts {
 		/// :nodoc:
 		override public func viewDidMoveToWindow() {
 			guard let window else {
-				windowDidResignKeyObserver = nil
-				windowDidBecomeKeyObserver = nil
+				removeObserver(&windowDidResignKeyObserver)
+				removeObserver(&windowDidBecomeKeyObserver)
 				endRecording()
 				return
 			}
+
+			removeObserver(&windowDidResignKeyObserver)
+			removeObserver(&windowDidBecomeKeyObserver)
 
 			// Ensures the recorder stops when the window is hidden.
 			// This is especially important for Settings windows, which as of macOS 13.5, only hides instead of closes when you click the close button.
@@ -342,7 +445,7 @@ extension KeyboardShortcuts {
 		}
 
 		private func saveShortcut(_ shortcut: Shortcut?) {
-			setShortcut(shortcut, for: shortcutName)
+			storeShortcut(shortcut)
 			onChange?(shortcut)
 		}
 	}

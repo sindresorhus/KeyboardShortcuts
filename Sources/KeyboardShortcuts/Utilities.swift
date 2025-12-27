@@ -1,4 +1,10 @@
 import SwiftUI
+#if DEBUG
+import os
+#endif
+#if DEBUG && canImport(OSLog)
+import OSLog
+#endif
 
 #if os(macOS)
 import Carbon.HIToolbox
@@ -524,6 +530,62 @@ extension View {
 extension Dictionary {
 	func hasKey(_ key: Key) -> Bool {
 		index(forKey: key) != nil
+	}
+}
+
+#if DEBUG
+/**
+Get SwiftUI dynamic shared object.
+
+Reference: https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/dyld.3.html
+*/
+@usableFromInline
+let dynamicSharedObject: UnsafeMutableRawPointer = {
+	let imageCount = _dyld_image_count()
+	for imageIndex in 0..<imageCount {
+		guard
+			let name = _dyld_get_image_name(imageIndex),
+			// Use `/SwiftUI` instead of `SwiftUI` to prevent any library named `XXSwiftUI`.
+			String(cString: name).hasSuffix("/SwiftUI"),
+			let header = _dyld_get_image_header(imageIndex)
+		else {
+			continue
+		}
+
+		return UnsafeMutableRawPointer(mutating: header)
+	}
+
+	return UnsafeMutableRawPointer(mutating: #dsohandle)
+}()
+#endif
+
+@_transparent
+@usableFromInline
+func runtimeWarn(
+	_ condition: @autoclosure () -> Bool, _ message: @autoclosure () -> String
+) {
+#if DEBUG
+#if canImport(OSLog)
+	let condition = condition()
+	if !condition {
+		os_log(
+			.fault,
+			// A token that identifies the containing executable or dylib image.
+			dso: dynamicSharedObject,
+			log: OSLog(subsystem: "com.apple.runtime-issues", category: "KeyboardShortcuts"),
+			"%@",
+			message()
+		)
+	}
+#else
+	assert(condition(), message())
+#endif
+#endif
+}
+
+extension KeyboardShortcuts {
+	static func isValidShortcutName(_ name: String) -> Bool {
+		!name.contains(".")
 	}
 }
 #endif

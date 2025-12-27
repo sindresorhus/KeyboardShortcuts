@@ -1,7 +1,7 @@
 import Testing
 import Foundation
 import AppKit
-import KeyboardShortcuts
+@testable import KeyboardShortcuts
 
 @Suite("KeyboardShortcuts Tests", .serialized)
 struct KeyboardShortcutsTests {
@@ -88,6 +88,12 @@ struct KeyboardShortcutsTests {
 		// Resetting should restore the default
 		KeyboardShortcuts.reset(name)
 		#expect(KeyboardShortcuts.getShortcut(for: name) == defaultShortcut)
+	}
+
+	@Test("Shortcut name validation")
+	func testShortcutNameValidation() {
+		#expect(KeyboardShortcuts.isValidShortcutName("validName"))
+		#expect(!KeyboardShortcuts.isValidShortcutName("invalid.name"))
 	}
 
 	@Test("Shortcut persistence")

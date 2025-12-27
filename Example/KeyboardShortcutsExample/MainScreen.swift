@@ -122,14 +122,33 @@ private struct DoubleShortcut: View {
 	}
 }
 
+private struct BindingShortcut: View {
+	@State private var shortcut: KeyboardShortcuts.Shortcut?
+
+	var body: some View {
+		Form {
+			KeyboardShortcuts.Recorder("Binding Shortcut:", shortcut: $shortcut)
+			Text("Current: \(shortcut.map { "\($0)" } ?? "None")")
+				.frame(maxWidth: .infinity, alignment: .leading)
+			Button("Clear") {
+				shortcut = nil
+			}
+		}
+		.frame(maxWidth: 300)
+		.padding()
+	}
+}
+
 struct MainScreen: View {
 	var body: some View {
 		VStack {
 			DoubleShortcut()
 			Divider()
+			BindingShortcut()
+			Divider()
 			DynamicShortcut()
 		}
-		.frame(width: 400, height: 320)
+		.frame(width: 400, height: 520)
 	}
 }
 
