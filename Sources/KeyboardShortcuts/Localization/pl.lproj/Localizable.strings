@@ -1,0 +1,9 @@
+"record_shortcut" = "Rejestruj skrót";
+"press_shortcut" = "Naciśnij skrót";
+"keyboard_shortcut_used_by_menu_item" = "Tego skrótu klawiszowego nie można użyć, ponieważ jest już używany przez pozycję menu „%@”.";
+"keyboard_shortcut_used_by_system" = "Tego skrótu klawiszowego nie można użyć, ponieważ jest już globalnym skrótem klawiszowym.";
+"keyboard_shortcuts_can_be_changed" = "Większość globalnych skrótów klawiszowych można zmienić w „Ustawienia systemowe… › Klawiatura › Skróty klawiszowe…”.";
+"keyboard_shortcut_disallowed" = "Klawisz modyfikujący Option musi być użyty razem z klawiszem Command lub Control.";
+"force_use_shortcut" = "Użyj mimo to";
+"ok" = "OK";
+"space_key" = "Spacja";
