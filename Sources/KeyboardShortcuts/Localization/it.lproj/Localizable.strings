@@ -1,0 +1,9 @@
+"record_shortcut" = "Registra scorciatoia";
+"press_shortcut" = "Premi scorciatoia";
+"keyboard_shortcut_used_by_menu_item" = "Questa scorciatoia da tastiera non può essere utilizzata perché è già assegnata alla voce di menu “%@”.";
+"keyboard_shortcut_used_by_system" = "Questa scorciatoia da tastiera non può essere utilizzata perché è già una scorciatoia di sistema.";
+"keyboard_shortcuts_can_be_changed" = "La maggior parte delle scorciatoie di sistema può essere modificata in “Impostazioni di Sistema › Tastiera › Scorciatoie da tastiera”.";
+"keyboard_shortcut_disallowed" = "Il modificatore Opzione deve essere combinato con Comando o Controllo.";
+"force_use_shortcut" = "Usa comunque";
+"ok" = "OK";
+"space_key" = "Spazio";

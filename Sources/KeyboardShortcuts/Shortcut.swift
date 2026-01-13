@@ -28,7 +28,7 @@ extension KeyboardShortcuts {
 		public var modifiers: NSEvent.ModifierFlags { NSEvent.ModifierFlags(carbon: carbonModifiers) }
 
 		/**
-		Low-level represetation of the key.
+		Low-level representation of the key.
 
 		You most likely don't need this.
 		*/
@@ -146,14 +146,17 @@ extension KeyboardShortcuts.Shortcut {
 			var keyEquivalent = item.keyEquivalent
 			var keyEquivalentModifierMask = item.keyEquivalentModifierMask
 
-			if modifiers.contains(.shift), keyEquivalent.lowercased() != keyEquivalent {
+			if
+				modifiers.contains(.shift),
+				keyEquivalent.lowercased() != keyEquivalent
+			{
 				keyEquivalent = keyEquivalent.lowercased()
 				keyEquivalentModifierMask.insert(.shift)
 			}
 
 			if
-				self.nsMenuItemKeyEquivalent == keyEquivalent, // Note `nil != ""`
-				self.modifiers == keyEquivalentModifierMask
+				nsMenuItemKeyEquivalent == keyEquivalent, // Note `nil != ""`
+				modifiers == keyEquivalentModifierMask
 			{
 				return item
 			}
@@ -735,10 +738,10 @@ extension KeyboardShortcuts.Shortcut: CustomStringConvertible {
 			let key,
 			let specialKey = keyToSpecialKeyMapping[key]
 		{
-			return modifiers.presentableDescription + specialKey.presentableDescription
+			return modifiers.ks_symbolicRepresentation + specialKey.presentableDescription
 		}
 
-		return modifiers.presentableDescription + String(keyToCharacter() ?? "�").capitalized
+		return modifiers.ks_symbolicRepresentation + String(keyToCharacter() ?? "�").capitalized
 	}
 
 	@MainActor
@@ -758,6 +761,7 @@ extension KeyboardShortcuts.Shortcut {
 		{
 			if let keyEquivalent = specialKey.swiftUIKeyEquivalent {
 				if #available(macOS 12.0, *) {
+					// We do `localization: .custom)` since the KeyboardShortcuts shortcuts are not localized.
 					return KeyboardShortcut(keyEquivalent, modifiers: modifiers.toEventModifiers, localization: .custom)
 				} else {
 					return KeyboardShortcut(keyEquivalent, modifiers: modifiers.toEventModifiers)
