@@ -752,9 +752,23 @@ extension KeyboardShortcuts.Shortcut: CustomStringConvertible {
 }
 
 extension KeyboardShortcuts.Shortcut {
+	/**
+	Converts this shortcut to a SwiftUI `KeyboardShortcut`.
+
+	Use this to apply a user-defined shortcut to a SwiftUI view using the `.keyboardShortcut(_:)` modifier.
+
+	Returns `nil` if the shortcut cannot be represented in SwiftUI (for example, certain special keys).
+
+	```swift
+	Button("Perform Action") {
+		performAction()
+	}
+	.keyboardShortcut(shortcut.toSwiftUI)
+	```
+	*/
 	@available(macOS 11, *)
 	@MainActor
-	var toSwiftUI: KeyboardShortcut? {
+	public var toSwiftUI: KeyboardShortcut? {
 		if
 			let key,
 			let specialKey = keyToSpecialKeyMapping[key]
