@@ -90,7 +90,7 @@ extension KeyboardShortcuts {
 }
 
 enum Constants {
-	static let isSandboxed = ProcessInfo.processInfo.environment.hasKey("APP_SANDBOX_CONTAINER_ID")
+	static let isSandboxed = ProcessInfo.processInfo.environment["APP_SANDBOX_CONTAINER_ID"] != nil
 }
 
 extension KeyboardShortcuts.Shortcut {
@@ -98,7 +98,9 @@ extension KeyboardShortcuts.Shortcut {
 	System-defined keyboard shortcuts.
 	*/
 	static var system: [Self] {
-		CarbonKeyboardShortcuts.system
+		HotKeyCenter.systemShortcuts.map {
+			Self(carbonKeyCode: $0.carbonKeyCode, carbonModifiers: $0.carbonModifiers)
+		}
 	}
 
 	/**
@@ -652,6 +654,10 @@ extension SpecialKey {
 }
 
 extension KeyboardShortcuts.Shortcut {
+	fileprivate var specialKey: SpecialKey? {
+		key.flatMap { keyToSpecialKeyMapping[$0] }
+	}
+
 	@MainActor // `TISGetInputSourceProperty` crashes if called on a non-main thread.
 	fileprivate func keyToCharacter() -> Character? {
 		guard
@@ -661,7 +667,7 @@ extension KeyboardShortcuts.Shortcut {
 			return nil
 		}
 
-		guard key.flatMap({ keyToSpecialKeyMapping[$0] }) == nil else {
+		guard specialKey == nil else {
 			assertionFailure("Special keys should get special treatment and should not be translated using keyToCharacter()")
 			return nil
 		}
@@ -707,10 +713,7 @@ extension KeyboardShortcuts.Shortcut {
 	*/
 	@MainActor
 	public var nsMenuItemKeyEquivalent: String? {
-		if
-			let key,
-			let specialKey = keyToSpecialKeyMapping[key]
-		{
+		if let specialKey {
 			if let keyEquivalent = specialKey.appKitMenuItemKeyEquivalent {
 				return String(keyEquivalent)
 			}
@@ -734,10 +737,7 @@ extension KeyboardShortcuts.Shortcut: CustomStringConvertible {
 
 	@MainActor
 	var presentableDescription: String {
-		if
-			let key,
-			let specialKey = keyToSpecialKeyMapping[key]
-		{
+		if let specialKey {
 			return modifiers.ks_symbolicRepresentation + specialKey.presentableDescription
 		}
 
@@ -769,10 +769,7 @@ extension KeyboardShortcuts.Shortcut {
 	@available(macOS 11, *)
 	@MainActor
 	public var toSwiftUI: KeyboardShortcut? {
-		if
-			let key,
-			let specialKey = keyToSpecialKeyMapping[key]
-		{
+		if let specialKey {
 			if let keyEquivalent = specialKey.swiftUIKeyEquivalent {
 				if #available(macOS 12.0, *) {
 					// We do `localization: .custom)` since the KeyboardShortcuts shortcuts are not localized.

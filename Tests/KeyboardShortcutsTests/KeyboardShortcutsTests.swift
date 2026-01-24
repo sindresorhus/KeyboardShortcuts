@@ -1,12 +1,79 @@
 import Testing
 import Foundation
 import AppKit
+import Carbon.HIToolbox
 @testable import KeyboardShortcuts
 
 @Suite("KeyboardShortcuts Tests", .serialized)
 struct KeyboardShortcutsTests {
 	init() {
 		UserDefaults.standard.removeAllKeyboardShortcuts()
+	}
+
+	/**
+	Returns whether a Carbon hotkey can be registered for the given shortcut.
+	*/
+	private static func canRegisterHotKey(for shortcut: KeyboardShortcuts.Shortcut) -> Bool {
+		HotKey(
+			carbonKeyCode: shortcut.carbonKeyCode,
+			carbonModifiers: shortcut.carbonModifiers,
+			onKeyDown: {},
+			onKeyUp: {}
+		) != nil
+	}
+
+	/**
+	Waits until the condition returns `true` or the timeout is reached.
+	*/
+	private static func waitUntilConditionIsTrue(
+		timeout: Duration = .seconds(1),
+		condition: @escaping @Sendable @MainActor () -> Bool
+	) async -> Bool {
+		let clock = ContinuousClock()
+		let deadline = clock.now + timeout
+
+		while !(await MainActor.run(body: condition)) {
+			guard clock.now < deadline else {
+				return false
+			}
+
+			try? await Task.sleep(for: .milliseconds(10))
+		}
+
+		return true
+	}
+
+	/**
+	Returns whether the shared hotkey center is in normal mode.
+	*/
+	private static func hotKeyCenterIsInNormalMode() -> Bool {
+		if case .normal = HotKeyCenter.shared.mode {
+			return true
+		}
+
+		return false
+	}
+
+	/**
+	Returns whether the shared hotkey center is in menu-open mode.
+	*/
+	private static func hotKeyCenterIsInMenuOpenMode() -> Bool {
+		if case .menuOpen = HotKeyCenter.shared.mode {
+			return true
+		}
+
+		return false
+	}
+
+	/**
+	Returns whether the shared hotkey center is in disabled mode.
+	*/
+	private static func hotKeyCenterIsInDisabledMode() -> Bool {
+		if case .disabled = HotKeyCenter.shared.mode {
+			return true
+		}
+
+		return false
 	}
 
 	@Test("Set shortcut and reset")
@@ -249,6 +316,517 @@ struct KeyboardShortcutsTests {
 		#expect(KeyboardShortcuts.getShortcut(for: name2) == .init(.b))
 		#expect(KeyboardShortcuts.getShortcut(for: name3) == nil)
 	}
+
+	@Test("Reset all clears defaults")
+	func testResetAllClearsDefaults() {
+		let nameWithDefault = KeyboardShortcuts.Name("resetAllDefault", default: .init(.a))
+		let nameWithoutDefault = KeyboardShortcuts.Name("resetAllNoDefault")
+
+		KeyboardShortcuts.setShortcut(.init(.b), for: nameWithDefault)
+		KeyboardShortcuts.setShortcut(.init(.c), for: nameWithoutDefault)
+
+		KeyboardShortcuts.resetAll()
+
+		#expect(KeyboardShortcuts.getShortcut(for: nameWithDefault) == nil)
+		#expect(KeyboardShortcuts.getShortcut(for: nameWithoutDefault) == nil)
+	}
+
+	@Test("Removing shortcut clears disabled marker for names without default")
+	func testRemovingShortcutClearsDisabledMarkerForNamesWithoutDefault() {
+		let shortcutKey = "KeyboardShortcuts_removeDisabledDefault"
+		let nameWithDefault = KeyboardShortcuts.Name("removeDisabledDefault", default: .init(.a))
+
+		KeyboardShortcuts.setShortcut(nil, for: nameWithDefault)
+		#expect(UserDefaults.standard.object(forKey: shortcutKey) as? Bool == false)
+
+		let nameWithoutDefault = KeyboardShortcuts.Name("removeDisabledDefault")
+		KeyboardShortcuts.setShortcut(nil, for: nameWithoutDefault)
+
+		#expect(UserDefaults.standard.object(forKey: shortcutKey) == nil)
+	}
+
+	@Test("Disable one name does not affect another with same shortcut")
+	func testDisableWithSharedShortcut() throws {
+		let shortcut = KeyboardShortcuts.Shortcut(.n, modifiers: [.command])
+		let name1 = KeyboardShortcuts.Name("shared1", default: shortcut)
+		let name2 = KeyboardShortcuts.Name("shared2", default: shortcut)
+
+		KeyboardShortcuts.onKeyDown(for: name1) {}
+		KeyboardShortcuts.onKeyDown(for: name2) {}
+
+		#expect(KeyboardShortcuts.isEnabled(for: name1))
+		#expect(KeyboardShortcuts.isEnabled(for: name2))
+
+		KeyboardShortcuts.disable(name1)
+		#expect(!KeyboardShortcuts.isEnabled(for: name1))
+		#expect(KeyboardShortcuts.isEnabled(for: name2))
+
+		KeyboardShortcuts.enable(name1)
+		KeyboardShortcuts.disable(name2)
+		#expect(KeyboardShortcuts.isEnabled(for: name1))
+		#expect(!KeyboardShortcuts.isEnabled(for: name2))
+
+		KeyboardShortcuts.removeAllHandlers()
+	}
+
+	@Test("IsEnabled requires active handlers")
+	func testIsEnabledRequiresActiveHandlers() {
+		let shortcut = KeyboardShortcuts.Shortcut(.l, modifiers: [.command, .option, .shift, .control])
+		let name = KeyboardShortcuts.Name("enabledRequiresHandlers", default: shortcut)
+
+		#expect(!KeyboardShortcuts.isEnabled(for: name))
+
+		KeyboardShortcuts.onKeyDown(for: name) {}
+		#expect(KeyboardShortcuts.isEnabled(for: name))
+
+		KeyboardShortcuts.removeHandler(for: name)
+		#expect(!KeyboardShortcuts.isEnabled(for: name))
+	}
+
+	@Test("Disabling a name unregisters its hotkey")
+	func testDisableUnregistersHotKey() {
+		let shortcut = KeyboardShortcuts.Shortcut(.k, modifiers: [.command, .option, .shift, .control])
+		let name = KeyboardShortcuts.Name("disableUnregister", default: shortcut)
+
+		KeyboardShortcuts.onKeyDown(for: name) {}
+		#expect(KeyboardShortcuts.isEnabled(for: name))
+
+		KeyboardShortcuts.disable(name)
+		#expect(!KeyboardShortcuts.isEnabled(for: name))
+
+		#expect(Self.canRegisterHotKey(for: shortcut))
+
+		KeyboardShortcuts.removeAllHandlers()
+	}
+
+	@Test("Resume failure drops hotkey registration")
+	func testResumeFailureDropsHotKeyRegistration() async {
+		let shortcut = KeyboardShortcuts.Shortcut(.f14, modifiers: [.command, .option, .shift, .control])
+		let name = KeyboardShortcuts.Name("resumeFailureDropsHotKey", default: shortcut)
+		let wasEnabled = KeyboardShortcuts.isEnabled
+		let testSignature: UInt32 = 0x54455354
+		var competingEventHotKey: EventHotKeyRef?
+
+		defer {
+			KeyboardShortcuts.isEnabled = wasEnabled
+			if let competingEventHotKey {
+				UnregisterEventHotKey(competingEventHotKey)
+			}
+			KeyboardShortcuts.removeAllHandlers()
+		}
+
+		KeyboardShortcuts.isEnabled = true
+		KeyboardShortcuts.onKeyDown(for: name) {}
+		#expect(KeyboardShortcuts.isEnabled(for: name))
+
+		KeyboardShortcuts.isEnabled = false
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.canRegisterHotKey(for: shortcut)
+		})
+
+		let error = RegisterEventHotKey(
+			UInt32(shortcut.carbonKeyCode),
+			UInt32(shortcut.carbonModifiers),
+			EventHotKeyID(signature: testSignature, id: 1),
+			GetEventDispatcherTarget(),
+			0,
+			&competingEventHotKey
+		)
+
+		#expect(error == noErr)
+		#expect(competingEventHotKey != nil)
+
+		KeyboardShortcuts.isEnabled = true
+		#expect(await Self.waitUntilConditionIsTrue {
+			!KeyboardShortcuts.isEnabled(for: name)
+		})
+	}
+
+	@Test("Disabled names do not keep shortcuts registered")
+	func testDisabledNamesDoNotKeepShortcutsRegistered() {
+		let shortcut = KeyboardShortcuts.Shortcut(.j, modifiers: [.command, .option, .shift, .control])
+		let name1 = KeyboardShortcuts.Name("disableShared1", default: shortcut)
+		let name2 = KeyboardShortcuts.Name("disableShared2", default: shortcut)
+
+		KeyboardShortcuts.onKeyDown(for: name1) {}
+		KeyboardShortcuts.onKeyDown(for: name2) {}
+
+		KeyboardShortcuts.disable(name1)
+		KeyboardShortcuts.removeHandler(for: name2)
+
+		#expect(Self.canRegisterHotKey(for: shortcut))
+
+		KeyboardShortcuts.removeAllHandlers()
+	}
+
+	@Test("Menu tracking notifications switch hotkey mode")
+	func testMenuTrackingNotificationsSwitchHotKeyMode() async {
+		let wasEnabled = KeyboardShortcuts.isEnabled
+
+		defer {
+			NotificationCenter.default.post(name: NSMenu.didEndTrackingNotification, object: nil)
+			KeyboardShortcuts.isEnabled = wasEnabled
+		}
+
+		KeyboardShortcuts.isEnabled = true
+		NotificationCenter.default.post(name: NSMenu.didEndTrackingNotification, object: nil)
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.hotKeyCenterIsInNormalMode()
+		})
+
+		NotificationCenter.default.post(name: NSMenu.didBeginTrackingNotification, object: nil)
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.hotKeyCenterIsInMenuOpenMode()
+		})
+
+		NotificationCenter.default.post(name: NSMenu.didEndTrackingNotification, object: nil)
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.hotKeyCenterIsInNormalMode()
+		})
+	}
+
+	@Test("HotKeyCenter menu observers respond to notifications")
+	func testHotKeyCenterMenuObserversRespondToNotifications() async {
+		let wasEnabled = KeyboardShortcuts.isEnabled
+
+		defer {
+			NotificationCenter.default.post(name: NSMenu.didEndTrackingNotification, object: nil)
+			KeyboardShortcuts.isEnabled = wasEnabled
+		}
+
+		KeyboardShortcuts.isEnabled = true
+		let _ = HotKeyCenter.shared
+
+		NotificationCenter.default.post(name: NSMenu.didBeginTrackingNotification, object: nil)
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.hotKeyCenterIsInMenuOpenMode()
+		})
+
+		NotificationCenter.default.post(name: NSMenu.didEndTrackingNotification, object: nil)
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.hotKeyCenterIsInNormalMode()
+		})
+	}
+
+	@Test("Menu tracking notifications from detached tasks are handled")
+	func testMenuTrackingNotificationsFromDetachedTasksAreHandled() async {
+		let wasEnabled = KeyboardShortcuts.isEnabled
+
+		defer {
+			NotificationCenter.default.post(name: NSMenu.didEndTrackingNotification, object: nil)
+			KeyboardShortcuts.isEnabled = wasEnabled
+		}
+
+		KeyboardShortcuts.isEnabled = true
+		let _ = HotKeyCenter.shared
+
+		await Task.detached {
+			NotificationCenter.default.post(name: NSMenu.didBeginTrackingNotification, object: nil)
+		}.value
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.hotKeyCenterIsInMenuOpenMode()
+		})
+
+		await Task.detached {
+			NotificationCenter.default.post(name: NSMenu.didEndTrackingNotification, object: nil)
+		}.value
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.hotKeyCenterIsInNormalMode()
+		})
+	}
+
+	@Test("Menu tracking notifications keep disabled mode when globally disabled")
+	func testMenuTrackingNotificationsRespectGlobalDisable() async {
+		let wasEnabled = KeyboardShortcuts.isEnabled
+
+		defer {
+			NotificationCenter.default.post(name: NSMenu.didEndTrackingNotification, object: nil)
+			KeyboardShortcuts.isEnabled = wasEnabled
+		}
+
+		KeyboardShortcuts.isEnabled = false
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.hotKeyCenterIsInDisabledMode()
+		})
+
+		NotificationCenter.default.post(name: NSMenu.didBeginTrackingNotification, object: nil)
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.hotKeyCenterIsInDisabledMode()
+		})
+
+		NotificationCenter.default.post(name: NSMenu.didEndTrackingNotification, object: nil)
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.hotKeyCenterIsInDisabledMode()
+		})
+	}
+
+	@Test("Enabling while menu is open enters menu-open mode")
+	func testEnablingWhileMenuIsOpenEntersMenuOpenMode() async {
+		let wasEnabled = KeyboardShortcuts.isEnabled
+
+		defer {
+			NotificationCenter.default.post(name: NSMenu.didEndTrackingNotification, object: nil)
+			KeyboardShortcuts.isEnabled = wasEnabled
+		}
+
+		KeyboardShortcuts.isEnabled = false
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.hotKeyCenterIsInDisabledMode()
+		})
+
+		NotificationCenter.default.post(name: NSMenu.didBeginTrackingNotification, object: nil)
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.hotKeyCenterIsInDisabledMode()
+		})
+
+		KeyboardShortcuts.isEnabled = true
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.hotKeyCenterIsInMenuOpenMode()
+		})
+
+		NotificationCenter.default.post(name: NSMenu.didEndTrackingNotification, object: nil)
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.hotKeyCenterIsInNormalMode()
+		})
+	}
+
+	@Test("Disabling and enabling works with stream-only handlers")
+	func testDisableAndEnableWithStreamOnlyHandlers() async {
+		let shortcut = KeyboardShortcuts.Shortcut(.f12, modifiers: [.command, .option, .shift, .control])
+		let name = KeyboardShortcuts.Name("streamDisableEnable", default: shortcut)
+		var stream: AsyncStream<KeyboardShortcuts.EventType>? = KeyboardShortcuts.events(for: name)
+		var iterator: AsyncStream<KeyboardShortcuts.EventType>.AsyncIterator? = stream?.makeAsyncIterator()
+		var waitingForEventTask: Task<Void, Never>? = Task {
+			_ = await iterator?.next()
+		}
+		#expect(iterator != nil)
+
+		defer {
+			waitingForEventTask?.cancel()
+		}
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			KeyboardShortcuts.isEnabled(for: name)
+		})
+		#expect(!Self.canRegisterHotKey(for: shortcut))
+
+		KeyboardShortcuts.disable(name)
+		#expect(!KeyboardShortcuts.isEnabled(for: name))
+		#expect(Self.canRegisterHotKey(for: shortcut))
+
+		KeyboardShortcuts.enable(name)
+		#expect(await Self.waitUntilConditionIsTrue {
+			KeyboardShortcuts.isEnabled(for: name)
+		})
+		#expect(!Self.canRegisterHotKey(for: shortcut))
+
+		iterator = nil
+		stream = nil
+		waitingForEventTask?.cancel()
+		waitingForEventTask = nil
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.canRegisterHotKey(for: shortcut)
+		})
+	}
+
+	@Test("Updating shortcut while disabled defers registration")
+	func testUpdatingShortcutWhileDisabledDefersRegistration() {
+		let originalShortcut = KeyboardShortcuts.Shortcut(.f20, modifiers: [.command, .option, .shift, .control])
+		let updatedShortcut = KeyboardShortcuts.Shortcut(.f19, modifiers: [.command, .option, .shift, .control])
+		let name = KeyboardShortcuts.Name("setWhileDisabled", default: originalShortcut)
+
+		KeyboardShortcuts.onKeyDown(for: name) {}
+
+		defer {
+			KeyboardShortcuts.enable(name)
+			KeyboardShortcuts.removeAllHandlers()
+		}
+
+		#expect(KeyboardShortcuts.isEnabled(for: name))
+
+		KeyboardShortcuts.disable(name)
+		#expect(Self.canRegisterHotKey(for: originalShortcut))
+
+		KeyboardShortcuts.setShortcut(updatedShortcut, for: name)
+		#expect(KeyboardShortcuts.getShortcut(for: name) == updatedShortcut)
+		#expect(Self.canRegisterHotKey(for: updatedShortcut))
+
+		KeyboardShortcuts.enable(name)
+		#expect(KeyboardShortcuts.isEnabled(for: name))
+		#expect(!Self.canRegisterHotKey(for: updatedShortcut))
+	}
+
+	@Test("Shortcut recovers after resume conflict when reapplied")
+	func testShortcutRecoversAfterResumeConflictWhenReapplied() async {
+		let shortcut = KeyboardShortcuts.Shortcut(.f13, modifiers: [.command, .option, .shift, .control])
+		let name = KeyboardShortcuts.Name("resumeConflictRecovery", default: shortcut)
+		let wasEnabled = KeyboardShortcuts.isEnabled
+		let testSignature: UInt32 = 0x54455354
+		var competingEventHotKey: EventHotKeyRef?
+
+		defer {
+			KeyboardShortcuts.isEnabled = wasEnabled
+			if let competingEventHotKey {
+				UnregisterEventHotKey(competingEventHotKey)
+			}
+			KeyboardShortcuts.removeAllHandlers()
+		}
+
+		KeyboardShortcuts.isEnabled = true
+		KeyboardShortcuts.onKeyDown(for: name) {}
+		#expect(KeyboardShortcuts.isEnabled(for: name))
+
+		KeyboardShortcuts.isEnabled = false
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.canRegisterHotKey(for: shortcut)
+		})
+
+		let error = RegisterEventHotKey(
+			UInt32(shortcut.carbonKeyCode),
+			UInt32(shortcut.carbonModifiers),
+			EventHotKeyID(signature: testSignature, id: 2),
+			GetEventDispatcherTarget(),
+			0,
+			&competingEventHotKey
+		)
+
+		#expect(error == noErr)
+		#expect(competingEventHotKey != nil)
+
+		KeyboardShortcuts.isEnabled = true
+		#expect(await Self.waitUntilConditionIsTrue {
+			!KeyboardShortcuts.isEnabled(for: name)
+		})
+
+		UnregisterEventHotKey(competingEventHotKey)
+		competingEventHotKey = nil
+
+		KeyboardShortcuts.setShortcut(shortcut, for: name)
+		#expect(KeyboardShortcuts.isEnabled(for: name))
+	}
+
+	@Test("Stream handlers keep shortcuts registered when removing legacy handlers")
+	func testStreamHandlersKeepShortcutsRegisteredWhenRemovingLegacyHandlers() async {
+		let shortcut = KeyboardShortcuts.Shortcut(.f19, modifiers: [.command, .option, .shift, .control])
+		let name = KeyboardShortcuts.Name("streamKeepsRegistered", default: shortcut)
+
+		var stream: AsyncStream<KeyboardShortcuts.EventType>? = KeyboardShortcuts.events(for: name)
+		var iterator: AsyncStream<KeyboardShortcuts.EventType>.AsyncIterator? = stream?.makeAsyncIterator()
+		#expect(iterator != nil)
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			KeyboardShortcuts.isEnabled(for: name)
+		})
+
+		KeyboardShortcuts.removeHandler(for: name)
+
+		#expect(KeyboardShortcuts.isEnabled(for: name))
+
+		iterator = nil
+		stream = nil
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.canRegisterHotKey(for: shortcut)
+		})
+	}
+
+	@Test("Ending stream does not unregister when legacy handlers remain")
+	func testStreamEndingDoesNotUnregisterWhenLegacyHandlersRemain() async {
+		let shortcut = KeyboardShortcuts.Shortcut(.f16, modifiers: [.command, .option, .shift, .control])
+		let name = KeyboardShortcuts.Name("streamEndingKeepsLegacyHandlers", default: shortcut)
+
+		KeyboardShortcuts.onKeyDown(for: name) {}
+
+		var stream: AsyncStream<KeyboardShortcuts.EventType>? = KeyboardShortcuts.events(for: name)
+		var iterator: AsyncStream<KeyboardShortcuts.EventType>.AsyncIterator? = stream?.makeAsyncIterator()
+		#expect(iterator != nil)
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			!Self.canRegisterHotKey(for: shortcut)
+		})
+
+		iterator = nil
+		stream = nil
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			KeyboardShortcuts.isEnabled(for: name)
+		})
+
+		#expect(KeyboardShortcuts.isEnabled(for: name))
+		#expect(!Self.canRegisterHotKey(for: shortcut))
+
+		KeyboardShortcuts.removeHandler(for: name)
+	}
+
+	@Test("Stream handlers release old shortcuts when changing shortcuts")
+	func testStreamHandlersReleaseOldShortcutsWhenChangingShortcuts() async {
+		let originalShortcut = KeyboardShortcuts.Shortcut(.f18, modifiers: [.command, .option, .shift, .control])
+		let updatedShortcut = KeyboardShortcuts.Shortcut(.f17, modifiers: [.command, .option, .shift, .control])
+		let name = KeyboardShortcuts.Name("streamUpdatesShortcut", default: originalShortcut)
+
+		var stream: AsyncStream<KeyboardShortcuts.EventType>? = KeyboardShortcuts.events(for: name)
+		var iterator: AsyncStream<KeyboardShortcuts.EventType>.AsyncIterator? = stream?.makeAsyncIterator()
+		#expect(iterator != nil)
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			KeyboardShortcuts.isEnabled(for: name)
+		})
+
+		KeyboardShortcuts.setShortcut(updatedShortcut, for: name)
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.canRegisterHotKey(for: originalShortcut)
+		})
+
+		iterator = nil
+		stream = nil
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.canRegisterHotKey(for: updatedShortcut)
+		})
+	}
+
+	@Test("Shortcut can be re-registered after clearing")
+	func testShortcutReregistration() throws {
+		let shortcut = KeyboardShortcuts.Shortcut(.m, modifiers: [.command])
+		let name = KeyboardShortcuts.Name("reregisterTest")
+
+		// Set shortcut
+		KeyboardShortcuts.setShortcut(shortcut, for: name)
+		#expect(KeyboardShortcuts.getShortcut(for: name) == shortcut)
+
+		// Clear shortcut
+		KeyboardShortcuts.setShortcut(nil, for: name)
+		#expect(KeyboardShortcuts.getShortcut(for: name) == nil)
+
+		// Re-register the same shortcut
+		KeyboardShortcuts.setShortcut(shortcut, for: name)
+		#expect(KeyboardShortcuts.getShortcut(for: name) == shortcut)
+	}
+
+	@Test("Changing shortcut releases old and registers new")
+	func testChangingShortcutUpdatesRegistration() {
+		let shortcutA = KeyboardShortcuts.Shortcut(.f16, modifiers: [.command, .option, .shift, .control])
+		let shortcutB = KeyboardShortcuts.Shortcut(.f15, modifiers: [.command, .option, .shift, .control])
+		let name = KeyboardShortcuts.Name("changeShortcutTest", default: shortcutA)
+
+		KeyboardShortcuts.onKeyDown(for: name) {}
+		#expect(KeyboardShortcuts.isEnabled(for: name))
+
+		KeyboardShortcuts.setShortcut(shortcutB, for: name)
+
+		// Old shortcut should be released
+		#expect(Self.canRegisterHotKey(for: shortcutA))
+
+		// New shortcut should be registered
+		#expect(KeyboardShortcuts.isEnabled(for: name))
+		#expect(KeyboardShortcuts.getShortcut(for: name) == shortcutB)
+
+		KeyboardShortcuts.removeAllHandlers()
+	}
 }
 
 // MARK: - Modifier Symbol Tests
@@ -315,8 +893,11 @@ struct ModifierSymbolTests {
 // MARK: - UserDefaults Extension for Testing
 
 extension UserDefaults {
+	/**
+	Removes all stored keyboard shortcuts from user defaults.
+	*/
 	func removeAllKeyboardShortcuts() {
-		dictionaryRepresentation().keys.forEach { key in
+		for key in dictionaryRepresentation().keys {
 			if key.hasPrefix("KeyboardShortcuts_") {
 				removeObject(forKey: key)
 			}

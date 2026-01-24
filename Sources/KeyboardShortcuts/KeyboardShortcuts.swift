@@ -1,5 +1,5 @@
 #if os(macOS)
-import AppKit.NSMenu
+import Foundation
 
 /**
 Global keyboard shortcuts for your macOS app.
@@ -29,38 +29,17 @@ public enum KeyboardShortcuts {
 			.disallow(reason: String(localized: reason))
 		}
 	}
-	private static var registeredShortcuts = Set<Shortcut>()
 
-	private static var legacyKeyDownHandlers = [Name: [() -> Void]]()
-	private static var legacyKeyUpHandlers = [Name: [() -> Void]]()
+	private static var hotKeys = [Shortcut: HotKey]()
+	private static var disabledNames = Set<Name>()
+
+	private static var keyDownHandlers = [Name: [() -> Void]]()
+	private static var keyUpHandlers = [Name: [() -> Void]]()
 
 	private static var streamKeyDownHandlers = [Name: [UUID: () -> Void]]()
 	private static var streamKeyUpHandlers = [Name: [UUID: () -> Void]]()
 
-	private static var shortcutsForLegacyHandlers: Set<Shortcut> {
-		let shortcuts = [legacyKeyDownHandlers.keys, legacyKeyUpHandlers.keys]
-			.flatMap { $0 }
-			.compactMap(\.shortcut)
-
-		return Set(shortcuts)
-	}
-
-	private static var shortcutsForStreamHandlers: Set<Shortcut> {
-		let shortcuts = [streamKeyDownHandlers.keys, streamKeyUpHandlers.keys]
-			.flatMap { $0 }
-			.compactMap(\.shortcut)
-
-		return Set(shortcuts)
-	}
-
-	private static var shortcutsForHandlers: Set<Shortcut> {
-		shortcutsForLegacyHandlers.union(shortcutsForStreamHandlers)
-	}
-
 	private static var isInitialized = false
-
-	private static var openMenuObserver: NSObjectProtocol?
-	private static var closeMenuObserver: NSObjectProtocol?
 
 	/**
 	When `true`, event handlers will not be called for registered keyboard shortcuts.
@@ -78,7 +57,7 @@ public enum KeyboardShortcuts {
 				return
 			}
 
-			CarbonKeyboardShortcuts.updateEventHandler()
+			updateHotKeyMode()
 		}
 	}
 
@@ -95,80 +74,123 @@ public enum KeyboardShortcuts {
 			.toSet()
 	}
 
-	/**
-	Enable keyboard shortcuts to work even when an `NSMenu` is open by setting this property when the menu opens and closes.
+	private static func updateHotKeyMode() {
+		HotKeyCenter.shared.setEnabled(isEnabled)
+	}
 
-	`NSMenu` runs in a tracking run mode that blocks keyboard shortcuts events. When you set this property to `true`, it switches to a different kind of event handler, which does work when the menu is open.
+	private static var namesWithKeyHandlers: Set<Name> {
+		Set(keyDownHandlers.keys).union(keyUpHandlers.keys)
+	}
 
-	The main use-case for this is toggling the menu of a menu bar app with a keyboard shortcut.
-	*/
-	private(set) static var isMenuOpen = false {
-		didSet {
-			guard isMenuOpen != oldValue else {
-				return
+	private static var namesWithAllHandlers: Set<Name> {
+		namesWithKeyHandlers
+			.union(streamKeyDownHandlers.keys)
+			.union(streamKeyUpHandlers.keys)
+	}
+
+	private static func hasHandlers<Handlers: Collection>(for name: Name, in handlers: [Name: Handlers]) -> Bool {
+		handlers[name]?.isEmpty == false
+	}
+
+	private static func hasHandlers(for name: Name) -> Bool {
+		hasHandlers(for: name, in: keyDownHandlers)
+			|| hasHandlers(for: name, in: keyUpHandlers)
+			|| hasHandlers(for: name, in: streamKeyDownHandlers)
+			|| hasHandlers(for: name, in: streamKeyUpHandlers)
+	}
+
+	private static func hasActiveHandlers(for name: Name) -> Bool {
+		guard !disabledNames.contains(name) else {
+			return false
+		}
+
+		return hasHandlers(for: name)
+	}
+
+	private static func hasActiveStreamHandlers(for name: Name) -> Bool {
+		guard !disabledNames.contains(name) else {
+			return false
+		}
+
+		return hasHandlers(for: name, in: streamKeyDownHandlers)
+			|| hasHandlers(for: name, in: streamKeyUpHandlers)
+	}
+
+	private static func isShortcutActive(_ shortcut: Shortcut, excluding nameToExclude: Name? = nil) -> Bool {
+		namesWithAllHandlers.contains { name in
+			if let nameToExclude, name == nameToExclude {
+				return false
 			}
 
-			CarbonKeyboardShortcuts.updateEventHandler()
+			guard hasActiveHandlers(for: name) else {
+				return false
+			}
+
+			return getShortcut(for: name) == shortcut
 		}
 	}
 
-	private static func register(_ shortcut: Shortcut) {
-		guard !registeredShortcuts.contains(shortcut) else {
+	/**
+	Register the shortcut for the given name if it has a shortcut and isn't already registered.
+	*/
+	private static func registerIfNeeded(for name: Name) {
+		guard hasActiveHandlers(for: name) else {
 			return
 		}
 
-		CarbonKeyboardShortcuts.register(
-			shortcut,
-			onKeyDown: handleOnKeyDown,
-			onKeyUp: handleOnKeyUp
-		)
-
-		registeredShortcuts.insert(shortcut)
-	}
-
-	/**
-	Register the shortcut for the given name if it has a shortcut.
-	*/
-	private static func registerShortcutIfNeeded(for name: Name) {
 		guard let shortcut = getShortcut(for: name) else {
 			return
 		}
 
-		register(shortcut)
+		// If this shortcut is already registered, nothing to do
+		guard hotKeys[shortcut] == nil else {
+			return
+		}
+
+		let hotKey = HotKey(
+			carbonKeyCode: shortcut.carbonKeyCode,
+			carbonModifiers: shortcut.carbonModifiers,
+			onKeyDown: { [shortcut] in handleKeyEvent(.keyDown, for: shortcut) },
+			onKeyUp: { [shortcut] in handleKeyEvent(.keyUp, for: shortcut) }
+		)
+
+		hotKey?.onRegistrationFailed = { [shortcut, weak hotKey] in
+			guard
+				let hotKey,
+				hotKeys[shortcut] === hotKey
+			else {
+				return
+			}
+
+			hotKeys[shortcut] = nil
+		}
+
+		hotKeys[shortcut] = hotKey
 	}
 
 	private static func unregister(_ shortcut: Shortcut) {
-		CarbonKeyboardShortcuts.unregister(shortcut)
-		registeredShortcuts.remove(shortcut)
+		hotKeys[shortcut] = nil // HotKey.deinit handles Carbon unregistration
 	}
 
 	/**
-	Unregister the given shortcut if it has no handlers.
+	Unregister the shortcut for the given name if no other names use it.
 	*/
-	private static func unregisterIfNeeded(_ shortcut: Shortcut) {
-		guard !shortcutsForHandlers.contains(shortcut) else {
+	private static func unregisterIfNeeded(for name: Name, excludingCurrentName: Bool = true) {
+		guard let shortcut = getShortcut(for: name) else {
+			return
+		}
+
+		let excludedName = excludingCurrentName ? name : nil
+
+		guard !isShortcutActive(shortcut, excluding: excludedName) else {
 			return
 		}
 
 		unregister(shortcut)
 	}
 
-	/**
-	Unregister the shortcut for the given name if it has no handlers.
-	*/
-	private static func unregisterShortcutIfNeeded(for name: Name) {
-		guard let shortcut = name.shortcut else {
-			return
-		}
-
-		unregisterIfNeeded(shortcut)
-	}
-
 	private static func unregisterAll() {
-		CarbonKeyboardShortcuts.unregisterAll()
-		registeredShortcuts.removeAll()
-
-		// TODO: Should remove user defaults too.
+		hotKeys.removeAll() // HotKey.deinit handles Carbon unregistration
 	}
 
 	static func initialize() {
@@ -176,14 +198,7 @@ public enum KeyboardShortcuts {
 			return
 		}
 
-		openMenuObserver = NotificationCenter.default.addObserver(forName: NSMenu.didBeginTrackingNotification, object: nil, queue: nil) { _ in
-			isMenuOpen = true
-		}
-
-		closeMenuObserver = NotificationCenter.default.addObserver(forName: NSMenu.didEndTrackingNotification, object: nil, queue: nil) { _ in
-			isMenuOpen = false
-		}
-
+		let _ = HotKeyCenter.shared
 		isInitialized = true
 	}
 
@@ -195,14 +210,18 @@ public enum KeyboardShortcuts {
 	- Note: This method does not affect listeners using ``events(for:)``.
 	*/
 	public static func removeAllHandlers() {
-		let shortcutsToUnregister = shortcutsForLegacyHandlers.subtracting(shortcutsForStreamHandlers)
+		// Collect shortcuts that might need unregistering
+		let shortcutsToCheck = namesWithKeyHandlers.compactMap { getShortcut(for: $0) }.toSet()
 
-		for shortcut in shortcutsToUnregister {
-			unregister(shortcut)
+		keyDownHandlers = [:]
+		keyUpHandlers = [:]
+
+		// Unregister shortcuts that no longer have any handlers
+		for shortcut in shortcutsToCheck {
+			if !isShortcutActive(shortcut) {
+				unregister(shortcut)
+			}
 		}
-
-		legacyKeyDownHandlers = [:]
-		legacyKeyUpHandlers = [:]
 	}
 
 	/**
@@ -215,18 +234,14 @@ public enum KeyboardShortcuts {
 	- Note: This method does not affect listeners using ``events(for:)``.
 	*/
 	public static func removeHandler(for name: Name) {
-		legacyKeyDownHandlers[name] = nil
-		legacyKeyUpHandlers[name] = nil
+		keyDownHandlers[name] = nil
+		keyUpHandlers[name] = nil
 
-		// Make sure not to unregister stream handlers.
-		guard
-			let shortcut = getShortcut(for: name),
-			!shortcutsForStreamHandlers.contains(shortcut)
-		else {
+		guard !hasActiveStreamHandlers(for: name) else {
 			return
 		}
 
-		unregister(shortcut)
+		unregisterIfNeeded(for: name)
 	}
 
 	/**
@@ -243,12 +258,14 @@ public enum KeyboardShortcuts {
 	public static func isEnabled(for name: Name) -> Bool {
 		guard
 			isEnabled,
-			let shortcut = getShortcut(for: name)
+			hasActiveHandlers(for: name),
+			let shortcut = getShortcut(for: name),
+			hotKeys[shortcut] != nil
 		else {
 			return false
 		}
 
-		return registeredShortcuts.contains(shortcut)
+		return true
 	}
 
 	/**
@@ -256,11 +273,8 @@ public enum KeyboardShortcuts {
 	*/
 	public static func disable(_ names: [Name]) {
 		for name in names {
-			guard let shortcut = getShortcut(for: name) else {
-				continue
-			}
-
-			unregister(shortcut)
+			disabledNames.insert(name)
+			unregisterIfNeeded(for: name)
 		}
 	}
 
@@ -276,11 +290,8 @@ public enum KeyboardShortcuts {
 	*/
 	public static func enable(_ names: [Name]) {
 		for name in names {
-			guard let shortcut = getShortcut(for: name) else {
-				continue
-			}
-
-			register(shortcut)
+			disabledNames.remove(name)
+			registerIfNeeded(for: name)
 		}
 	}
 
@@ -367,7 +378,9 @@ public enum KeyboardShortcuts {
 	```
 	*/
 	public static func resetAll() {
-		reset(allNames.toArray())
+		for name in allNames {
+			setShortcut(nil, for: name)
+		}
 	}
 
 	/**
@@ -380,12 +393,13 @@ public enum KeyboardShortcuts {
 	public static func setShortcut(_ shortcut: Shortcut?, for name: Name) {
 		if let shortcut {
 			userDefaultsSet(name: name, shortcut: shortcut)
+			return
+		}
+
+		if name.defaultShortcut != nil {
+			userDefaultsDisable(name: name)
 		} else {
-			if name.defaultShortcut != nil {
-				userDefaultsDisable(name: name)
-			} else {
-				userDefaultsRemove(name: name)
-			}
+			userDefaultsRemove(name: name)
 		}
 	}
 
@@ -393,65 +407,48 @@ public enum KeyboardShortcuts {
 	Get the keyboard shortcut for a name.
 	*/
 	public static func getShortcut(for name: Name) -> Shortcut? {
-		guard
-			let data = UserDefaults.standard.string(forKey: userDefaultsKey(for: name))?.data(using: .utf8),
-			let decoded = try? JSONDecoder().decode(Shortcut.self, from: data)
-		else {
-			return nil
+		if case .shortcut(let shortcut) = storedShortcut(for: name) {
+			return shortcut
 		}
 
-		return decoded
+		return nil
 	}
 
-	private static func handleOnKeyDown(_ shortcut: Shortcut) {
+	private static func handleKeyEvent(_ eventType: EventType, for shortcut: Shortcut) {
 		guard !isPaused else {
 			return
 		}
 
-		for (name, handlers) in legacyKeyDownHandlers {
-			guard getShortcut(for: name) == shortcut else {
-				continue
-			}
+		let handlers = eventType == .keyDown ? keyDownHandlers : keyUpHandlers
+		let streamHandlers = eventType == .keyDown ? streamKeyDownHandlers : streamKeyUpHandlers
 
-			for handler in handlers {
-				handler()
+		invokeHandlers(for: shortcut, in: handlers) { callbacks in
+			for callback in callbacks {
+				callback()
 			}
 		}
 
-		for (name, handlers) in streamKeyDownHandlers {
-			guard getShortcut(for: name) == shortcut else {
-				continue
-			}
-
-			for handler in handlers.values {
-				handler()
+		invokeHandlers(for: shortcut, in: streamHandlers) { callbacks in
+			for callback in callbacks.values {
+				callback()
 			}
 		}
 	}
 
-	private static func handleOnKeyUp(_ shortcut: Shortcut) {
-		guard !isPaused else {
-			return
-		}
-
-		for (name, handlers) in legacyKeyUpHandlers {
-			guard getShortcut(for: name) == shortcut else {
+	private static func invokeHandlers<Handlers>(
+		for shortcut: Shortcut,
+		in handlers: [Name: Handlers],
+		_ handleCallbacks: (Handlers) -> Void
+	) {
+		for (name, callbacks) in handlers {
+			guard
+				getShortcut(for: name) == shortcut,
+				!disabledNames.contains(name)
+			else {
 				continue
 			}
 
-			for handler in handlers {
-				handler()
-			}
-		}
-
-		for (name, handlers) in streamKeyUpHandlers {
-			guard getShortcut(for: name) == shortcut else {
-				continue
-			}
-
-			for handler in handlers.values {
-				handler()
-			}
+			handleCallbacks(callbacks)
 		}
 	}
 
@@ -479,8 +476,8 @@ public enum KeyboardShortcuts {
 	```
 	*/
 	public static func onKeyDown(for name: Name, action: @escaping () -> Void) {
-		legacyKeyDownHandlers[name, default: []].append(action)
-		registerShortcutIfNeeded(for: name)
+		keyDownHandlers[name, default: []].append(action)
+		registerIfNeeded(for: name)
 	}
 
 	/**
@@ -507,18 +504,60 @@ public enum KeyboardShortcuts {
 	```
 	*/
 	public static func onKeyUp(for name: Name, action: @escaping () -> Void) {
-		legacyKeyUpHandlers[name, default: []].append(action)
-		registerShortcutIfNeeded(for: name)
+		keyUpHandlers[name, default: []].append(action)
+		registerIfNeeded(for: name)
 	}
 
 	private static let userDefaultsPrefix = "KeyboardShortcuts_"
 
-	private static func userDefaultsKey(for shortcutName: Name) -> String { "\(userDefaultsPrefix)\(shortcutName.rawValue)"
+	private static func userDefaultsKey(for shortcutName: Name) -> String {
+		"\(userDefaultsPrefix)\(shortcutName.rawValue)"
+	}
+
+	private enum StoredShortcut {
+		case shortcut(Shortcut)
+		case disabled
+		case missing
+	}
+
+	private static func userDefaultsValue(for name: Name) -> Any? {
+		UserDefaults.standard.object(forKey: userDefaultsKey(for: name))
+	}
+
+	private static func storedShortcut(for name: Name) -> StoredShortcut {
+		guard let storedValue = userDefaultsValue(for: name) else {
+			return .missing
+		}
+
+		if let isEnabled = storedValue as? Bool, !isEnabled {
+			return .disabled
+		}
+
+		guard
+			let shortcutString = storedValue as? String,
+			let data = shortcutString.data(using: .utf8),
+			let shortcut = try? JSONDecoder().decode(Shortcut.self, from: data)
+		else {
+			return .missing
+		}
+
+		return .shortcut(shortcut)
+	}
+
+	private static func isShortcutDisabled(for name: Name) -> Bool {
+		userDefaultsValue(for: name) as? Bool == false
 	}
 
 	static func userDefaultsDidChange(name: Name) {
 		// TODO: Use proper UserDefaults observation instead of this.
-		NotificationCenter.default.post(name: .shortcutByNameDidChange, object: nil, userInfo: ["name": name])
+		NotificationCenter.default.post(name: .shortcutByNameDidChange, object: nil, userInfo: [NotificationUserInfoKey.name: name])
+	}
+
+	private static func updateStoredShortcut(for name: Name, update: () -> Void) {
+		unregisterIfNeeded(for: name)
+		update()
+		registerIfNeeded(for: name)
+		userDefaultsDidChange(name: name)
 	}
 
 	static func userDefaultsSet(name: Name, shortcut: Shortcut) {
@@ -526,37 +565,33 @@ public enum KeyboardShortcuts {
 			return
 		}
 
-		if let oldShortcut = getShortcut(for: name) {
-			unregister(oldShortcut)
+		updateStoredShortcut(for: name) {
+			UserDefaults.standard.set(encoded, forKey: userDefaultsKey(for: name))
 		}
-
-		register(shortcut)
-		UserDefaults.standard.set(encoded, forKey: userDefaultsKey(for: name))
-		userDefaultsDidChange(name: name)
 	}
 
 	static func userDefaultsDisable(name: Name) {
-		guard let shortcut = getShortcut(for: name) else {
+		guard !isShortcutDisabled(for: name) else {
 			return
 		}
 
-		UserDefaults.standard.set(false, forKey: userDefaultsKey(for: name))
-		unregister(shortcut)
-		userDefaultsDidChange(name: name)
+		updateStoredShortcut(for: name) {
+			UserDefaults.standard.set(false, forKey: userDefaultsKey(for: name))
+		}
 	}
 
 	static func userDefaultsRemove(name: Name) {
-		guard let shortcut = getShortcut(for: name) else {
+		guard userDefaultsValue(for: name) != nil else {
 			return
 		}
 
-		UserDefaults.standard.removeObject(forKey: userDefaultsKey(for: name))
-		unregister(shortcut)
-		userDefaultsDidChange(name: name)
+		updateStoredShortcut(for: name) {
+			UserDefaults.standard.removeObject(forKey: userDefaultsKey(for: name))
+		}
 	}
 
 	static func userDefaultsContains(name: Name) -> Bool {
-		UserDefaults.standard.object(forKey: userDefaultsKey(for: name)) != nil
+		userDefaultsValue(for: name) != nil
 	}
 }
 
@@ -599,7 +634,7 @@ extension KeyboardShortcuts {
 		AsyncStream { continuation in
 			let id = UUID()
 
-			DispatchQueue.main.async {
+			let registerHandlers = {
 				streamKeyDownHandlers[name, default: [:]][id] = {
 					continuation.yield(.keyDown)
 				}
@@ -608,7 +643,13 @@ extension KeyboardShortcuts {
 					continuation.yield(.keyUp)
 				}
 
-				registerShortcutIfNeeded(for: name)
+				registerIfNeeded(for: name)
+			}
+
+			if Thread.isMainThread {
+				registerHandlers()
+			} else {
+				DispatchQueue.main.async(execute: registerHandlers)
 			}
 
 			continuation.onTermination = { _ in
@@ -616,7 +657,7 @@ extension KeyboardShortcuts {
 					streamKeyDownHandlers[name]?[id] = nil
 					streamKeyUpHandlers[name]?[id] = nil
 
-					unregisterShortcutIfNeeded(for: name)
+					unregisterIfNeeded(for: name, excludingCurrentName: false)
 				}
 			}
 		}

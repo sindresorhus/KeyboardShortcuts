@@ -226,15 +226,11 @@ extension KeyboardShortcuts {
 			}
 		}
 
-		private func setStringValue(shortcut: Shortcut?) {
-			stringValue = shortcut.map { "\($0)" } ?? ""
+		private func updateStringValue() {
+			stringValue = currentShortcut.map { "\($0)" } ?? ""
 
 			// If `stringValue` is empty, hide the cancel button to let the placeholder center.
 			showsCancelButton = !stringValue.isEmpty
-		}
-
-		private func updateStringValue() {
-			setStringValue(shortcut: currentShortcut)
 		}
 
 		private func setUpEvents() {
@@ -245,7 +241,7 @@ extension KeyboardShortcuts {
 			shortcutsNameChangeObserver = NotificationCenter.default.addObserver(forName: .shortcutByNameDidChange, object: nil, queue: nil) { [weak self] notification in
 				guard
 					let self,
-					let nameInNotification = notification.userInfo?["name"] as? KeyboardShortcuts.Name,
+					let nameInNotification = notification.keyboardShortcutsName,
 					nameInNotification == shortcutName
 				else {
 					return
@@ -261,7 +257,7 @@ extension KeyboardShortcuts {
 			showsCancelButton = !stringValue.isEmpty
 			restoreCaret()
 			KeyboardShortcuts.isPaused = false
-			NotificationCenter.default.post(name: .recorderActiveStatusDidChange, object: nil, userInfo: ["isActive": false])
+			NotificationCenter.default.post(name: .recorderActiveStatusDidChange, object: nil, userInfo: [NotificationUserInfoKey.isActive: false])
 		}
 
 		private func preventBecomingKey() {
@@ -344,7 +340,7 @@ extension KeyboardShortcuts {
 			showsCancelButton = !stringValue.isEmpty
 			hideCaret()
 			KeyboardShortcuts.isPaused = true // The position here matters.
-			NotificationCenter.default.post(name: .recorderActiveStatusDidChange, object: nil, userInfo: ["isActive": true])
+			NotificationCenter.default.post(name: .recorderActiveStatusDidChange, object: nil, userInfo: [NotificationUserInfoKey.isActive: true])
 
 			eventMonitor = LocalEventMonitor(events: [.keyDown, .leftMouseUp, .rightMouseUp]) { [weak self] event in
 				guard let self else {
@@ -366,32 +362,24 @@ extension KeyboardShortcuts {
 					return nil
 				}
 
-				if
-					event.modifiers.isEmpty,
-					event.specialKey == .tab
-				{
-					blur()
+				if event.modifiers.isEmpty {
+					switch event.specialKey {
+					case .tab:
+						blur()
 
-					// We intentionally bubble up the event so it can focus the next responder.
-					return event
-				}
+						// We intentionally bubble up the event so it can focus the next responder.
+						return event
+					case .delete, .deleteForward, .backspace:
+						clear()
+						return nil
+					default:
+						break
+					}
 
-				if
-					event.modifiers.isEmpty,
-					event.keyCode == kVK_Escape // TODO: Make this strongly typed.
-				{
-					blur()
-					return nil
-				}
-
-				if
-					event.modifiers.isEmpty,
-					event.specialKey == .delete
-						|| event.specialKey == .deleteForward
-						|| event.specialKey == .backspace
-				{
-					clear()
-					return nil
+					if event.keyCode == kVK_Escape { // TODO: Make this strongly typed.
+						blur()
+						return nil
+					}
 				}
 
 				// The “shift” key is not allowed without other modifiers or a function key, since it doesn't actually work.
@@ -406,36 +394,19 @@ extension KeyboardShortcuts {
 
 				if let menuItem = shortcut.takenByMainMenu {
 					// TODO: Find a better way to make it possible to dismiss the alert by pressing "Enter". How can we make the input automatically temporarily lose focus while the alert is open?
-					blur()
-
-					NSAlert.showModal(
-						for: window,
-						title: String.localizedStringWithFormat("keyboard_shortcut_used_by_menu_item".localized, menuItem.title)
-					)
-
-					focus()
+					showAlert(title: String.localizedStringWithFormat("keyboard_shortcut_used_by_menu_item".localized, menuItem.title))
 
 					return nil
 				}
 
 				// See: https://developer.apple.com/forums/thread/763878?answerId=804374022#804374022
 				if shortcut.isDisallowed {
-					blur()
-
-					NSAlert.showModal(
-						for: window,
-						title: "keyboard_shortcut_disallowed".localized
-					)
-
-					focus()
+					showAlert(title: "keyboard_shortcut_disallowed".localized)
 					return nil
 				}
 
 				if shortcut.isTakenBySystem {
-					blur()
-
-					let modalResponse = NSAlert.showModal(
-						for: window,
+					let modalResponse = showAlert(
 						title: "keyboard_shortcut_used_by_system".localized,
 						// TODO: Add button to offer to open the relevant system settings pane for the user.
 						message: "keyboard_shortcuts_can_be_changed".localized,
@@ -445,8 +416,6 @@ extension KeyboardShortcuts {
 						]
 					)
 
-					focus()
-
 					// If the user has selected "Use Anyway" in the dialog (the second option), we'll continue setting the keyboard shorcut even though it's reserved by the system.
 					guard modalResponse == .alertSecondButtonReturn else {
 						return nil
@@ -454,14 +423,7 @@ extension KeyboardShortcuts {
 				}
 
 				if case .disallow(let reason) = validateShortcut?(shortcut) {
-					blur()
-
-					NSAlert.showModal(
-						for: window,
-						title: reason
-					)
-
-					focus()
+					showAlert(title: reason)
 					return nil
 				}
 
@@ -480,6 +442,25 @@ extension KeyboardShortcuts {
 		private func saveShortcut(_ shortcut: Shortcut?) {
 			storeShortcut(shortcut)
 			onChange?(shortcut)
+		}
+
+		@discardableResult
+		private func showAlert(
+			title: String,
+			message: String? = nil,
+			buttonTitles: [String] = []
+		) -> NSApplication.ModalResponse {
+			blur()
+
+			let response = NSAlert.showModal(
+				for: window,
+				title: title,
+				message: message,
+				buttonTitles: buttonTitles
+			)
+
+			focus()
+			return response
 		}
 	}
 }

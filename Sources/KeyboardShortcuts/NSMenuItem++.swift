@@ -55,6 +55,11 @@ extension NSMenuItem {
 			return
 		}
 
+		if let existingObserver = AssociatedKeys.observer[self] {
+			NotificationCenter.default.removeObserver(existingObserver)
+			AssociatedKeys.observer[self] = nil
+		}
+
 		func set() {
 			let shortcut = KeyboardShortcuts.Shortcut(name: name)
 			setShortcut(shortcut)
@@ -65,7 +70,7 @@ extension NSMenuItem {
 		// TODO: Use AsyncStream when targeting macOS 15.
 		AssociatedKeys.observer[self] = NotificationCenter.default.addObserver(forName: .shortcutByNameDidChange, object: nil, queue: nil) { notification in
 			guard
-				let nameInNotification = notification.userInfo?["name"] as? KeyboardShortcuts.Name,
+				let nameInNotification = notification.keyboardShortcutsName,
 				nameInNotification == name
 			else {
 				return

@@ -116,7 +116,7 @@ final class RunLoopLocalEventMonitor {
 			var eventsToHandle = [NSEvent]()
 
 			// Retrieve all events from the event queue to preserve their order (instead of using the `matching` parameter).
-			while let eventToHandle = NSApp.nextEvent(matching: .any, until: nil, inMode: .default, dequeue: true) {
+			while let eventToHandle = NSApp.nextEvent(matching: .any, until: nil, inMode: runLoopMode, dequeue: true) {
 				eventsToHandle.append(eventToHandle)
 			}
 
@@ -527,12 +527,6 @@ extension View {
 }
 
 
-extension Dictionary {
-	func hasKey(_ key: Key) -> Bool {
-		index(forKey: key) != nil
-	}
-}
-
 #if DEBUG
 /**
 Get SwiftUI dynamic shared object.
@@ -612,13 +606,6 @@ extension Sequence where Element: Hashable {
 }
 
 
-extension Set {
-	/**
-	Convert a `Set` to an `Array`.
-	*/
-	func toArray() -> [Element] { Array(self) }
-}
-
 
 extension StringProtocol {
 	func replacingPrefix(_ prefix: String, with replacement: String) -> String {
@@ -637,5 +624,20 @@ extension Character {
 		}
 
 		self = Character(content)
+	}
+}
+
+enum NotificationUserInfoKey {
+	static let name = "name"
+	static let isActive = "isActive"
+}
+
+extension Notification {
+	var keyboardShortcutsName: KeyboardShortcuts.Name? {
+		userInfo?[NotificationUserInfoKey.name] as? KeyboardShortcuts.Name
+	}
+
+	var recorderIsActive: Bool? {
+		userInfo?[NotificationUserInfoKey.isActive] as? Bool
 	}
 }
