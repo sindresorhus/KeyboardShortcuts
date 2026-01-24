@@ -80,4 +80,22 @@ struct RecorderCocoaLayoutTests {
 		#expect(recorder.shortcut == shortcut)
 		#expect(recorder.stringValue == originalStringValue)
 	}
+
+	@Test("RecorderCocoa supports validateShortcut")
+	@MainActor
+	func testRecorderValidateShortcut() throws {
+		let recorder = KeyboardShortcuts.RecorderCocoa(for: .init("test"))
+
+		#expect(recorder.validateShortcut == nil)
+
+		recorder.validateShortcut = { _ in
+			.disallow(reason: "Test error")
+		}
+
+		#expect(recorder.validateShortcut != nil)
+
+		let shortcut = KeyboardShortcuts.Shortcut(.k, modifiers: [.command])
+		let result = recorder.validateShortcut?(shortcut)
+		#expect(result == .disallow(reason: "Test error"))
+	}
 }

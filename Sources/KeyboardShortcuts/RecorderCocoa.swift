@@ -45,6 +45,27 @@ extension KeyboardShortcuts {
 		private var windowDidBecomeKeyObserver: NSObjectProtocol?
 
 		/**
+		A closure that validates a shortcut before it is saved.
+
+		Use this to prevent assigning shortcuts that are already in use by other actions or to block certain shortcuts.
+
+		```swift
+		let recorder = KeyboardShortcuts.RecorderCocoa(for: .action1)
+
+		recorder.validateShortcut = { shortcut in
+			let others: [KeyboardShortcuts.Name] = [.action2, .action3]
+
+			if let conflict = others.first(where: { $0.shortcut == shortcut }) {
+				return .disallow(reason: "This shortcut is already used by “\(conflict.rawValue)”.")
+			}
+
+			return .allow
+		}
+		```
+		*/
+		public var validateShortcut: ((_ shortcut: Shortcut) -> ValidationResult)?
+
+		/**
 		The shortcut name for the recorder.
 
 		Can be dynamically changed at any time.
@@ -430,6 +451,18 @@ extension KeyboardShortcuts {
 					guard modalResponse == .alertSecondButtonReturn else {
 						return nil
 					}
+				}
+
+				if case .disallow(let reason) = validateShortcut?(shortcut) {
+					blur()
+
+					NSAlert.showModal(
+						for: window,
+						title: reason
+					)
+
+					focus()
+					return nil
 				}
 
 				stringValue = "\(shortcut)"

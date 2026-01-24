@@ -5,6 +5,30 @@ import AppKit.NSMenu
 Global keyboard shortcuts for your macOS app.
 */
 public enum KeyboardShortcuts {
+	/**
+	The result of validating a keyboard shortcut.
+	*/
+	public enum ValidationResult: Sendable, Equatable {
+		/**
+		The shortcut is allowed.
+		*/
+		case allow
+
+		/**
+		The shortcut is disallowed.
+
+		- Parameter reason: A message explaining why the shortcut is disallowed.
+		*/
+		case disallow(reason: String)
+
+		/**
+		Creates a disallow result with a localized reason.
+		*/
+		@available(macOS 13, *)
+		public static func disallow(reason: LocalizedStringResource) -> Self {
+			.disallow(reason: String(localized: reason))
+		}
+	}
 	private static var registeredShortcuts = Set<Shortcut>()
 
 	private static var legacyKeyDownHandlers = [Name: [() -> Void]]()

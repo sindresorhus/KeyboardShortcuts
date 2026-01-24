@@ -16,6 +16,7 @@ extension KeyboardShortcuts {
 
 		let source: ShortcutSource
 		let onChange: ((_ shortcut: Shortcut?) -> Void)?
+		let validateShortcut: ((_ shortcut: Shortcut) -> ValidationResult)?
 
 		final class Coordinator {
 			var shortcutBinding: Binding<Shortcut?>?
@@ -42,21 +43,27 @@ extension KeyboardShortcuts {
 		func makeNSView(context: Context) -> NSViewType {
 			let coordinator = context.coordinator
 
+			let recorder: RecorderCocoa
 			switch source {
 			case .name(let name):
-				return .init(for: name) { shortcut in
+				recorder = .init(for: name) { shortcut in
 					coordinator.handleChange(shortcut)
 				}
 			case .binding(let binding):
-				return .init(shortcut: binding.wrappedValue) { shortcut in
+				recorder = .init(shortcut: binding.wrappedValue) { shortcut in
 					coordinator.handleChange(shortcut)
 				}
 			}
+
+			recorder.validateShortcut = validateShortcut
+
+			return recorder
 		}
 
 		func updateNSView(_ nsView: NSViewType, context: Context) {
 			let coordinator = context.coordinator
 			coordinator.onChange = onChange
+			nsView.validateShortcut = validateShortcut
 
 			switch source {
 			case .name(let name):
@@ -104,16 +111,19 @@ extension KeyboardShortcuts {
 		private let onChange: ((Shortcut?) -> Void)?
 		private let hasLabel: Bool
 		private let label: Label
+		private var validateShortcut: ((Shortcut) -> ValidationResult)?
 
 		private init(
 			shortcutSource: ShortcutSource,
 			onChange: ((Shortcut?) -> Void)? = nil,
 			hasLabel: Bool,
+			validateShortcut: ((Shortcut) -> ValidationResult)? = nil,
 			@ViewBuilder label: () -> Label
 		) {
 			self.shortcutSource = shortcutSource
 			self.onChange = onChange
 			self.hasLabel = hasLabel
+			self.validateShortcut = validateShortcut
 			self.label = label()
 		}
 
@@ -139,7 +149,8 @@ extension KeyboardShortcuts {
 		private var recorderView: some View {
 			_Recorder(
 				source: shortcutSource,
-				onChange: onChange
+				onChange: onChange,
+				validateShortcut: validateShortcut
 			)
 		}
 	}
@@ -298,6 +309,34 @@ extension KeyboardShortcuts.Recorder {
 			hasLabel: true,
 			label: label
 		)
+	}
+}
+
+extension KeyboardShortcuts.Recorder {
+	/**
+	Validates a shortcut before it is saved.
+
+	Use this to prevent assigning shortcuts that are already in use by other actions or to block certain shortcuts.
+
+	```swift
+	KeyboardShortcuts.Recorder(for: .action1)
+		.shortcutValidation { shortcut in
+			let others: [KeyboardShortcuts.Name] = [.action2, .action3]
+
+			if let conflict = others.first(where: { $0.shortcut == shortcut }) {
+				return .disallow(reason: "This shortcut is already used by “\(conflict.rawValue)”.")
+			}
+
+			return .allow
+		}
+	```
+	*/
+	public func shortcutValidation(
+		_ validate: @escaping (_ shortcut: KeyboardShortcuts.Shortcut) -> KeyboardShortcuts.ValidationResult
+	) -> Self {
+		var copy = self
+		copy.validateShortcut = validate
+		return copy
 	}
 }
 

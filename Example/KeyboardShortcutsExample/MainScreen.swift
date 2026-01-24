@@ -91,6 +91,11 @@ private struct DoubleShortcut: View {
 	var body: some View {
 		Form {
 			KeyboardShortcuts.Recorder("Shortcut 1:", name: .testShortcut1)
+				// Uncomment to test.
+//				.shortcutValidation {
+//					// Example: Disallow ⌘K
+//					$0 == .init(.k, modifiers: .command) ? .disallow(reason: "⌘K is not allowed.") : .allow
+//				}
 				.overlay(alignment: .trailing) {
 					Text("Pressed? \(isPressed1 ? "👍" : "👎")")
 						.offset(x: 90)
