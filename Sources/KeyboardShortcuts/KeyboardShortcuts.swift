@@ -68,8 +68,8 @@ public enum KeyboardShortcuts {
 					return nil
 				}
 
-				let name = key.replacingPrefix(userDefaultsPrefix, with: "")
-				return .init(name)
+				let rawValue = key.replacingPrefix(userDefaultsPrefix, with: "")
+				return .init(rawValueWithoutInitialization: rawValue)
 			}
 			.toSet()
 	}
@@ -508,10 +508,31 @@ public enum KeyboardShortcuts {
 		registerIfNeeded(for: name)
 	}
 
-	private static let userDefaultsPrefix = "KeyboardShortcuts_"
+	private nonisolated static let userDefaultsPrefix = "KeyboardShortcuts_"
+
+	nonisolated static func userDefaultsKey(forRawValue rawValue: String) -> String {
+		"\(userDefaultsPrefix)\(rawValue)"
+	}
+
+	nonisolated static func encodedShortcutForStorage(_ shortcut: Shortcut) -> String? {
+		try? JSONEncoder().encode(shortcut).toString
+	}
+
+	nonisolated static func setDefaultShortcutIfNeeded(_ shortcut: Shortcut, forRawValue rawValue: String) {
+		let key = userDefaultsKey(forRawValue: rawValue)
+
+		guard
+			UserDefaults.standard.object(forKey: key) == nil,
+			let encodedShortcut = encodedShortcutForStorage(shortcut)
+		else {
+			return
+		}
+
+		UserDefaults.standard.set(encodedShortcut, forKey: key)
+	}
 
 	private static func userDefaultsKey(for shortcutName: Name) -> String {
-		"\(userDefaultsPrefix)\(shortcutName.rawValue)"
+		userDefaultsKey(forRawValue: shortcutName.rawValue)
 	}
 
 	private enum StoredShortcut {
@@ -561,7 +582,7 @@ public enum KeyboardShortcuts {
 	}
 
 	static func userDefaultsSet(name: Name, shortcut: Shortcut) {
-		guard let encoded = try? JSONEncoder().encode(shortcut).toString else {
+		guard let encoded = encodedShortcutForStorage(shortcut) else {
 			return
 		}
 
@@ -596,7 +617,7 @@ public enum KeyboardShortcuts {
 }
 
 extension KeyboardShortcuts {
-	public enum EventType: Sendable {
+	public nonisolated enum EventType: Sendable, Equatable {
 		case keyDown
 		case keyUp
 	}
@@ -634,26 +655,18 @@ extension KeyboardShortcuts {
 		AsyncStream { continuation in
 			let id = UUID()
 
-			let registerHandlers = {
-				streamKeyDownHandlers[name, default: [:]][id] = {
-					continuation.yield(.keyDown)
-				}
-
-				streamKeyUpHandlers[name, default: [:]][id] = {
-					continuation.yield(.keyUp)
-				}
-
-				registerIfNeeded(for: name)
+			streamKeyDownHandlers[name, default: [:]][id] = {
+				continuation.yield(.keyDown)
 			}
 
-			if Thread.isMainThread {
-				registerHandlers()
-			} else {
-				DispatchQueue.main.async(execute: registerHandlers)
+			streamKeyUpHandlers[name, default: [:]][id] = {
+				continuation.yield(.keyUp)
 			}
+
+			registerIfNeeded(for: name)
 
 			continuation.onTermination = { _ in
-				DispatchQueue.main.async {
+				Task { @MainActor in
 					streamKeyDownHandlers[name]?[id] = nil
 					streamKeyUpHandlers[name]?[id] = nil
 

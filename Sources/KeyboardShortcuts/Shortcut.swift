@@ -7,7 +7,7 @@ extension KeyboardShortcuts {
 	/**
 	A keyboard shortcut.
 	*/
-	public struct Shortcut: Hashable, Codable, Sendable {
+	public nonisolated struct Shortcut: Hashable, Codable, Sendable {
 		/**
 		Carbon modifiers are not always stored as the same number.
 
@@ -69,6 +69,7 @@ extension KeyboardShortcuts {
 		/**
 		Initialize from a keyboard shortcut stored by `Recorder` or `RecorderCocoa`.
 		*/
+		@MainActor
 		public init?(name: Name) {
 			guard let shortcut = getShortcut(for: name) else {
 				return nil

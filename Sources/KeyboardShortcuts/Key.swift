@@ -6,7 +6,7 @@ extension KeyboardShortcuts {
 	/**
 	Represents a key on the keyboard.
 	*/
-	public struct Key: Hashable, RawRepresentable, Sendable {
+	public nonisolated struct Key: Hashable, RawRepresentable, Sendable {
 		// MARK: Letters
 
 		public static let a = Self(kVK_ANSI_A)

@@ -508,6 +508,28 @@ struct KeyboardShortcutsTests {
 		})
 	}
 
+	@Test("Menu tracking notifications update mode immediately on main thread")
+	func testMenuTrackingNotificationsUpdateModeImmediatelyOnMainThread() {
+		let wasEnabled = KeyboardShortcuts.isEnabled
+
+		defer {
+			NotificationCenter.default.post(name: NSMenu.didEndTrackingNotification, object: nil)
+			KeyboardShortcuts.isEnabled = wasEnabled
+		}
+
+		KeyboardShortcuts.isEnabled = true
+		let _ = HotKeyCenter.shared
+
+		NotificationCenter.default.post(name: NSMenu.didEndTrackingNotification, object: nil)
+		#expect(Self.hotKeyCenterIsInNormalMode())
+
+		NotificationCenter.default.post(name: NSMenu.didBeginTrackingNotification, object: nil)
+		#expect(Self.hotKeyCenterIsInMenuOpenMode())
+
+		NotificationCenter.default.post(name: NSMenu.didEndTrackingNotification, object: nil)
+		#expect(Self.hotKeyCenterIsInNormalMode())
+	}
+
 	@Test("Menu tracking notifications from detached tasks are handled")
 	func testMenuTrackingNotificationsFromDetachedTasksAreHandled() async {
 		let wasEnabled = KeyboardShortcuts.isEnabled
@@ -626,6 +648,25 @@ struct KeyboardShortcutsTests {
 		stream = nil
 		waitingForEventTask?.cancel()
 		waitingForEventTask = nil
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.canRegisterHotKey(for: shortcut)
+		})
+	}
+
+	@Test("Stream listener registration happens immediately")
+	func testStreamListenerRegistrationHappensImmediately() async {
+		let shortcut = KeyboardShortcuts.Shortcut(.f11, modifiers: [.command, .option, .shift, .control])
+		let name = KeyboardShortcuts.Name("streamImmediateRegistration", default: shortcut)
+		var stream: AsyncStream<KeyboardShortcuts.EventType>? = KeyboardShortcuts.events(for: name)
+		var iterator: AsyncStream<KeyboardShortcuts.EventType>.AsyncIterator? = stream?.makeAsyncIterator()
+		#expect(iterator != nil)
+
+		#expect(KeyboardShortcuts.isEnabled(for: name))
+		#expect(!Self.canRegisterHotKey(for: shortcut))
+
+		iterator = nil
+		stream = nil
 
 		#expect(await Self.waitUntilConditionIsTrue {
 			Self.canRegisterHotKey(for: shortcut)

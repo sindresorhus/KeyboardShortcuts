@@ -1,6 +1,5 @@
 import SwiftUI
 
-@MainActor
 final class CallbackMenuItem: NSMenuItem {
 	private static var validateCallback: ((NSMenuItem) -> Bool)?
 
@@ -8,7 +7,12 @@ final class CallbackMenuItem: NSMenuItem {
 		validateCallback = callback
 	}
 
-	private let callback: () -> Void
+	private var callback: () -> Void = {}
+
+	@available(*, unavailable, message: "Use init(_:key:keyModifiers:isEnabled:isChecked:isHidden:action:).")
+	nonisolated override init(title string: String, action selector: Selector?, keyEquivalent charCode: String) {
+		super.init(title: string, action: selector, keyEquivalent: charCode)
+	}
 
 	init(
 		_ title: String,
@@ -32,7 +36,7 @@ final class CallbackMenuItem: NSMenuItem {
 	}
 
 	@available(*, unavailable)
-	required init(coder decoder: NSCoder) {
+	required nonisolated init(coder decoder: NSCoder) {
 		// swiftlint:disable:next fatal_error_message
 		fatalError()
 	}
@@ -41,9 +45,8 @@ final class CallbackMenuItem: NSMenuItem {
 	private func action(_ sender: NSMenuItem) {
 		callback()
 	}
-}
 
-extension CallbackMenuItem: NSMenuItemValidation {
+	@objc
 	func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
 		Self.validateCallback?(menuItem) ?? true
 	}
@@ -80,7 +83,6 @@ extension NSMenuItem {
 }
 
 extension NSMenu {
-	@MainActor
 	@discardableResult
 	func addCallbackItem(
 		_ title: String,

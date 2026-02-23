@@ -179,7 +179,7 @@ extension KeyboardShortcuts {
 			fatalError("init(coder:) has not been implemented")
 		}
 
-		deinit {
+		isolated deinit {
 			removeObserver(&shortcutsNameChangeObserver)
 			removeObserver(&windowDidResignKeyObserver)
 			removeObserver(&windowDidBecomeKeyObserver)
@@ -239,15 +239,19 @@ extension KeyboardShortcuts {
 			}
 
 			shortcutsNameChangeObserver = NotificationCenter.default.addObserver(forName: .shortcutByNameDidChange, object: nil, queue: nil) { [weak self] notification in
-				guard
-					let self,
-					let nameInNotification = notification.keyboardShortcutsName,
-					nameInNotification == shortcutName
-				else {
-					return
-				}
+				let nameInNotification = notification.keyboardShortcutsName
 
-				updateStringValue()
+				Task { @MainActor [weak self] in
+					guard
+						let self,
+						let nameInNotification,
+						nameInNotification == shortcutName
+					else {
+						return
+					}
+
+					updateStringValue()
+				}
 			}
 		}
 
@@ -264,8 +268,8 @@ extension KeyboardShortcuts {
 			canBecomeKey = false
 
 			// Prevent the control from receiving the initial focus.
-			DispatchQueue.main.async { [self] in
-				canBecomeKey = true
+			Task { @MainActor [weak self] in
+				self?.canBecomeKey = true
 			}
 		}
 
@@ -303,20 +307,24 @@ extension KeyboardShortcuts {
 			// Ensures the recorder stops when the window is hidden.
 			// This is especially important for Settings windows, which as of macOS 13.5, only hides instead of closes when you click the close button.
 			windowDidResignKeyObserver = NotificationCenter.default.addObserver(forName: NSWindow.didResignKeyNotification, object: window, queue: nil) { [weak self] _ in
-				guard
-					let self,
-					let window = self.window
-				else {
-					return
-				}
+				Task { @MainActor [weak self] in
+					guard
+						let self,
+						let window = self.window
+					else {
+						return
+					}
 
-				endRecording()
-				window.makeFirstResponder(nil)
+					endRecording()
+					window.makeFirstResponder(nil)
+				}
 			}
 
 			// Ensures the recorder does not receive initial focus when a hidden window becomes unhidden.
 			windowDidBecomeKeyObserver = NotificationCenter.default.addObserver(forName: NSWindow.didBecomeKeyNotification, object: window, queue: nil) { [weak self] _ in
-				self?.preventBecomingKey()
+				Task { @MainActor [weak self] in
+					self?.preventBecomingKey()
+				}
 			}
 
 			preventBecomingKey()

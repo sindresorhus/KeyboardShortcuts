@@ -13,7 +13,7 @@ extension KeyboardShortcuts {
 	}
 	```
 	*/
-	public struct Name: Hashable, Sendable {
+	public nonisolated struct Name: Hashable, Sendable {
 		// This makes it possible to use `Shortcut` without the namespace.
 		/// :nodoc:
 		public typealias Shortcut = KeyboardShortcuts.Shortcut
@@ -22,20 +22,11 @@ extension KeyboardShortcuts {
 		public let defaultShortcut: Shortcut?
 
 		/**
-		The keyboard shortcut assigned to the name.
-		*/
-		public var shortcut: Shortcut? {
-			get { KeyboardShortcuts.getShortcut(for: self) }
-			nonmutating set {
-				KeyboardShortcuts.setShortcut(newValue, for: self)
-			}
-		}
-
-		/**
 		- Parameter name: Name of the shortcut.
 		- Parameter initialShortcut: Optional default key combination. Do not set this unless it's essential. Users find it annoying when random apps steal their existing keyboard shortcuts. It's generally better to show a welcome screen on the first app launch that lets the user set the shortcut.
 		- Important: The name must not contain a dot (`.`) because it is used as a key path for observation.
 		*/
+		nonisolated
 		public init(_ name: String, default initialShortcut: Shortcut? = nil) {
 			runtimeWarn(
 				KeyboardShortcuts.isValidShortcutName(name),
@@ -45,18 +36,19 @@ extension KeyboardShortcuts {
 			self.rawValue = name
 			self.defaultShortcut = initialShortcut
 
-			if
-				let initialShortcut,
-				!userDefaultsContains(name: self)
-			{
-				setShortcut(initialShortcut, for: self)
+			if let initialShortcut {
+				KeyboardShortcuts.setDefaultShortcutIfNeeded(initialShortcut, forRawValue: name)
 			}
 
-			KeyboardShortcuts.initialize()
+			// TODO: Use `Task.immediate` when targeting macOS 26.
+			Task { @MainActor in
+				KeyboardShortcuts.initialize()
+			}
 		}
 	}
 }
 
+nonisolated
 extension KeyboardShortcuts.Name {
 	init(rawValueWithoutInitialization rawValue: String) {
 		self.rawValue = rawValue
@@ -64,10 +56,26 @@ extension KeyboardShortcuts.Name {
 	}
 }
 
+nonisolated
 extension KeyboardShortcuts.Name: RawRepresentable {
 	/// :nodoc:
 	public init?(rawValue: String) {
-		self.init(rawValue)
+		self.init(rawValueWithoutInitialization: rawValue)
+	}
+}
+
+extension KeyboardShortcuts.Name {
+	/**
+	The keyboard shortcut assigned to the name.
+	*/
+	@MainActor
+	public var shortcut: Shortcut? {
+		get {
+			KeyboardShortcuts.getShortcut(for: self)
+		}
+		nonmutating set {
+			KeyboardShortcuts.setShortcut(newValue, for: self)
+		}
 	}
 }
 #endif

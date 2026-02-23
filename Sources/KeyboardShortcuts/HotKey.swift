@@ -46,7 +46,7 @@ final class HotKey {
 		}
 	}
 
-	deinit {
+	isolated deinit {
 		HotKeyCenter.shared.unregister(self)
 	}
 }
@@ -155,20 +155,28 @@ final class HotKeyCenter {
 		}
 
 		openMenuObserver = NotificationCenter.default.addObserver(forName: NSMenu.didBeginTrackingNotification, object: nil, queue: nil) { [weak self] _ in
-			self?.setMenuOpenOnMainThread(true)
+			if Thread.isMainThread {
+				MainActor.assumeIsolated {
+					self?.setMenuOpen(true)
+				}
+				return
+			}
+
+			Task { @MainActor [weak self] in
+				self?.setMenuOpen(true)
+			}
 		}
 
 		closeMenuObserver = NotificationCenter.default.addObserver(forName: NSMenu.didEndTrackingNotification, object: nil, queue: nil) { [weak self] _ in
-			self?.setMenuOpenOnMainThread(false)
-		}
-	}
+			if Thread.isMainThread {
+				MainActor.assumeIsolated {
+					self?.setMenuOpen(false)
+				}
+				return
+			}
 
-	private func setMenuOpenOnMainThread(_ isMenuOpen: Bool) {
-		if Thread.isMainThread {
-			setMenuOpen(isMenuOpen)
-		} else {
-			DispatchQueue.main.async { [weak self] in
-				self?.setMenuOpen(isMenuOpen)
+			Task { @MainActor [weak self] in
+				self?.setMenuOpen(false)
 			}
 		}
 	}
@@ -449,7 +457,7 @@ final class HotKeyCenter {
 }
 
 // Global C callback for Carbon event handler
-private func carbonEventHandler(
+private nonisolated func carbonEventHandler(
 	_: EventHandlerCallRef?,
 	event: EventRef?,
 	userData: UnsafeMutableRawPointer?
@@ -459,7 +467,16 @@ private func carbonEventHandler(
 	}
 
 	let center = Unmanaged<HotKeyCenter>.fromOpaque(userData).takeUnretainedValue()
-	return center.handleEvent(event)
+	let eventAddress = event.map { UInt(bitPattern: $0) }
+
+	guard Thread.isMainThread else {
+		assertionFailure("Carbon event callback must execute on the main thread.")
+		return OSStatus(eventNotHandledErr)
+	}
+
+	return MainActor.assumeIsolated {
+		center.handleEvent(eventAddress.flatMap { EventRef(bitPattern: $0) })
+	}
 }
 
 // MARK: - System Shortcuts

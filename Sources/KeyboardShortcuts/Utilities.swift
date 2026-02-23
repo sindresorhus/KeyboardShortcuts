@@ -21,12 +21,12 @@ extension String {
 
 
 extension Data {
-	var toString: String? { String(data: self, encoding: .utf8) }
+	nonisolated var toString: String? { String(data: self, encoding: .utf8) }
 }
 
 
 extension NSEvent {
-	var isKeyEvent: Bool { type == .keyDown || type == .keyUp }
+	nonisolated var isKeyEvent: Bool { type == .keyDown || type == .keyUp }
 }
 
 
@@ -76,7 +76,7 @@ final class LocalEventMonitor {
 		self.callback = callback
 	}
 
-	deinit {
+	isolated deinit {
 		stop()
 	}
 
@@ -139,7 +139,7 @@ final class RunLoopLocalEventMonitor {
 		}
 	}
 
-	deinit {
+	isolated deinit {
 		stop()
 	}
 
@@ -265,15 +265,15 @@ enum UnicodeSymbols {
 	/**
 	Represents the Function (Fn) key on the keybord.
 	*/
-	static let functionKey = "🌐\u{FE0E}"
+	nonisolated static let functionKey = "🌐\u{FE0E}"
 }
 
 
 extension NSEvent.ModifierFlags {
 	// Not documented anywhere, but reverse-engineered by me.
-	private static let functionKey = 1 << 17 // 131072 (0x20000)
+	private nonisolated static let functionKey = 1 << 17 // 131072 (0x20000)
 
-	var carbon: Int {
+	nonisolated var carbon: Int {
 		var modifierFlags = 0
 
 		if contains(.control) {
@@ -299,7 +299,7 @@ extension NSEvent.ModifierFlags {
 		return modifierFlags
 	}
 
-	init(carbon: Int) {
+	nonisolated init(carbon: Int) {
 		self.init()
 
 		if carbon & controlKey == controlKey {
@@ -326,11 +326,11 @@ extension NSEvent.ModifierFlags {
 
 extension SwiftUI.EventModifiers {
 	// `.function` is deprecated, so we use the raw value.
-	fileprivate static let function_nonDeprecated = Self(rawValue: 64)
+	fileprivate nonisolated static let function_nonDeprecated = Self(rawValue: 64)
 }
 
 extension NSEvent.ModifierFlags {
-	var toEventModifiers: SwiftUI.EventModifiers {
+	nonisolated var toEventModifiers: SwiftUI.EventModifiers {
 		var modifiers = SwiftUI.EventModifiers()
 
 		if contains(.capsLock) {
@@ -391,7 +391,7 @@ extension NSEvent.ModifierFlags {
 	//=> "⇧⌘"
 	```
 	*/
-	public var ks_symbolicRepresentation: String {
+	public nonisolated var ks_symbolicRepresentation: String {
 		var description = ""
 
 		if contains(.control) {
@@ -420,7 +420,7 @@ extension NSEvent.ModifierFlags {
 
 
 extension NSEvent.SpecialKey {
-	static let functionKeys: Set<Self> = [
+	nonisolated(unsafe) static let functionKeys: Set<Self> = [
 		.f1,
 		.f2,
 		.f3,
@@ -458,7 +458,7 @@ extension NSEvent.SpecialKey {
 		.f35
 	]
 
-	var isFunctionKey: Bool { Self.functionKeys.contains(self) }
+	nonisolated var isFunctionKey: Bool { Self.functionKeys.contains(self) }
 }
 
 
@@ -507,12 +507,12 @@ final class ObjectAssociation<T> {
 
 extension HorizontalAlignment {
 	private enum ControlAlignment: AlignmentID {
-		static func defaultValue(in context: ViewDimensions) -> CGFloat { // swiftlint:disable:this no_cgfloat
+		nonisolated static func defaultValue(in context: ViewDimensions) -> CGFloat { // swiftlint:disable:this no_cgfloat
 			context[HorizontalAlignment.center]
 		}
 	}
 
-	fileprivate static let controlAlignment = Self(ControlAlignment.self)
+	fileprivate nonisolated static let controlAlignment = Self(ControlAlignment.self)
 }
 
 extension View {
@@ -534,7 +534,7 @@ Get SwiftUI dynamic shared object.
 Reference: https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/dyld.3.html
 */
 @usableFromInline
-let dynamicSharedObject: UnsafeMutableRawPointer = {
+nonisolated(unsafe) let dynamicSharedObject: UnsafeMutableRawPointer = {
 	let imageCount = _dyld_image_count()
 	for imageIndex in 0..<imageCount {
 		guard
@@ -555,7 +555,7 @@ let dynamicSharedObject: UnsafeMutableRawPointer = {
 
 @_transparent
 @usableFromInline
-func runtimeWarn(
+nonisolated func runtimeWarn(
 	_ condition: @autoclosure () -> Bool, _ message: @autoclosure () -> String
 ) {
 #if DEBUG
@@ -578,7 +578,7 @@ func runtimeWarn(
 }
 
 extension KeyboardShortcuts {
-	static func isValidShortcutName(_ name: String) -> Bool {
+	nonisolated static func isValidShortcutName(_ name: String) -> Bool {
 		!name.contains(".")
 	}
 }
@@ -628,16 +628,16 @@ extension Character {
 }
 
 enum NotificationUserInfoKey {
-	static let name = "name"
-	static let isActive = "isActive"
+	nonisolated static let name = "name"
+	nonisolated static let isActive = "isActive"
 }
 
 extension Notification {
-	var keyboardShortcutsName: KeyboardShortcuts.Name? {
+	nonisolated var keyboardShortcutsName: KeyboardShortcuts.Name? {
 		userInfo?[NotificationUserInfoKey.name] as? KeyboardShortcuts.Name
 	}
 
-	var recorderIsActive: Bool? {
+	nonisolated var recorderIsActive: Bool? {
 		userInfo?[NotificationUserInfoKey.isActive] as? Bool
 	}
 }

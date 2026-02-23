@@ -14,7 +14,6 @@ struct RecorderCocoaLayoutTests {
 	}
 
 	@Test("RecorderCocoa works with addSubview")
-	@MainActor
 	func testRecorderAddSubview() throws {
 		let recorder = KeyboardShortcuts.RecorderCocoa(for: .init("test"))
 		let containerView = NSView(frame: NSRect(x: 0, y: 0, width: 400, height: 100))
@@ -25,7 +24,6 @@ struct RecorderCocoaLayoutTests {
 	}
 
 	@Test("RecorderCocoa supports direct shortcut storage")
-	@MainActor
 	func testRecorderDirectShortcutStorage() throws {
 		let shortcut = KeyboardShortcuts.Shortcut(.k, modifiers: [.command, .shift])
 		let recorder = KeyboardShortcuts.RecorderCocoa(shortcut: shortcut)
@@ -40,7 +38,6 @@ struct RecorderCocoaLayoutTests {
 	}
 
 	@Test("RecorderCocoa direct mode handles multiple shortcut changes")
-	@MainActor
 	func testRecorderDirectModeMultipleChanges() throws {
 		let shortcut1 = KeyboardShortcuts.Shortcut(.a, modifiers: [.command])
 		let shortcut2 = KeyboardShortcuts.Shortcut(.b, modifiers: [.command, .shift])
@@ -68,7 +65,6 @@ struct RecorderCocoaLayoutTests {
 	}
 
 	@Test("RecorderCocoa direct mode ignores redundant updates")
-	@MainActor
 	func testRecorderDirectModeRedundantUpdates() throws {
 		let shortcut = KeyboardShortcuts.Shortcut(.k, modifiers: [.command])
 		let recorder = KeyboardShortcuts.RecorderCocoa(shortcut: shortcut)
@@ -82,7 +78,6 @@ struct RecorderCocoaLayoutTests {
 	}
 
 	@Test("RecorderCocoa supports validateShortcut")
-	@MainActor
 	func testRecorderValidateShortcut() throws {
 		let recorder = KeyboardShortcuts.RecorderCocoa(for: .init("test"))
 
