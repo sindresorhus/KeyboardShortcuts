@@ -868,6 +868,29 @@ struct KeyboardShortcutsTests {
 
 		KeyboardShortcuts.removeAllHandlers()
 	}
+
+	@Test("Localization files are valid")
+	func testLocalizationFilesAreValid() throws {
+		for localizationIdentifier in Bundle.module.localizations.sorted() {
+			guard let localizationFileURL = Bundle.module.url(
+				forResource: "Localizable",
+				withExtension: "strings",
+				subdirectory: nil,
+				localization: localizationIdentifier
+			) else {
+				Issue.record("Missing Localizable.strings for localization '\(localizationIdentifier)'")
+				continue
+			}
+
+			let localizationFileData = try Data(contentsOf: localizationFileURL)
+
+			do {
+				_ = try PropertyListSerialization.propertyList(from: localizationFileData, options: [], format: nil)
+			} catch {
+				Issue.record("Invalid Localizable.strings for localization '\(localizationIdentifier)': \(error)")
+			}
+		}
+	}
 }
 
 // MARK: - Modifier Symbol Tests
