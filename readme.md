@@ -141,15 +141,15 @@ See [`NSMenuItem#setShortcut`](https://github.com/sindresorhus/KeyboardShortcuts
 
 Your app might need to support keyboard shortcuts for user-defined actions. Normally, you would statically register the keyboard shortcuts upfront in `extension KeyboardShortcuts.Name {}`. However, this is not a requirement. It's only for convenience so that you can use dot-syntax when calling various APIs (for example, `.onKeyDown(.unicornMode) {}`). You can create `KeyboardShortcuts.Name`'s dynamically and store them yourself. You can see this in action in the example project.
 
-#### Default keyboard shortcuts
+#### Initial keyboard shortcuts
 
-Setting a default keyboard shortcut can be useful if you're migrating from a different package or just making something for yourself. However, please do not set this for a publicly distributed app. Users find it annoying when random apps steal their existing keyboard shortcuts. It’s generally better to show a welcome screen on the first app launch that lets the user set the shortcut.
+Setting an initial keyboard shortcut can be useful if you're migrating from a different package or just making something for yourself. However, please do not set this for a publicly distributed app. Users find it annoying when random apps steal their existing keyboard shortcuts. It’s generally better to show a welcome screen on the first app launch that lets the user set the shortcut.
 
 ```swift
 import KeyboardShortcuts
 
 extension KeyboardShortcuts.Name {
-	static let toggleUnicornMode = Self("toggleUnicornMode", default: .init(.k, modifiers: [.command, .option]))
+	static let toggleUnicornMode = Self("toggleUnicornMode", initial: .init(.k, modifiers: [.command, .option]))
 }
 ```
 

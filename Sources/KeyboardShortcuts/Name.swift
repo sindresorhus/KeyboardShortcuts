@@ -23,11 +23,11 @@ extension KeyboardShortcuts {
 
 		/**
 		- Parameter name: Name of the shortcut.
-		- Parameter initialShortcut: Optional default key combination. Do not set this unless it's essential. Users find it annoying when random apps steal their existing keyboard shortcuts. It's generally better to show a welcome screen on the first app launch that lets the user set the shortcut.
+		- Parameter initialShortcut: Optional initial key combination. Do not set this unless it's essential. Users find it annoying when random apps steal their existing keyboard shortcuts. It's generally better to show a welcome screen on the first app launch that lets the user set the shortcut.
 		- Important: The name must not contain a dot (`.`) because it is used as a key path for observation.
 		*/
 		nonisolated
-		public init(_ name: String, default initialShortcut: Shortcut? = nil) {
+		public init(_ name: String, initial initialShortcut: Shortcut? = nil) {
 			runtimeWarn(
 				KeyboardShortcuts.isValidShortcutName(name),
 				"The keyboard shortcut name must not contain a dot (.)."
@@ -44,6 +44,12 @@ extension KeyboardShortcuts {
 			Task { @MainActor in
 				KeyboardShortcuts.initialize()
 			}
+		}
+
+		@available(*, deprecated, renamed: "init(_:initial:)")
+		nonisolated
+		public init(_ name: String, `default` initialShortcut: Shortcut?) {
+			self.init(name, initial: initialShortcut)
 		}
 	}
 }

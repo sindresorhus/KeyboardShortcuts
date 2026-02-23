@@ -83,7 +83,7 @@ struct KeyboardShortcutsTests {
 		let shortcut2 = KeyboardShortcuts.Shortcut(.b)
 
 		let shortcutName1 = KeyboardShortcuts.Name("testSetShortcutAndReset1")
-		let shortcutName2 = KeyboardShortcuts.Name("testSetShortcutAndReset2", default: defaultShortcut)
+		let shortcutName2 = KeyboardShortcuts.Name("testSetShortcutAndReset2", initial: defaultShortcut)
 
 		KeyboardShortcuts.setShortcut(shortcut1, for: shortcutName1)
 		KeyboardShortcuts.setShortcut(shortcut2, for: shortcutName2)
@@ -139,10 +139,10 @@ struct KeyboardShortcutsTests {
 		#expect(name1 != name3)
 	}
 
-	@Test("Name with default")
-	func testNameWithDefault() throws {
+	@Test("Name with initial value")
+	func testNameWithInitialValue() throws {
 		let defaultShortcut = KeyboardShortcuts.Shortcut(.space)
-		let name = KeyboardShortcuts.Name("testDefault", default: defaultShortcut)
+		let name = KeyboardShortcuts.Name("testDefault", initial: defaultShortcut)
 
 		// Should return default when no value is set
 		#expect(KeyboardShortcuts.getShortcut(for: name) == defaultShortcut)
@@ -155,6 +155,13 @@ struct KeyboardShortcutsTests {
 		// Resetting should restore the default
 		KeyboardShortcuts.reset(name)
 		#expect(KeyboardShortcuts.getShortcut(for: name) == defaultShortcut)
+	}
+
+	@Test("Name with initial label")
+	func testNameWithInitialLabel() {
+		let initialShortcut = KeyboardShortcuts.Shortcut(.space)
+		let name = KeyboardShortcuts.Name("testInitialLabel", initial: initialShortcut)
+		#expect(KeyboardShortcuts.getShortcut(for: name) == initialShortcut)
 	}
 
 	@Test("Shortcut name validation")
@@ -278,7 +285,7 @@ struct KeyboardShortcutsTests {
 	@Test("Default values")
 	func testDefaultValues() throws {
 		let defaultShortcut = KeyboardShortcuts.Shortcut(.d, modifiers: [.command])
-		let nameWithDefault = KeyboardShortcuts.Name("withDefault", default: defaultShortcut)
+		let nameWithDefault = KeyboardShortcuts.Name("withDefault", initial: defaultShortcut)
 		let nameWithoutDefault = KeyboardShortcuts.Name("withoutDefault")
 
 		#expect(KeyboardShortcuts.getShortcut(for: nameWithDefault) == defaultShortcut)
@@ -288,7 +295,7 @@ struct KeyboardShortcutsTests {
 	@Test("Overriding defaults")
 	func testOverridingDefaults() throws {
 		let defaultShortcut = KeyboardShortcuts.Shortcut(.x, modifiers: [.control])
-		let name = KeyboardShortcuts.Name("override", default: defaultShortcut)
+		let name = KeyboardShortcuts.Name("override", initial: defaultShortcut)
 
 		let newShortcut = KeyboardShortcuts.Shortcut(.y, modifiers: [.option])
 		KeyboardShortcuts.setShortcut(newShortcut, for: name)
@@ -302,8 +309,8 @@ struct KeyboardShortcutsTests {
 
 	@Test("Batch reset")
 	func testBatchReset() throws {
-		let name1 = KeyboardShortcuts.Name("batch1", default: .init(.a))
-		let name2 = KeyboardShortcuts.Name("batch2", default: .init(.b))
+		let name1 = KeyboardShortcuts.Name("batch1", initial: .init(.a))
+		let name2 = KeyboardShortcuts.Name("batch2", initial: .init(.b))
 		let name3 = KeyboardShortcuts.Name("batch3")
 
 		KeyboardShortcuts.setShortcut(.init(.x), for: name1)
@@ -319,7 +326,7 @@ struct KeyboardShortcutsTests {
 
 	@Test("Reset all clears defaults")
 	func testResetAllClearsDefaults() {
-		let nameWithDefault = KeyboardShortcuts.Name("resetAllDefault", default: .init(.a))
+		let nameWithDefault = KeyboardShortcuts.Name("resetAllDefault", initial: .init(.a))
 		let nameWithoutDefault = KeyboardShortcuts.Name("resetAllNoDefault")
 
 		KeyboardShortcuts.setShortcut(.init(.b), for: nameWithDefault)
@@ -334,7 +341,7 @@ struct KeyboardShortcutsTests {
 	@Test("Removing shortcut clears disabled marker for names without default")
 	func testRemovingShortcutClearsDisabledMarkerForNamesWithoutDefault() {
 		let shortcutKey = "KeyboardShortcuts_removeDisabledDefault"
-		let nameWithDefault = KeyboardShortcuts.Name("removeDisabledDefault", default: .init(.a))
+		let nameWithDefault = KeyboardShortcuts.Name("removeDisabledDefault", initial: .init(.a))
 
 		KeyboardShortcuts.setShortcut(nil, for: nameWithDefault)
 		#expect(UserDefaults.standard.object(forKey: shortcutKey) as? Bool == false)
@@ -348,8 +355,8 @@ struct KeyboardShortcutsTests {
 	@Test("Disable one name does not affect another with same shortcut")
 	func testDisableWithSharedShortcut() throws {
 		let shortcut = KeyboardShortcuts.Shortcut(.n, modifiers: [.command])
-		let name1 = KeyboardShortcuts.Name("shared1", default: shortcut)
-		let name2 = KeyboardShortcuts.Name("shared2", default: shortcut)
+		let name1 = KeyboardShortcuts.Name("shared1", initial: shortcut)
+		let name2 = KeyboardShortcuts.Name("shared2", initial: shortcut)
 
 		KeyboardShortcuts.onKeyDown(for: name1) {}
 		KeyboardShortcuts.onKeyDown(for: name2) {}
@@ -372,7 +379,7 @@ struct KeyboardShortcutsTests {
 	@Test("IsEnabled requires active handlers")
 	func testIsEnabledRequiresActiveHandlers() {
 		let shortcut = KeyboardShortcuts.Shortcut(.l, modifiers: [.command, .option, .shift, .control])
-		let name = KeyboardShortcuts.Name("enabledRequiresHandlers", default: shortcut)
+		let name = KeyboardShortcuts.Name("enabledRequiresHandlers", initial: shortcut)
 
 		#expect(!KeyboardShortcuts.isEnabled(for: name))
 
@@ -386,7 +393,7 @@ struct KeyboardShortcutsTests {
 	@Test("Disabling a name unregisters its hotkey")
 	func testDisableUnregistersHotKey() {
 		let shortcut = KeyboardShortcuts.Shortcut(.k, modifiers: [.command, .option, .shift, .control])
-		let name = KeyboardShortcuts.Name("disableUnregister", default: shortcut)
+		let name = KeyboardShortcuts.Name("disableUnregister", initial: shortcut)
 
 		KeyboardShortcuts.onKeyDown(for: name) {}
 		#expect(KeyboardShortcuts.isEnabled(for: name))
@@ -402,7 +409,7 @@ struct KeyboardShortcutsTests {
 	@Test("Resume failure drops hotkey registration")
 	func testResumeFailureDropsHotKeyRegistration() async {
 		let shortcut = KeyboardShortcuts.Shortcut(.f14, modifiers: [.command, .option, .shift, .control])
-		let name = KeyboardShortcuts.Name("resumeFailureDropsHotKey", default: shortcut)
+		let name = KeyboardShortcuts.Name("resumeFailureDropsHotKey", initial: shortcut)
 		let wasEnabled = KeyboardShortcuts.isEnabled
 		let testSignature: UInt32 = 0x54455354
 		var competingEventHotKey: EventHotKeyRef?
@@ -445,8 +452,8 @@ struct KeyboardShortcutsTests {
 	@Test("Disabled names do not keep shortcuts registered")
 	func testDisabledNamesDoNotKeepShortcutsRegistered() {
 		let shortcut = KeyboardShortcuts.Shortcut(.j, modifiers: [.command, .option, .shift, .control])
-		let name1 = KeyboardShortcuts.Name("disableShared1", default: shortcut)
-		let name2 = KeyboardShortcuts.Name("disableShared2", default: shortcut)
+		let name1 = KeyboardShortcuts.Name("disableShared1", initial: shortcut)
+		let name2 = KeyboardShortcuts.Name("disableShared2", initial: shortcut)
 
 		KeyboardShortcuts.onKeyDown(for: name1) {}
 		KeyboardShortcuts.onKeyDown(for: name2) {}
@@ -617,7 +624,7 @@ struct KeyboardShortcutsTests {
 	@Test("Disabling and enabling works with stream-only handlers")
 	func testDisableAndEnableWithStreamOnlyHandlers() async {
 		let shortcut = KeyboardShortcuts.Shortcut(.f12, modifiers: [.command, .option, .shift, .control])
-		let name = KeyboardShortcuts.Name("streamDisableEnable", default: shortcut)
+		let name = KeyboardShortcuts.Name("streamDisableEnable", initial: shortcut)
 		var stream: AsyncStream<KeyboardShortcuts.EventType>? = KeyboardShortcuts.events(for: name)
 		var iterator: AsyncStream<KeyboardShortcuts.EventType>.AsyncIterator? = stream?.makeAsyncIterator()
 		var waitingForEventTask: Task<Void, Never>? = Task {
@@ -657,7 +664,7 @@ struct KeyboardShortcutsTests {
 	@Test("Stream listener registration happens immediately")
 	func testStreamListenerRegistrationHappensImmediately() async {
 		let shortcut = KeyboardShortcuts.Shortcut(.f11, modifiers: [.command, .option, .shift, .control])
-		let name = KeyboardShortcuts.Name("streamImmediateRegistration", default: shortcut)
+		let name = KeyboardShortcuts.Name("streamImmediateRegistration", initial: shortcut)
 		var stream: AsyncStream<KeyboardShortcuts.EventType>? = KeyboardShortcuts.events(for: name)
 		var iterator: AsyncStream<KeyboardShortcuts.EventType>.AsyncIterator? = stream?.makeAsyncIterator()
 		#expect(iterator != nil)
@@ -677,7 +684,7 @@ struct KeyboardShortcutsTests {
 	func testUpdatingShortcutWhileDisabledDefersRegistration() {
 		let originalShortcut = KeyboardShortcuts.Shortcut(.f20, modifiers: [.command, .option, .shift, .control])
 		let updatedShortcut = KeyboardShortcuts.Shortcut(.f19, modifiers: [.command, .option, .shift, .control])
-		let name = KeyboardShortcuts.Name("setWhileDisabled", default: originalShortcut)
+		let name = KeyboardShortcuts.Name("setWhileDisabled", initial: originalShortcut)
 
 		KeyboardShortcuts.onKeyDown(for: name) {}
 
@@ -703,7 +710,7 @@ struct KeyboardShortcutsTests {
 	@Test("Shortcut recovers after resume conflict when reapplied")
 	func testShortcutRecoversAfterResumeConflictWhenReapplied() async {
 		let shortcut = KeyboardShortcuts.Shortcut(.f13, modifiers: [.command, .option, .shift, .control])
-		let name = KeyboardShortcuts.Name("resumeConflictRecovery", default: shortcut)
+		let name = KeyboardShortcuts.Name("resumeConflictRecovery", initial: shortcut)
 		let wasEnabled = KeyboardShortcuts.isEnabled
 		let testSignature: UInt32 = 0x54455354
 		var competingEventHotKey: EventHotKeyRef?
@@ -752,7 +759,7 @@ struct KeyboardShortcutsTests {
 	@Test("Stream handlers keep shortcuts registered when removing legacy handlers")
 	func testStreamHandlersKeepShortcutsRegisteredWhenRemovingLegacyHandlers() async {
 		let shortcut = KeyboardShortcuts.Shortcut(.f19, modifiers: [.command, .option, .shift, .control])
-		let name = KeyboardShortcuts.Name("streamKeepsRegistered", default: shortcut)
+		let name = KeyboardShortcuts.Name("streamKeepsRegistered", initial: shortcut)
 
 		var stream: AsyncStream<KeyboardShortcuts.EventType>? = KeyboardShortcuts.events(for: name)
 		var iterator: AsyncStream<KeyboardShortcuts.EventType>.AsyncIterator? = stream?.makeAsyncIterator()
@@ -777,7 +784,7 @@ struct KeyboardShortcutsTests {
 	@Test("Ending stream does not unregister when legacy handlers remain")
 	func testStreamEndingDoesNotUnregisterWhenLegacyHandlersRemain() async {
 		let shortcut = KeyboardShortcuts.Shortcut(.f16, modifiers: [.command, .option, .shift, .control])
-		let name = KeyboardShortcuts.Name("streamEndingKeepsLegacyHandlers", default: shortcut)
+		let name = KeyboardShortcuts.Name("streamEndingKeepsLegacyHandlers", initial: shortcut)
 
 		KeyboardShortcuts.onKeyDown(for: name) {}
 
@@ -806,7 +813,7 @@ struct KeyboardShortcutsTests {
 	func testStreamHandlersReleaseOldShortcutsWhenChangingShortcuts() async {
 		let originalShortcut = KeyboardShortcuts.Shortcut(.f18, modifiers: [.command, .option, .shift, .control])
 		let updatedShortcut = KeyboardShortcuts.Shortcut(.f17, modifiers: [.command, .option, .shift, .control])
-		let name = KeyboardShortcuts.Name("streamUpdatesShortcut", default: originalShortcut)
+		let name = KeyboardShortcuts.Name("streamUpdatesShortcut", initial: originalShortcut)
 
 		var stream: AsyncStream<KeyboardShortcuts.EventType>? = KeyboardShortcuts.events(for: name)
 		var iterator: AsyncStream<KeyboardShortcuts.EventType>.AsyncIterator? = stream?.makeAsyncIterator()
@@ -852,7 +859,7 @@ struct KeyboardShortcutsTests {
 	func testChangingShortcutUpdatesRegistration() {
 		let shortcutA = KeyboardShortcuts.Shortcut(.f16, modifiers: [.command, .option, .shift, .control])
 		let shortcutB = KeyboardShortcuts.Shortcut(.f15, modifiers: [.command, .option, .shift, .control])
-		let name = KeyboardShortcuts.Name("changeShortcutTest", default: shortcutA)
+		let name = KeyboardShortcuts.Name("changeShortcutTest", initial: shortcutA)
 
 		KeyboardShortcuts.onKeyDown(for: name) {}
 		#expect(KeyboardShortcuts.isEnabled(for: name))
