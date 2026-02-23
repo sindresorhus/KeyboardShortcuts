@@ -112,10 +112,10 @@ extension KeyboardShortcuts {
 			}
 		}
 
-		/// :nodoc:
+		@_documentation(visibility: private)
 		override public var canBecomeKeyView: Bool { canBecomeKey }
 
-		/// :nodoc:
+		@_documentation(visibility: private)
 		override public var intrinsicContentSize: CGSize {
 			var size = super.intrinsicContentSize
 			size.width = minimumWidth
@@ -273,7 +273,7 @@ extension KeyboardShortcuts {
 			}
 		}
 
-		/// :nodoc:
+		@_documentation(visibility: private)
 		public func controlTextDidChange(_ object: Notification) {
 			if stringValue.isEmpty {
 				saveShortcut(nil)
@@ -287,12 +287,12 @@ extension KeyboardShortcuts {
 			}
 		}
 
-		/// :nodoc:
+		@_documentation(visibility: private)
 		public func controlTextDidEndEditing(_ object: Notification) {
 			endRecording()
 		}
 
-		/// :nodoc:
+		@_documentation(visibility: private)
 		override public func viewDidMoveToWindow() {
 			guard let window else {
 				removeObserver(&windowDidResignKeyObserver)
@@ -330,7 +330,7 @@ extension KeyboardShortcuts {
 			preventBecomingKey()
 		}
 
-		/// :nodoc:
+		@_documentation(visibility: private)
 		override public func becomeFirstResponder() -> Bool {
 			// Ensure we have a valid window before attempting to become first responder
 			// This prevents issues in SwiftUI contexts where the view hierarchy might not be fully established

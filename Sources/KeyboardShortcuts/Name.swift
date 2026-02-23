@@ -15,7 +15,7 @@ extension KeyboardShortcuts {
 	*/
 	public nonisolated struct Name: Hashable, Sendable {
 		// This makes it possible to use `Shortcut` without the namespace.
-		/// :nodoc:
+		@_documentation(visibility: private)
 		public typealias Shortcut = KeyboardShortcuts.Shortcut
 
 		public let rawValue: String
@@ -64,7 +64,7 @@ extension KeyboardShortcuts.Name {
 
 nonisolated
 extension KeyboardShortcuts.Name: RawRepresentable {
-	/// :nodoc:
+	@_documentation(visibility: private)
 	public init?(rawValue: String) {
 		self.init(rawValueWithoutInitialization: rawValue)
 	}
