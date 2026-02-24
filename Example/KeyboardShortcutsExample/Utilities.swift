@@ -10,7 +10,7 @@ final class CallbackMenuItem: NSMenuItem {
 	private var callback: () -> Void = {}
 
 	@available(*, unavailable, message: "Use init(_:key:keyModifiers:isEnabled:isChecked:isHidden:action:).")
-	nonisolated override init(title string: String, action selector: Selector?, keyEquivalent charCode: String) {
+	override nonisolated init(title string: String, action selector: Selector?, keyEquivalent charCode: String) {
 		super.init(title: string, action: selector, keyEquivalent: charCode)
 	}
 
@@ -36,7 +36,7 @@ final class CallbackMenuItem: NSMenuItem {
 	}
 
 	@available(*, unavailable)
-	required nonisolated init(coder decoder: NSCoder) {
+	nonisolated required init(coder decoder: NSCoder) {
 		// swiftlint:disable:next fatal_error_message
 		fatalError()
 	}

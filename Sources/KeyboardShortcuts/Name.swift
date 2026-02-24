@@ -13,7 +13,7 @@ extension KeyboardShortcuts {
 	}
 	```
 	*/
-	public nonisolated struct Name: Hashable, Sendable {
+	nonisolated public struct Name: Hashable, Sendable {
 		// This makes it possible to use `Shortcut` without the namespace.
 		@_documentation(visibility: private)
 		public typealias Shortcut = KeyboardShortcuts.Shortcut

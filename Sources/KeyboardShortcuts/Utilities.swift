@@ -263,7 +263,7 @@ extension NSAlert {
 
 enum UnicodeSymbols {
 	/**
-	Represents the Function (Fn) key on the keybord.
+	Represents the Function (Fn) key on the keyboard.
 	*/
 	nonisolated static let functionKey = "🌐\u{FE0E}"
 }
@@ -271,7 +271,7 @@ enum UnicodeSymbols {
 
 extension NSEvent.ModifierFlags {
 	// Not documented anywhere, but reverse-engineered by me.
-	private nonisolated static let functionKey = 1 << 17 // 131072 (0x20000)
+	nonisolated private static let functionKey = 1 << 17 // 131072 (0x20000)
 
 	nonisolated var carbon: Int {
 		var modifierFlags = 0
@@ -326,7 +326,7 @@ extension NSEvent.ModifierFlags {
 
 extension SwiftUI.EventModifiers {
 	// `.function` is deprecated, so we use the raw value.
-	fileprivate nonisolated static let function_nonDeprecated = Self(rawValue: 64)
+	nonisolated fileprivate static let function_nonDeprecated = Self(rawValue: 64)
 }
 
 extension NSEvent.ModifierFlags {
@@ -391,7 +391,7 @@ extension NSEvent.ModifierFlags {
 	//=> "⇧⌘"
 	```
 	*/
-	public nonisolated var ks_symbolicRepresentation: String {
+	nonisolated public var ks_symbolicRepresentation: String {
 		var description = ""
 
 		if contains(.control) {
@@ -512,7 +512,7 @@ extension HorizontalAlignment {
 		}
 	}
 
-	fileprivate nonisolated static let controlAlignment = Self(ControlAlignment.self)
+	nonisolated fileprivate static let controlAlignment = Self(ControlAlignment.self)
 }
 
 extension View {

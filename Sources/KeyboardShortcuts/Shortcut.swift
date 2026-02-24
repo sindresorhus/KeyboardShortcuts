@@ -7,7 +7,7 @@ extension KeyboardShortcuts {
 	/**
 	A keyboard shortcut.
 	*/
-	public nonisolated struct Shortcut: Hashable, Codable, Sendable {
+	nonisolated public struct Shortcut: Hashable, Codable, Sendable {
 		/**
 		Carbon modifiers are not always stored as the same number.
 

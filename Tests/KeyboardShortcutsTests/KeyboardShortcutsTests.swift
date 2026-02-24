@@ -502,7 +502,7 @@ struct KeyboardShortcutsTests {
 		}
 
 		KeyboardShortcuts.isEnabled = true
-		let _ = HotKeyCenter.shared
+		_ = HotKeyCenter.shared
 
 		NotificationCenter.default.post(name: NSMenu.didBeginTrackingNotification, object: nil)
 		#expect(await Self.waitUntilConditionIsTrue {
@@ -525,7 +525,7 @@ struct KeyboardShortcutsTests {
 		}
 
 		KeyboardShortcuts.isEnabled = true
-		let _ = HotKeyCenter.shared
+		_ = HotKeyCenter.shared
 
 		NotificationCenter.default.post(name: NSMenu.didEndTrackingNotification, object: nil)
 		#expect(Self.hotKeyCenterIsInNormalMode())
@@ -547,7 +547,7 @@ struct KeyboardShortcutsTests {
 		}
 
 		KeyboardShortcuts.isEnabled = true
-		let _ = HotKeyCenter.shared
+		_ = HotKeyCenter.shared
 
 		await Task.detached {
 			NotificationCenter.default.post(name: NSMenu.didBeginTrackingNotification, object: nil)

@@ -4,6 +4,7 @@
 "keyboard_shortcut_used_by_system" = "このショートカットキーは既にシステムで使われており使えません。";
 "keyboard_shortcuts_can_be_changed" = "システムで設定されているショートカットキーは“システム設定 › キーボード › キーボードショートカット”で変更できます。";
 "keyboard_shortcut_disallowed" = "Optionキーは、CommandキーまたはControlキーと組み合わせる必要があります。";
+"clear_shortcut" = "ショートカットを消去";
 "force_use_shortcut" = "強制使用";
 "ok" = "OK";
 "space_key" = "スペース";

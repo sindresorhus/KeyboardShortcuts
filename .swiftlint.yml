@@ -50,12 +50,14 @@ only_rules:
   - first_where
   - flatmap_over_map_reduce
   - for_where
+  - function_name_whitespace
   - generic_type_name
   - ibinspectable_in_extension
   - identical_operands
   - identifier_name
   - implicit_getter
   - implicit_return
+  - implicit_optional_initialization
   - inclusive_language
   - invalid_swiftlint_command
   - is_disjoint
@@ -90,8 +92,11 @@ only_rules:
   - nsobject_prefer_isequal
   - number_separator
   - operator_usage_whitespace
-  - operator_whitespace
+  - optional_data_string_conversion
   - overridden_super_call
+  - prefer_asset_symbols
+  - prefer_condition_list
+  - prefer_key_path
   - prefer_self_in_static_references
   - prefer_self_type_over_type_of_self
   - prefer_zero_over_explicit_init
@@ -107,7 +112,7 @@ only_rules:
   - redundant_discardable_let
   - redundant_nil_coalescing
   - redundant_objc_attribute
-  - redundant_optional_initialization
+  - redundant_sendable
   - redundant_set_access_control
   - redundant_string_enum_value
   - redundant_type_annotation
@@ -164,6 +169,8 @@ analyzer_rules:
   - unneeded_synthesized_initializer
   - unused_declaration
   - unused_import
+redundant_discardable_let:
+  ignore_swiftui_view_bodies: true
 for_where:
   allow_for_as_filter: true
 number_separator:
@@ -193,7 +200,7 @@ redundant_type_annotation:
 unneeded_override:
   affect_initializers: true
 deployment_target:
-  macOS_deployment_target: '10.11'
+  macOS_deployment_target: '10.15'
 custom_rules:
   no_nsrect:
     regex: '\bNSRect\b'
@@ -220,6 +227,12 @@ custom_rules:
   swiftui_environment_private:
     regex: '@Environment\(\\\.\w+\)\s+var'
     message: 'SwiftUI @Environment properties should be private'
+  swiftui_scaledtofit:
+    regex: 'aspectRatio\(contentMode: \.fit\)'
+    message: 'Prefer `scaledToFit()`'
+  swiftui_scaledtofill:
+      regex: 'aspectRatio\(contentMode: \.fill\)'
+      message: 'Prefer `scaledToFill()`'
   final_class:
     regex: '^class [a-zA-Z\d]+[^{]+\{'
     message: 'Classes should be marked as final whenever possible. If you actually need it to be subclassable, just add `// swiftlint:disable:next final_class`.'

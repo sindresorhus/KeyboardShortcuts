@@ -457,7 +457,7 @@ final class HotKeyCenter {
 }
 
 // Global C callback for Carbon event handler
-private nonisolated func carbonEventHandler(
+nonisolated private func carbonEventHandler(
 	_: EventHandlerCallRef?,
 	event: EventRef?,
 	userData: UnsafeMutableRawPointer?

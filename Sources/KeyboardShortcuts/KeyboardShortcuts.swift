@@ -198,7 +198,7 @@ public enum KeyboardShortcuts {
 			return
 		}
 
-		let _ = HotKeyCenter.shared
+		_ = HotKeyCenter.shared
 		isInitialized = true
 	}
 
@@ -508,7 +508,7 @@ public enum KeyboardShortcuts {
 		registerIfNeeded(for: name)
 	}
 
-	private nonisolated static let userDefaultsPrefix = "KeyboardShortcuts_"
+	nonisolated private static let userDefaultsPrefix = "KeyboardShortcuts_"
 
 	nonisolated static func userDefaultsKey(forRawValue rawValue: String) -> String {
 		"\(userDefaultsPrefix)\(rawValue)"
@@ -617,7 +617,7 @@ public enum KeyboardShortcuts {
 }
 
 extension KeyboardShortcuts {
-	public nonisolated enum EventType: Sendable, Equatable {
+	nonisolated public enum EventType: Sendable, Equatable {
 		case keyDown
 		case keyUp
 	}

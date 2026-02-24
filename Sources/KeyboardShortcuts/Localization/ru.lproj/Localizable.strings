@@ -4,6 +4,7 @@
 "keyboard_shortcut_used_by_system" = "Это сочетание клавиш нельзя использовать, поскольку оно является системным.";
 "keyboard_shortcuts_can_be_changed" = "Большинство системных сочетаний клавиш можно изменить в «Настройки системы › Клавиатура › Сочетания клавиш».";
 "keyboard_shortcut_disallowed" = "Клавиша Option должна использоваться в сочетании с Command или Control.";
+"clear_shortcut" = "Очистить сочетание клавиш";
 "force_use_shortcut" = "Все равно использовать";
 "ok" = "OK";
 "space_key" = "Пробел";
