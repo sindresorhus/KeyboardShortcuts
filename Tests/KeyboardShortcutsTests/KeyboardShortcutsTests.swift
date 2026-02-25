@@ -980,6 +980,95 @@ struct KeyboardShortcutsTests {
 		KeyboardShortcuts.removeAllHandlers()
 	}
 
+	@Test("NSMenuItem preserves original key equivalent when no global shortcut is set")
+	@MainActor
+	func testNSMenuItemPreservesOriginalKeyEquivalentWhenNoShortcut() {
+		let name = KeyboardShortcuts.Name("menuItemPreservesKeyEquivalent")
+
+		let menuItem = NSMenuItem()
+		menuItem.keyEquivalent = "n"
+		menuItem.keyEquivalentModifierMask = .command
+
+		menuItem.setShortcut(for: name)
+
+		#expect(menuItem.keyEquivalent == "n")
+		#expect(menuItem.keyEquivalentModifierMask == .command)
+	}
+
+	@Test("NSMenuItem restores original key equivalent when name binding is removed")
+	@MainActor
+	func testNSMenuItemRestoresOriginalKeyEquivalentWhenNameBindingRemoved() {
+		let name = KeyboardShortcuts.Name("menuItemBindingRemoved")
+		KeyboardShortcuts.setShortcut(.init(.t, modifiers: [.command]), for: name)
+
+		let menuItem = NSMenuItem()
+		menuItem.keyEquivalent = "n"
+		menuItem.keyEquivalentModifierMask = .command
+
+		menuItem.setShortcut(for: name)
+		#expect(menuItem.keyEquivalent == "t")
+
+		menuItem.setShortcut(for: nil)
+
+		#expect(menuItem.keyEquivalent == "n")
+		#expect(menuItem.keyEquivalentModifierMask == .command)
+	}
+
+	@Test("NSMenuItem preserves original fallback when switching names")
+	@MainActor
+	func testNSMenuItemPreservesFallbackWhenSwitchingNames() {
+		let name1 = KeyboardShortcuts.Name("menuItemSwitchName1")
+		let name2 = KeyboardShortcuts.Name("menuItemSwitchName2")
+		KeyboardShortcuts.setShortcut(.init(.a, modifiers: [.command]), for: name1)
+		KeyboardShortcuts.setShortcut(.init(.b, modifiers: [.shift]), for: name2)
+
+		let menuItem = NSMenuItem()
+		menuItem.keyEquivalent = "z"
+		menuItem.keyEquivalentModifierMask = .control
+
+		menuItem.setShortcut(for: name1)
+		#expect(menuItem.keyEquivalent == "a")
+		#expect(menuItem.keyEquivalentModifierMask == .command)
+
+		menuItem.setShortcut(for: name2)
+		#expect(menuItem.keyEquivalent == "b")
+		#expect(menuItem.keyEquivalentModifierMask == .shift)
+
+		// Restores the ORIGINAL "z", not "a" from the first name
+		menuItem.setShortcut(for: nil)
+		#expect(menuItem.keyEquivalent == "z")
+		#expect(menuItem.keyEquivalentModifierMask == .control)
+	}
+
+	@Test("NSMenuItem restores original key equivalent when global shortcut is cleared")
+	@MainActor
+	func testNSMenuItemRestoresOriginalKeyEquivalentWhenShortcutCleared() async {
+		let name = KeyboardShortcuts.Name("menuItemRestoresKeyEquivalent")
+		let globalShortcut = KeyboardShortcuts.Shortcut(.t, modifiers: [.command, .shift])
+		KeyboardShortcuts.setShortcut(globalShortcut, for: name)
+
+		let menuItem = NSMenuItem()
+		menuItem.keyEquivalent = "n"
+		menuItem.keyEquivalentModifierMask = .command
+
+		menuItem.setShortcut(for: name)
+
+		// Should now show the global shortcut
+		#expect(menuItem.keyEquivalent == "t")
+		#expect(menuItem.keyEquivalentModifierMask == [.command, .shift])
+
+		// Clear the global shortcut
+		KeyboardShortcuts.setShortcut(nil, for: name)
+
+		// Wait for the notification to restore the fallback
+		let restored = await Self.waitUntilConditionIsTrue {
+			menuItem.keyEquivalent == "n"
+		}
+
+		#expect(restored)
+		#expect(menuItem.keyEquivalentModifierMask == .command)
+	}
+
 	@Test("Localization files are valid")
 	func testLocalizationFilesAreValid() throws {
 		for localizationIdentifier in Bundle.module.localizations.sorted() {

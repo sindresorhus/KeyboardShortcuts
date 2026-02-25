@@ -10,8 +10,14 @@ extension NSMenuItem {
 		}
 	}
 
+	private struct FallbackShortcut: Sendable {
+		let keyEquivalent: String
+		let modifierMask: NSEvent.ModifierFlags
+	}
+
 	private enum AssociatedKeys {
 		static let observer = ObjectAssociation<NSObjectProtocol>()
+		static let fallback = ObjectAssociation<FallbackShortcut>()
 	}
 
 	private func clearShortcut() {
@@ -23,6 +29,19 @@ extension NSMenuItem {
 		}
 	}
 
+	private func restoreShortcut() {
+		if let fallback = AssociatedKeys.fallback[self] {
+			keyEquivalent = fallback.keyEquivalent
+			keyEquivalentModifierMask = fallback.modifierMask
+
+			if #available(macOS 12, *) {
+				allowsAutomaticKeyEquivalentLocalization = true
+			}
+		} else {
+			clearShortcut()
+		}
+	}
+
 	// TODO: Make this a getter/setter. We must first add the ability to create a `Shortcut` from a `keyEquivalent`.
 	/**
 	Show a recorded keyboard shortcut in a `NSMenuItem`.
@@ -31,7 +50,7 @@ extension NSMenuItem {
 
 	Pass in `nil` to clear the keyboard shortcut.
 
-	This method overrides `.keyEquivalent` and `.keyEquivalentModifierMask`.
+	This method overrides `.keyEquivalent` and `.keyEquivalentModifierMask`. The original values are preserved and restored when the global shortcut is cleared.
 
 	```swift
 	import AppKit
@@ -54,7 +73,8 @@ extension NSMenuItem {
 	*/
 	public func setShortcut(for name: KeyboardShortcuts.Name?) {
 		guard let name else {
-			clearShortcut()
+			restoreShortcut()
+			AssociatedKeys.fallback[self] = nil
 			NotificationCenter.default.removeObserver(AssociatedKeys.observer[self] as Any)
 			AssociatedKeys.observer[self] = nil
 			return
@@ -63,10 +83,20 @@ extension NSMenuItem {
 		if let existingObserver = AssociatedKeys.observer[self] {
 			NotificationCenter.default.removeObserver(existingObserver)
 			AssociatedKeys.observer[self] = nil
+		} else {
+			AssociatedKeys.fallback[self] = FallbackShortcut(
+				keyEquivalent: keyEquivalent,
+				modifierMask: keyEquivalentModifierMask
+			)
 		}
 
 		let shortcut = KeyboardShortcuts.Shortcut(name: name)
-		setShortcut(shortcut)
+		if let shortcut {
+			setShortcut(shortcut)
+		} else {
+			restoreShortcut()
+		}
+
 		let menuItemReference = WeakReference(self)
 
 		// TODO: Use AsyncStream when targeting macOS 15.
@@ -84,7 +114,11 @@ extension NSMenuItem {
 				}
 
 				let shortcut = KeyboardShortcuts.Shortcut(name: name)
-				menuItem.setShortcut(shortcut)
+				if let shortcut {
+					menuItem.setShortcut(shortcut)
+				} else {
+					menuItem.restoreShortcut()
+				}
 			}
 		}
 	}
