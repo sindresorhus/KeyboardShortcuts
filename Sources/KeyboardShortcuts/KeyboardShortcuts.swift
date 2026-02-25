@@ -63,7 +63,22 @@ public enum KeyboardShortcuts {
 		}
 	}
 
-	static var allNames: Set<Name> {
+	/**
+	All shortcut names that currently have a stored value in `UserDefaults`.
+
+	This includes names whose shortcut was set by the user or via an `initial:` parameter on ``Name/init(_:initial:)``. Names that were never stored will not appear. The returned `Name` instances only carry the `rawValue`, not the `defaultShortcut`.
+
+	Useful for dynamic shortcut management, for example, removing deprecated shortcuts:
+
+	```swift
+	let activeNames: Set<String> = ["newAction", "anotherAction"]
+
+	for name in KeyboardShortcuts.storedNames where !activeNames.contains(name.rawValue) {
+		KeyboardShortcuts.setShortcut(nil, for: name)
+	}
+	```
+	*/
+	public static var storedNames: Set<Name> {
 		UserDefaults.standard.dictionaryRepresentation()
 			.compactMap { key, _ in
 				guard key.hasPrefix(userDefaultsPrefix) else {
@@ -424,7 +439,7 @@ public enum KeyboardShortcuts {
 	```
 	*/
 	public static func resetAll() {
-		for name in allNames {
+		for name in storedNames {
 			setShortcut(nil, for: name)
 		}
 	}
