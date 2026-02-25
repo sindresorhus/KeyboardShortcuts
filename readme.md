@@ -141,6 +141,24 @@ See [`NSMenuItem#setShortcut`](https://github.com/sindresorhus/KeyboardShortcuts
 
 Your app might need to support keyboard shortcuts for user-defined actions. Normally, you would statically register the keyboard shortcuts upfront in `extension KeyboardShortcuts.Name {}`. However, this is not a requirement. It's only for convenience so that you can use dot-syntax when calling various APIs (for example, `.onKeyDown(.unicornMode) {}`). You can create `KeyboardShortcuts.Name`'s dynamically and store them yourself. You can see this in action in the example project.
 
+#### Hard-coded keyboard shortcuts
+
+If you need a hard-coded global shortcut, you can listen to a `KeyboardShortcuts.Shortcut` directly.
+
+```swift
+import KeyboardShortcuts
+
+let shortcut = KeyboardShortcuts.Shortcut(.a, modifiers: [.command])
+
+Task {
+	for await eventType in KeyboardShortcuts.events(for: shortcut) where eventType == .keyUp {
+		// Do something.
+	}
+}
+```
+
+Prefer user-customizable shortcuts whenever possible.
+
 #### Initial keyboard shortcuts
 
 Setting an initial keyboard shortcut can be useful if you're migrating from a different package or just making something for yourself. However, please do not set this for a publicly distributed app. Users find it annoying when random apps steal their existing keyboard shortcuts. It’s generally better to show a welcome screen on the first app launch that lets the user set the shortcut.
@@ -217,10 +235,6 @@ This package:
 `MASShortcut`:
 - More mature.
 - More localizations.
-
-#### How is it different from [`HotKey`](https://github.com/soffes/HotKey)?
-
-`HotKey` is good for adding hard-coded keyboard shortcuts, but it doesn't provide any UI component for the user to choose their own keyboard shortcuts.
 
 #### Why is this package importing `Carbon`? Isn't that deprecated?
 

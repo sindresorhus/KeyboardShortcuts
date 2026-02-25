@@ -837,6 +837,110 @@ struct KeyboardShortcutsTests {
 		})
 	}
 
+	@Test("Hard-coded stream listener registration happens immediately")
+	func testHardCodedStreamListenerRegistrationHappensImmediately() async {
+		let shortcut = KeyboardShortcuts.Shortcut(.f10, modifiers: [.command, .option, .shift, .control])
+
+		var stream: AsyncStream<KeyboardShortcuts.EventType>? = KeyboardShortcuts.events(for: shortcut)
+		var iterator: AsyncStream<KeyboardShortcuts.EventType>.AsyncIterator? = stream?.makeAsyncIterator()
+		#expect(iterator != nil)
+		#expect(!Self.canRegisterHotKey(for: shortcut))
+
+		iterator = nil
+		stream = nil
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.canRegisterHotKey(for: shortcut)
+		})
+	}
+
+	@Test("Hard-coded stream handlers keep shortcuts registered when removing name handlers")
+	func testHardCodedStreamHandlersKeepShortcutsRegisteredWhenRemovingNameHandlers() async {
+		let shortcut = KeyboardShortcuts.Shortcut(.f9, modifiers: [.command, .option, .shift, .control])
+		let name = KeyboardShortcuts.Name("hardCodedStreamKeepsRegistered", initial: shortcut)
+
+		KeyboardShortcuts.onKeyDown(for: name) {}
+
+		var stream: AsyncStream<KeyboardShortcuts.EventType>? = KeyboardShortcuts.events(for: shortcut)
+		var iterator: AsyncStream<KeyboardShortcuts.EventType>.AsyncIterator? = stream?.makeAsyncIterator()
+		#expect(iterator != nil)
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			KeyboardShortcuts.isEnabled(for: name)
+		})
+
+		KeyboardShortcuts.removeHandler(for: name)
+		#expect(!KeyboardShortcuts.isEnabled(for: name))
+		#expect(!Self.canRegisterHotKey(for: shortcut))
+
+		iterator = nil
+		stream = nil
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.canRegisterHotKey(for: shortcut)
+		})
+	}
+
+	@Test("Hard-coded stream handlers keep shortcuts registered when removing all name handlers")
+	func testHardCodedStreamHandlersKeepShortcutsRegisteredWhenRemovingAllNameHandlers() async {
+		let shortcut = KeyboardShortcuts.Shortcut(.f5, modifiers: [.command, .option, .shift, .control])
+		let name = KeyboardShortcuts.Name("hardCodedStreamKeepsRegisteredAfterRemoveAllHandlers", initial: shortcut)
+
+		KeyboardShortcuts.onKeyDown(for: name) {}
+
+		var stream: AsyncStream<KeyboardShortcuts.EventType>? = KeyboardShortcuts.events(for: shortcut)
+		var iterator: AsyncStream<KeyboardShortcuts.EventType>.AsyncIterator? = stream?.makeAsyncIterator()
+		#expect(iterator != nil)
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			KeyboardShortcuts.isEnabled(for: name)
+		})
+
+		KeyboardShortcuts.removeAllHandlers()
+		#expect(!KeyboardShortcuts.isEnabled(for: name))
+		#expect(!Self.canRegisterHotKey(for: shortcut))
+
+		iterator = nil
+		stream = nil
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.canRegisterHotKey(for: shortcut)
+		})
+	}
+
+	@Test("Name shortcut updates do not unregister active hard-coded streams")
+	func testNameShortcutUpdatesDoNotUnregisterActiveHardCodedStreams() async {
+		let originalShortcut = KeyboardShortcuts.Shortcut(.f8, modifiers: [.command, .option, .shift, .control])
+		let updatedShortcut = KeyboardShortcuts.Shortcut(.f7, modifiers: [.command, .option, .shift, .control])
+		let name = KeyboardShortcuts.Name("hardCodedStreamSurvivesNameUpdates", initial: originalShortcut)
+
+		KeyboardShortcuts.onKeyDown(for: name) {}
+
+		var stream: AsyncStream<KeyboardShortcuts.EventType>? = KeyboardShortcuts.events(for: originalShortcut)
+		var iterator: AsyncStream<KeyboardShortcuts.EventType>.AsyncIterator? = stream?.makeAsyncIterator()
+		#expect(iterator != nil)
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			KeyboardShortcuts.isEnabled(for: name)
+		})
+
+		KeyboardShortcuts.setShortcut(updatedShortcut, for: name)
+		#expect(!Self.canRegisterHotKey(for: originalShortcut))
+		#expect(!Self.canRegisterHotKey(for: updatedShortcut))
+
+		iterator = nil
+		stream = nil
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.canRegisterHotKey(for: originalShortcut)
+		})
+
+		KeyboardShortcuts.removeAllHandlers()
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.canRegisterHotKey(for: updatedShortcut)
+		})
+	}
+
 	@Test("Shortcut can be re-registered after clearing")
 	func testShortcutReregistration() throws {
 		let shortcut = KeyboardShortcuts.Shortcut(.m, modifiers: [.command])

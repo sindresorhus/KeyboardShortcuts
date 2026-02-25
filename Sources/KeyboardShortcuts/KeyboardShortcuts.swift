@@ -38,6 +38,8 @@ public enum KeyboardShortcuts {
 
 	private static var streamKeyDownHandlers = [Name: [UUID: () -> Void]]()
 	private static var streamKeyUpHandlers = [Name: [UUID: () -> Void]]()
+	private static var streamShortcutKeyDownHandlers = [Shortcut: [UUID: () -> Void]]()
+	private static var streamShortcutKeyUpHandlers = [Shortcut: [UUID: () -> Void]]()
 
 	private static var isInitialized = false
 
@@ -99,6 +101,18 @@ public enum KeyboardShortcuts {
 			|| hasHandlers(for: name, in: streamKeyUpHandlers)
 	}
 
+	private static func hasHandlers<Handlers: Collection>(for shortcut: Shortcut, in handlers: [Shortcut: Handlers]) -> Bool {
+		handlers[shortcut]?.isEmpty == false
+	}
+
+	/**
+	Returns whether a hard-coded shortcut has active stream handlers.
+	*/
+	private static func hasHardCodedStreamHandlers(for shortcut: Shortcut) -> Bool {
+		hasHandlers(for: shortcut, in: streamShortcutKeyDownHandlers)
+			|| hasHandlers(for: shortcut, in: streamShortcutKeyUpHandlers)
+	}
+
 	private static func hasActiveHandlers(for name: Name) -> Bool {
 		guard !disabledNames.contains(name) else {
 			return false
@@ -117,7 +131,7 @@ public enum KeyboardShortcuts {
 	}
 
 	private static func isShortcutActive(_ shortcut: Shortcut, excluding nameToExclude: Name? = nil) -> Bool {
-		namesWithAllHandlers.contains { name in
+		let hasActiveNamedHandlers = namesWithAllHandlers.contains { name in
 			if let nameToExclude, name == nameToExclude {
 				return false
 			}
@@ -128,21 +142,30 @@ public enum KeyboardShortcuts {
 
 			return getShortcut(for: name) == shortcut
 		}
+
+		guard !hasActiveNamedHandlers else {
+			return true
+		}
+
+		return hasHardCodedStreamHandlers(for: shortcut)
 	}
 
 	/**
-	Register the shortcut for the given name if it has a shortcut and isn't already registered.
+	Removes a stream handler from a dictionary and prunes the key when the last handler is removed.
 	*/
-	private static func registerIfNeeded(for name: Name) {
-		guard hasActiveHandlers(for: name) else {
-			return
-		}
+	private static func removeStreamHandlerEntry<Key: Hashable>(
+		_ id: UUID,
+		for key: Key,
+		in handlers: inout [Key: [UUID: () -> Void]]
+	) {
+		handlers[key]?[id] = nil
 
-		guard let shortcut = getShortcut(for: name) else {
-			return
+		if handlers[key]?.isEmpty == true {
+			handlers[key] = nil
 		}
+	}
 
-		// If this shortcut is already registered, nothing to do
+	private static func registerIfNeeded(for shortcut: Shortcut) {
 		guard hotKeys[shortcut] == nil else {
 			return
 		}
@@ -168,6 +191,21 @@ public enum KeyboardShortcuts {
 		hotKeys[shortcut] = hotKey
 	}
 
+	/**
+	Register the shortcut for the given name if it has a shortcut and isn't already registered.
+	*/
+	private static func registerIfNeeded(for name: Name) {
+		guard hasActiveHandlers(for: name) else {
+			return
+		}
+
+		guard let shortcut = getShortcut(for: name) else {
+			return
+		}
+
+		registerIfNeeded(for: shortcut)
+	}
+
 	private static func unregister(_ shortcut: Shortcut) {
 		hotKeys[shortcut] = nil // HotKey.deinit handles Carbon unregistration
 	}
@@ -183,6 +221,14 @@ public enum KeyboardShortcuts {
 		let excludedName = excludingCurrentName ? name : nil
 
 		guard !isShortcutActive(shortcut, excluding: excludedName) else {
+			return
+		}
+
+		unregister(shortcut)
+	}
+
+	private static func unregisterIfNeeded(for shortcut: Shortcut) {
+		guard !isShortcutActive(shortcut) else {
 			return
 		}
 
@@ -421,6 +467,7 @@ public enum KeyboardShortcuts {
 
 		let handlers = eventType == .keyDown ? keyDownHandlers : keyUpHandlers
 		let streamHandlers = eventType == .keyDown ? streamKeyDownHandlers : streamKeyUpHandlers
+		let streamShortcutHandlers = eventType == .keyDown ? streamShortcutKeyDownHandlers : streamShortcutKeyUpHandlers
 
 		invokeHandlers(for: shortcut, in: handlers) { callbacks in
 			for callback in callbacks {
@@ -429,6 +476,12 @@ public enum KeyboardShortcuts {
 		}
 
 		invokeHandlers(for: shortcut, in: streamHandlers) { callbacks in
+			for callback in callbacks.values {
+				callback()
+			}
+		}
+
+		if let callbacks = streamShortcutHandlers[shortcut] {
 			for callback in callbacks.values {
 				callback()
 			}
@@ -667,10 +720,57 @@ extension KeyboardShortcuts {
 
 			continuation.onTermination = { _ in
 				Task { @MainActor in
-					streamKeyDownHandlers[name]?[id] = nil
-					streamKeyUpHandlers[name]?[id] = nil
+					removeStreamHandlerEntry(id, for: name, in: &streamKeyDownHandlers)
+					removeStreamHandlerEntry(id, for: name, in: &streamKeyUpHandlers)
 
 					unregisterIfNeeded(for: name, excludingCurrentName: false)
+				}
+			}
+		}
+	}
+
+	/**
+	Listen to hard-coded keyboard shortcut events.
+
+	Use this for shortcuts you define in code instead of storing in ``Name``.
+
+	Ending the async sequence will stop the listener.
+
+	```swift
+	import KeyboardShortcuts
+
+	let shortcut = KeyboardShortcuts.Shortcut(.a, modifiers: [.command])
+
+	Task {
+		for await eventType in KeyboardShortcuts.events(for: shortcut) where eventType == .keyUp {
+			// Do something.
+		}
+	}
+	```
+
+	- Important: In apps distributed to users, prefer user-customizable shortcuts when possible.
+	- Note: This method is not affected by `.removeAllHandlers()`.
+	*/
+	public static func events(for shortcut: Shortcut) -> AsyncStream<KeyboardShortcuts.EventType> {
+		AsyncStream { continuation in
+			let id = UUID()
+
+			streamShortcutKeyDownHandlers[shortcut, default: [:]][id] = {
+				continuation.yield(.keyDown)
+			}
+
+			streamShortcutKeyUpHandlers[shortcut, default: [:]][id] = {
+				continuation.yield(.keyUp)
+			}
+
+			registerIfNeeded(for: shortcut)
+
+			continuation.onTermination = { _ in
+				Task { @MainActor in
+					removeStreamHandlerEntry(id, for: shortcut, in: &streamShortcutKeyDownHandlers)
+					removeStreamHandlerEntry(id, for: shortcut, in: &streamShortcutKeyUpHandlers)
+
+					unregisterIfNeeded(for: shortcut)
 				}
 			}
 		}
