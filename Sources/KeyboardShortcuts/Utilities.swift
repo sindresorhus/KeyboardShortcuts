@@ -637,7 +637,7 @@ extension Notification {
 		userInfo?[NotificationUserInfoKey.name] as? KeyboardShortcuts.Name
 	}
 
-	nonisolated var recorderIsActive: Bool? {
-		userInfo?[NotificationUserInfoKey.isActive] as? Bool
+	nonisolated var recorderIsActive: Bool {
+		(userInfo?[NotificationUserInfoKey.isActive] as? Bool) ?? false
 	}
 }

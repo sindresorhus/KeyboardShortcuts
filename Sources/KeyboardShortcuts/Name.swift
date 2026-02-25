@@ -19,7 +19,10 @@ extension KeyboardShortcuts {
 		public typealias Shortcut = KeyboardShortcuts.Shortcut
 
 		public let rawValue: String
-		public let defaultShortcut: Shortcut?
+		public let initialShortcut: Shortcut?
+
+		@available(*, deprecated, renamed: "initialShortcut")
+		public var defaultShortcut: Shortcut? { initialShortcut }
 
 		/**
 		- Parameter name: Name of the shortcut.
@@ -34,10 +37,13 @@ extension KeyboardShortcuts {
 			)
 
 			self.rawValue = name
-			self.defaultShortcut = initialShortcut
+			self.initialShortcut = initialShortcut
 
 			if let initialShortcut {
-				KeyboardShortcuts.setDefaultShortcutIfNeeded(initialShortcut, forRawValue: name)
+				KeyboardShortcuts.setInitialShortcutIfNeeded(
+					initialShortcut,
+					forRawValue: name
+				)
 			}
 
 			// TODO: Use `Task.immediate` when targeting macOS 26.
@@ -58,7 +64,7 @@ nonisolated
 extension KeyboardShortcuts.Name {
 	init(rawValueWithoutInitialization rawValue: String) {
 		self.rawValue = rawValue
-		self.defaultShortcut = nil
+		self.initialShortcut = nil
 	}
 }
 

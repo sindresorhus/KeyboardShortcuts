@@ -78,12 +78,12 @@ struct KeyboardShortcutsTests {
 
 	@Test("Set shortcut and reset")
 	func testSetShortcutAndReset() throws {
-		let defaultShortcut = KeyboardShortcuts.Shortcut(.c)
+		let initialShortcut = KeyboardShortcuts.Shortcut(.c)
 		let shortcut1 = KeyboardShortcuts.Shortcut(.a)
 		let shortcut2 = KeyboardShortcuts.Shortcut(.b)
 
 		let shortcutName1 = KeyboardShortcuts.Name("testSetShortcutAndReset1")
-		let shortcutName2 = KeyboardShortcuts.Name("testSetShortcutAndReset2", initial: defaultShortcut)
+		let shortcutName2 = KeyboardShortcuts.Name("testSetShortcutAndReset2", initial: initialShortcut)
 
 		KeyboardShortcuts.setShortcut(shortcut1, for: shortcutName1)
 		KeyboardShortcuts.setShortcut(shortcut2, for: shortcutName2)
@@ -94,7 +94,7 @@ struct KeyboardShortcutsTests {
 		KeyboardShortcuts.reset(shortcutName1, shortcutName2)
 
 		#expect(KeyboardShortcuts.getShortcut(for: shortcutName1) == nil)
-		#expect(KeyboardShortcuts.getShortcut(for: shortcutName2) == defaultShortcut)
+		#expect(KeyboardShortcuts.getShortcut(for: shortcutName2) == initialShortcut)
 	}
 
 	@Test("Shortcut creation")
@@ -104,7 +104,7 @@ struct KeyboardShortcutsTests {
 		let shortcut3 = KeyboardShortcuts.Shortcut(.a, modifiers: [.command, .shift])
 
 		#expect(shortcut1.key == .a)
-		#expect(shortcut1.modifiers == [])
+		#expect(shortcut1.modifiers.isEmpty)
 
 		#expect(shortcut2.key == .a)
 		#expect(shortcut2.modifiers == [.command])
@@ -141,11 +141,11 @@ struct KeyboardShortcutsTests {
 
 	@Test("Name with initial value")
 	func testNameWithInitialValue() throws {
-		let defaultShortcut = KeyboardShortcuts.Shortcut(.space)
-		let name = KeyboardShortcuts.Name("testDefault", initial: defaultShortcut)
+		let initialShortcut = KeyboardShortcuts.Shortcut(.space)
+		let name = KeyboardShortcuts.Name("testDefault", initial: initialShortcut)
 
 		// Should return default when no value is set
-		#expect(KeyboardShortcuts.getShortcut(for: name) == defaultShortcut)
+		#expect(KeyboardShortcuts.getShortcut(for: name) == initialShortcut)
 
 		// Setting a value should override the default
 		let customShortcut = KeyboardShortcuts.Shortcut(.tab)
@@ -154,7 +154,7 @@ struct KeyboardShortcutsTests {
 
 		// Resetting should restore the default
 		KeyboardShortcuts.reset(name)
-		#expect(KeyboardShortcuts.getShortcut(for: name) == defaultShortcut)
+		#expect(KeyboardShortcuts.getShortcut(for: name) == initialShortcut)
 	}
 
 	@Test("Name with initial label")
@@ -218,7 +218,7 @@ struct KeyboardShortcutsTests {
 	func testEmptyModifiers() throws {
 		let shortcut = KeyboardShortcuts.Shortcut(.a, modifiers: [])
 		#expect(shortcut.modifiers.isEmpty)
-		#expect(shortcut.modifiers.ks_symbolicRepresentation == "")
+		#expect(shortcut.modifiers.ks_symbolicRepresentation.isEmpty)
 	}
 
 	@Test("Function keys")
@@ -284,18 +284,18 @@ struct KeyboardShortcutsTests {
 
 	@Test("Default values")
 	func testDefaultValues() throws {
-		let defaultShortcut = KeyboardShortcuts.Shortcut(.d, modifiers: [.command])
-		let nameWithDefault = KeyboardShortcuts.Name("withDefault", initial: defaultShortcut)
+		let initialShortcut = KeyboardShortcuts.Shortcut(.d, modifiers: [.command])
+		let nameWithDefault = KeyboardShortcuts.Name("withDefault", initial: initialShortcut)
 		let nameWithoutDefault = KeyboardShortcuts.Name("withoutDefault")
 
-		#expect(KeyboardShortcuts.getShortcut(for: nameWithDefault) == defaultShortcut)
+		#expect(KeyboardShortcuts.getShortcut(for: nameWithDefault) == initialShortcut)
 		#expect(KeyboardShortcuts.getShortcut(for: nameWithoutDefault) == nil)
 	}
 
 	@Test("Overriding defaults")
 	func testOverridingDefaults() throws {
-		let defaultShortcut = KeyboardShortcuts.Shortcut(.x, modifiers: [.control])
-		let name = KeyboardShortcuts.Name("override", initial: defaultShortcut)
+		let initialShortcut = KeyboardShortcuts.Shortcut(.x, modifiers: [.control])
+		let name = KeyboardShortcuts.Name("override", initial: initialShortcut)
 
 		let newShortcut = KeyboardShortcuts.Shortcut(.y, modifiers: [.option])
 		KeyboardShortcuts.setShortcut(newShortcut, for: name)
@@ -304,7 +304,7 @@ struct KeyboardShortcutsTests {
 
 		// Reset should restore default
 		KeyboardShortcuts.reset(name)
-		#expect(KeyboardShortcuts.getShortcut(for: name) == defaultShortcut)
+		#expect(KeyboardShortcuts.getShortcut(for: name) == initialShortcut)
 	}
 
 	@Test("Batch reset")
@@ -1014,7 +1014,7 @@ struct ModifierSymbolTests {
 		#expect(NSEvent.ModifierFlags.option.ks_symbolicRepresentation == "⌥")
 		#expect(NSEvent.ModifierFlags.shift.ks_symbolicRepresentation == "⇧")
 		#expect(NSEvent.ModifierFlags.command.ks_symbolicRepresentation == "⌘")
-		#expect(NSEvent.ModifierFlags([]).ks_symbolicRepresentation == "")
+		#expect(NSEvent.ModifierFlags([]).ks_symbolicRepresentation.isEmpty)
 	}
 
 	@Test("Combined modifier symbols")
@@ -1061,7 +1061,7 @@ struct ModifierSymbolTests {
 		#expect(allModifiers.ks_symbolicRepresentation == "⌃⌥⇧⌘🌐︎")
 
 		// Empty modifiers
-		#expect(NSEvent.ModifierFlags().ks_symbolicRepresentation == "")
+		#expect(NSEvent.ModifierFlags().ks_symbolicRepresentation.isEmpty)
 	}
 }
 
@@ -1072,10 +1072,8 @@ extension UserDefaults {
 	Removes all stored keyboard shortcuts from user defaults.
 	*/
 	func removeAllKeyboardShortcuts() {
-		for key in dictionaryRepresentation().keys {
-			if key.hasPrefix("KeyboardShortcuts_") {
-				removeObject(forKey: key)
-			}
+		for key in dictionaryRepresentation().keys where key.hasPrefix("KeyboardShortcuts_") {
+			removeObject(forKey: key)
 		}
 	}
 }

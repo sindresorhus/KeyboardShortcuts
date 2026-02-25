@@ -66,7 +66,7 @@ public enum KeyboardShortcuts {
 	/**
 	All shortcut names that currently have a stored value in `UserDefaults`.
 
-	This includes names whose shortcut was set by the user or via an `initial:` parameter on ``Name/init(_:initial:)``. Names that were never stored will not appear. The returned `Name` instances only carry the `rawValue`, not the `defaultShortcut`.
+	This includes names whose shortcut was set by the user or via an `initial:` parameter on ``Name/init(_:initial:)``. Names that were never stored will not appear. The returned `Name` instances only carry the `rawValue`, not the `initialShortcut`.
 
 	Useful for dynamic shortcut management, for example, removing deprecated shortcuts:
 
@@ -278,10 +278,8 @@ public enum KeyboardShortcuts {
 		keyUpHandlers = [:]
 
 		// Unregister shortcuts that no longer have any handlers
-		for shortcut in shortcutsToCheck {
-			if !isShortcutActive(shortcut) {
-				unregister(shortcut)
-			}
+		for shortcut in shortcutsToCheck where !isShortcutActive(shortcut) {
+			unregister(shortcut)
 		}
 	}
 
@@ -388,7 +386,7 @@ public enum KeyboardShortcuts {
 	*/
 	public static func reset(_ names: [Name]) {
 		for name in names {
-			setShortcut(name.defaultShortcut, for: name)
+			setShortcut(name.initialShortcut, for: name)
 		}
 	}
 
@@ -457,7 +455,7 @@ public enum KeyboardShortcuts {
 			return
 		}
 
-		if name.defaultShortcut != nil {
+		if name.initialShortcut != nil {
 			userDefaultsDisable(name: name)
 		} else {
 			userDefaultsRemove(name: name)
@@ -586,7 +584,10 @@ public enum KeyboardShortcuts {
 		try? JSONEncoder().encode(shortcut).toString
 	}
 
-	nonisolated static func setDefaultShortcutIfNeeded(_ shortcut: Shortcut, forRawValue rawValue: String) {
+	nonisolated static func setInitialShortcutIfNeeded(
+		_ shortcut: Shortcut,
+		forRawValue rawValue: String
+	) {
 		let key = userDefaultsKey(forRawValue: rawValue)
 
 		guard
