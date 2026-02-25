@@ -248,6 +248,10 @@ No.
 
 That is outside the scope of this package. You can either use [`NSEvent.addLocalMonitorForEvents`](https://developer.apple.com/documentation/appkit/nsevent/1534971-addlocalmonitorforevents), [`NSMenuItem` with keyboard shortcut](https://developer.apple.com/documentation/appkit/nsmenuitem/2880316-allowskeyequivalentwhenhidden) (it can even be hidden), or SwiftUI's [`View#keyboardShortcut()` modifier](https://developer.apple.com/documentation/swiftui/form/keyboardshortcut(_:)).
 
+#### Can I use custom storage for shortcuts?
+
+Yes. Use `KeyboardShortcuts.Recorder` with `shortcut: Binding<KeyboardShortcuts.Shortcut?>` to read and write shortcuts from your own storage, and use `KeyboardShortcuts.events(for: shortcut)` to listen to those shortcuts.
+
 #### Does it support media keys?
 
 No, since it would not work for sandboxed apps. If your app is not sandboxed, you can use [`MediaKeyTap`](https://github.com/nhurden/MediaKeyTap).
