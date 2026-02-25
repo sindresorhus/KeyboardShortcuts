@@ -854,6 +854,502 @@ struct KeyboardShortcutsTests {
 		})
 	}
 
+	@Test("Repeating key-down stream listener registration happens immediately")
+	@available(macOS 13, *)
+	func testRepeatingKeyDownStreamListenerRegistrationHappensImmediately() async {
+		let shortcut = KeyboardShortcuts.Shortcut(.f6, modifiers: [.command, .option, .shift, .control])
+		let name = KeyboardShortcuts.Name("repeatingStreamImmediateRegistration", initial: shortcut)
+		var stream: AsyncStream<Void>? = KeyboardShortcuts.repeatingKeyDownEvents(for: name)
+		var iterator: AsyncStream<Void>.AsyncIterator? = stream?.makeAsyncIterator()
+		#expect(iterator != nil)
+
+		#expect(KeyboardShortcuts.isEnabled(for: name))
+		#expect(!Self.canRegisterHotKey(for: shortcut))
+
+		iterator = nil
+		stream = nil
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.canRegisterHotKey(for: shortcut)
+		})
+	}
+
+	@Test("Hard-coded repeating stream listener registration happens immediately")
+	@available(macOS 13, *)
+	func testHardCodedRepeatingStreamListenerRegistrationHappensImmediately() async {
+		let shortcut = KeyboardShortcuts.Shortcut(.f4, modifiers: [.command, .option, .shift, .control])
+
+		var stream: AsyncStream<Void>? = KeyboardShortcuts.repeatingKeyDownEvents(for: shortcut)
+		var iterator: AsyncStream<Void>.AsyncIterator? = stream?.makeAsyncIterator()
+		#expect(iterator != nil)
+		#expect(!Self.canRegisterHotKey(for: shortcut))
+
+		iterator = nil
+		stream = nil
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.canRegisterHotKey(for: shortcut)
+		})
+	}
+
+	@Test("Ending repeating stream does not unregister when legacy handlers remain")
+	@available(macOS 13, *)
+	func testRepeatingStreamEndingDoesNotUnregisterWhenLegacyHandlersRemain() async {
+		let shortcut = KeyboardShortcuts.Shortcut(.f3, modifiers: [.command, .option, .shift, .control])
+		let name = KeyboardShortcuts.Name("repeatingStreamEndingKeepsLegacyHandlers", initial: shortcut)
+
+		KeyboardShortcuts.onKeyDown(for: name) {}
+
+		var stream: AsyncStream<Void>? = KeyboardShortcuts.repeatingKeyDownEvents(for: name)
+		var iterator: AsyncStream<Void>.AsyncIterator? = stream?.makeAsyncIterator()
+		#expect(iterator != nil)
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			!Self.canRegisterHotKey(for: shortcut)
+		})
+
+		iterator = nil
+		stream = nil
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			KeyboardShortcuts.isEnabled(for: name)
+		})
+
+		#expect(KeyboardShortcuts.isEnabled(for: name))
+		#expect(!Self.canRegisterHotKey(for: shortcut))
+
+		KeyboardShortcuts.removeHandler(for: name)
+	}
+
+	@Test("Hard-coded repeating stream keeps shortcut registered when removing name handlers")
+	@available(macOS 13, *)
+	func testHardCodedRepeatingStreamKeepsShortcutRegisteredWhenRemovingNameHandlers() async {
+		let shortcut = KeyboardShortcuts.Shortcut(.f2, modifiers: [.command, .option, .shift, .control])
+		let name = KeyboardShortcuts.Name("hardCodedRepeatingStreamKeepsRegistered", initial: shortcut)
+
+		KeyboardShortcuts.onKeyDown(for: name) {}
+
+		var stream: AsyncStream<Void>? = KeyboardShortcuts.repeatingKeyDownEvents(for: shortcut)
+		var iterator: AsyncStream<Void>.AsyncIterator? = stream?.makeAsyncIterator()
+		#expect(iterator != nil)
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			KeyboardShortcuts.isEnabled(for: name)
+		})
+
+		KeyboardShortcuts.removeHandler(for: name)
+		#expect(!KeyboardShortcuts.isEnabled(for: name))
+		#expect(!Self.canRegisterHotKey(for: shortcut))
+
+		iterator = nil
+		stream = nil
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.canRegisterHotKey(for: shortcut)
+		})
+	}
+
+	@Test("Name shortcut updates do not unregister active hard-coded repeating streams")
+	@available(macOS 13, *)
+	func testNameShortcutUpdatesDoNotUnregisterActiveHardCodedRepeatingStreams() async {
+		let originalShortcut = KeyboardShortcuts.Shortcut(.f1, modifiers: [.command, .option, .shift, .control])
+		let updatedShortcut = KeyboardShortcuts.Shortcut(.f14, modifiers: [.command, .option, .shift, .control])
+		let name = KeyboardShortcuts.Name("hardCodedRepeatingStreamSurvivesNameUpdates", initial: originalShortcut)
+
+		KeyboardShortcuts.onKeyDown(for: name) {}
+
+		var stream: AsyncStream<Void>? = KeyboardShortcuts.repeatingKeyDownEvents(for: originalShortcut)
+		var iterator: AsyncStream<Void>.AsyncIterator? = stream?.makeAsyncIterator()
+		#expect(iterator != nil)
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			KeyboardShortcuts.isEnabled(for: name)
+		})
+
+		KeyboardShortcuts.setShortcut(updatedShortcut, for: name)
+		#expect(!Self.canRegisterHotKey(for: originalShortcut))
+		#expect(!Self.canRegisterHotKey(for: updatedShortcut))
+
+		iterator = nil
+		stream = nil
+
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.canRegisterHotKey(for: originalShortcut)
+		})
+
+		KeyboardShortcuts.removeAllHandlers()
+		#expect(await Self.waitUntilConditionIsTrue {
+			Self.canRegisterHotKey(for: updatedShortcut)
+		})
+	}
+
+	@Test("Repeating stream emits repeatedly after delay")
+	@available(macOS 13, *)
+	func testRepeatingStreamEmitsRepeatedlyAfterDelay() async {
+		var eventsContinuation: AsyncStream<KeyboardShortcuts.EventType>.Continuation?
+		let eventsStream = AsyncStream<KeyboardShortcuts.EventType> {
+			eventsContinuation = $0
+		}
+		let repeatingStream = KeyboardShortcuts.repeatingKeyDownEvents(
+			from: eventsStream,
+			repeatDelay: .milliseconds(40),
+			repeatInterval: .milliseconds(20)
+		)
+
+		var emissionCount = 0
+		let task = Task {
+			for await _ in repeatingStream {
+				emissionCount += 1
+			}
+		}
+
+		defer {
+			task.cancel()
+			eventsContinuation?.finish()
+		}
+
+		eventsContinuation?.yield(.keyDown)
+
+		#expect(await Self.waitUntilConditionIsTrue(timeout: .milliseconds(300)) {
+			emissionCount >= 3
+		})
+	}
+
+	@Test("Repeating stream stops after key up before delay elapses")
+	@available(macOS 13, *)
+	func testRepeatingStreamStopsAfterKeyUpBeforeDelay() async {
+		var eventsContinuation: AsyncStream<KeyboardShortcuts.EventType>.Continuation?
+		let eventsStream = AsyncStream<KeyboardShortcuts.EventType> {
+			eventsContinuation = $0
+		}
+		let repeatingStream = KeyboardShortcuts.repeatingKeyDownEvents(
+			from: eventsStream,
+			repeatDelay: .milliseconds(80),
+			repeatInterval: .milliseconds(20)
+		)
+
+		var emissionCount = 0
+		let task = Task {
+			for await _ in repeatingStream {
+				emissionCount += 1
+			}
+		}
+
+		defer {
+			task.cancel()
+			eventsContinuation?.finish()
+		}
+
+		eventsContinuation?.yield(.keyDown)
+		eventsContinuation?.yield(.keyUp)
+
+		try? await Task.sleep(for: .milliseconds(200))
+
+		#expect(emissionCount == 1)
+	}
+
+	@Test("Repeating stream stops when source stream ends during hold")
+	@available(macOS 13, *)
+	func testRepeatingStreamStopsWhenSourceStreamEndsDuringHold() async {
+		var eventsContinuation: AsyncStream<KeyboardShortcuts.EventType>.Continuation?
+		let eventsStream = AsyncStream<KeyboardShortcuts.EventType> {
+			eventsContinuation = $0
+		}
+		let repeatingStream = KeyboardShortcuts.repeatingKeyDownEvents(
+			from: eventsStream,
+			repeatDelay: .milliseconds(40),
+			repeatInterval: .milliseconds(20)
+		)
+
+		var emissionCount = 0
+		let task = Task {
+			for await _ in repeatingStream {
+				emissionCount += 1
+			}
+		}
+
+		defer {
+			task.cancel()
+		}
+
+		eventsContinuation?.yield(.keyDown)
+		#expect(await Self.waitUntilConditionIsTrue(timeout: .milliseconds(300)) {
+			emissionCount >= 3
+		})
+
+		eventsContinuation?.finish()
+		let emissionCountAfterFinish = emissionCount
+		try? await Task.sleep(for: .milliseconds(120))
+
+		#expect(emissionCount == emissionCountAfterFinish)
+	}
+
+	@Test("Repeating stream finishes when source stream ends")
+	@available(macOS 13, *)
+	func testRepeatingStreamFinishesWhenSourceStreamEnds() async {
+		var eventsContinuation: AsyncStream<KeyboardShortcuts.EventType>.Continuation?
+		let eventsStream = AsyncStream<KeyboardShortcuts.EventType> {
+			eventsContinuation = $0
+		}
+		let repeatingStream = KeyboardShortcuts.repeatingKeyDownEvents(
+			from: eventsStream,
+			repeatDelay: .milliseconds(40),
+			repeatInterval: .milliseconds(20)
+		)
+
+		var didFinish = false
+		let task = Task {
+			for await _ in repeatingStream {}
+			didFinish = true
+		}
+
+		defer {
+			task.cancel()
+		}
+
+		eventsContinuation?.yield(.keyDown)
+		try? await Task.sleep(for: .milliseconds(120))
+		#expect(!didFinish)
+
+		eventsContinuation?.finish()
+		#expect(await Self.waitUntilConditionIsTrue(timeout: .milliseconds(300)) {
+			didFinish
+		})
+	}
+
+	@Test("Repeating stream stops when active-state check becomes false")
+	@available(macOS 13, *)
+	func testRepeatingStreamStopsWhenActiveStateCheckBecomesFalse() async {
+		@MainActor
+		final class RepeatState {
+			var isActive = true
+		}
+
+		let repeatState = await MainActor.run {
+			RepeatState()
+		}
+
+		var eventsContinuation: AsyncStream<KeyboardShortcuts.EventType>.Continuation?
+		let eventsStream = AsyncStream<KeyboardShortcuts.EventType> {
+			eventsContinuation = $0
+		}
+		let repeatingStream = KeyboardShortcuts.repeatingKeyDownEvents(
+			from: eventsStream,
+			repeatDelay: .milliseconds(40),
+			repeatInterval: .milliseconds(20),
+			shouldContinueRepeating: { // swiftlint:disable:this trailing_closure
+				repeatState.isActive
+			}
+		)
+
+		var emissionCount = 0
+		let task = Task {
+			for await _ in repeatingStream {
+				emissionCount += 1
+			}
+		}
+
+		defer {
+			task.cancel()
+			eventsContinuation?.finish()
+		}
+
+		eventsContinuation?.yield(.keyDown)
+		#expect(await Self.waitUntilConditionIsTrue(timeout: .milliseconds(300)) {
+			emissionCount >= 3
+		})
+
+		await MainActor.run {
+			repeatState.isActive = false
+		}
+
+		let emissionCountAfterDeactivation = emissionCount
+		try? await Task.sleep(for: .milliseconds(120))
+		#expect(emissionCount == emissionCountAfterDeactivation)
+	}
+
+	@Test("Repeating stream stops when shortcut handling is paused")
+	@available(macOS 13, *)
+	func testRepeatingStreamStopsWhenShortcutHandlingIsPaused() async {
+		await MainActor.run {
+			KeyboardShortcuts.isPaused = false
+		}
+
+		var eventsContinuation: AsyncStream<KeyboardShortcuts.EventType>.Continuation?
+		let eventsStream = AsyncStream<KeyboardShortcuts.EventType> {
+			eventsContinuation = $0
+		}
+		let repeatingStream = KeyboardShortcuts.repeatingKeyDownEvents(
+			from: eventsStream,
+			repeatDelay: .milliseconds(40),
+			repeatInterval: .milliseconds(20),
+			shouldContinueRepeating: { // swiftlint:disable:this trailing_closure
+				!KeyboardShortcuts.isPaused
+			}
+		)
+
+		var emissionCount = 0
+		let task = Task {
+			for await _ in repeatingStream {
+				emissionCount += 1
+			}
+		}
+
+		defer {
+			task.cancel()
+			eventsContinuation?.finish()
+		}
+
+		eventsContinuation?.yield(.keyDown)
+		#expect(await Self.waitUntilConditionIsTrue(timeout: .milliseconds(300)) {
+			emissionCount >= 3
+		})
+
+		await MainActor.run {
+			KeyboardShortcuts.isPaused = true
+		}
+
+		let emissionCountAfterPause = emissionCount
+		try? await Task.sleep(for: .milliseconds(120))
+		#expect(emissionCount == emissionCountAfterPause)
+
+		await MainActor.run {
+			KeyboardShortcuts.isPaused = false
+		}
+	}
+
+	@Test("Name-based repeating stream stops when name is disabled during hold")
+	@available(macOS 13, *)
+	func testNameBasedRepeatingStreamStopsWhenNameIsDisabledDuringHold() async {
+		let shortcut = KeyboardShortcuts.Shortcut(.f15, modifiers: [.command, .option, .shift, .control])
+		let name = KeyboardShortcuts.Name("nameBasedRepeatingDisableDuringHold", initial: shortcut)
+		KeyboardShortcuts.onKeyDown(for: name) {}
+
+		@MainActor
+		final class RepeatState {
+			var heldShortcut: KeyboardShortcuts.Shortcut?
+		}
+
+		let repeatState = await MainActor.run {
+			RepeatState()
+		}
+
+		var eventsContinuation: AsyncStream<KeyboardShortcuts.EventType>.Continuation?
+		let eventsStream = AsyncStream<KeyboardShortcuts.EventType> {
+			eventsContinuation = $0
+		}
+		let repeatingStream = KeyboardShortcuts.repeatingKeyDownEvents(
+			from: eventsStream,
+			repeatDelay: .milliseconds(40),
+			repeatInterval: .milliseconds(20),
+			didReceiveKeyDown: {
+				repeatState.heldShortcut = KeyboardShortcuts.getShortcut(for: name)
+			},
+			shouldContinueRepeating: {
+				guard
+					!KeyboardShortcuts.isPaused,
+					KeyboardShortcuts.isEnabled(for: name),
+					let heldShortcut = repeatState.heldShortcut
+				else {
+					return false
+				}
+
+				return KeyboardShortcuts.getShortcut(for: name) == heldShortcut
+			}
+		)
+
+		var emissionCount = 0
+		let task = Task {
+			for await _ in repeatingStream {
+				emissionCount += 1
+			}
+		}
+
+		defer {
+			task.cancel()
+			eventsContinuation?.finish()
+			KeyboardShortcuts.enable(name)
+			KeyboardShortcuts.removeHandler(for: name)
+		}
+
+		eventsContinuation?.yield(.keyDown)
+		#expect(await Self.waitUntilConditionIsTrue(timeout: .milliseconds(300)) {
+			emissionCount >= 3
+		})
+
+		KeyboardShortcuts.disable(name)
+
+		let emissionCountAfterDisable = emissionCount
+		try? await Task.sleep(for: .milliseconds(120))
+		#expect(emissionCount == emissionCountAfterDisable)
+	}
+
+	@Test("Name-based repeating stream stops when name shortcut changes during hold")
+	@available(macOS 13, *)
+	func testNameBasedRepeatingStreamStopsWhenNameShortcutChangesDuringHold() async {
+		let originalShortcut = KeyboardShortcuts.Shortcut(.f15, modifiers: [.command, .option, .shift, .control])
+		let updatedShortcut = KeyboardShortcuts.Shortcut(.f18, modifiers: [.command, .option, .shift, .control])
+		let name = KeyboardShortcuts.Name("nameBasedRepeatingShortcutChangeDuringHold", initial: originalShortcut)
+		KeyboardShortcuts.onKeyDown(for: name) {}
+
+		@MainActor
+		final class RepeatState {
+			var heldShortcut: KeyboardShortcuts.Shortcut?
+		}
+
+		let repeatState = await MainActor.run {
+			RepeatState()
+		}
+
+		var eventsContinuation: AsyncStream<KeyboardShortcuts.EventType>.Continuation?
+		let eventsStream = AsyncStream<KeyboardShortcuts.EventType> {
+			eventsContinuation = $0
+		}
+		let repeatingStream = KeyboardShortcuts.repeatingKeyDownEvents(
+			from: eventsStream,
+			repeatDelay: .milliseconds(40),
+			repeatInterval: .milliseconds(20),
+			didReceiveKeyDown: {
+				repeatState.heldShortcut = KeyboardShortcuts.getShortcut(for: name)
+			},
+			shouldContinueRepeating: {
+				guard
+					!KeyboardShortcuts.isPaused,
+					KeyboardShortcuts.isEnabled(for: name),
+					let heldShortcut = repeatState.heldShortcut
+				else {
+					return false
+				}
+
+				return KeyboardShortcuts.getShortcut(for: name) == heldShortcut
+			}
+		)
+
+		var emissionCount = 0
+		let task = Task {
+			for await _ in repeatingStream {
+				emissionCount += 1
+			}
+		}
+
+		defer {
+			task.cancel()
+			eventsContinuation?.finish()
+			KeyboardShortcuts.removeHandler(for: name)
+		}
+
+		eventsContinuation?.yield(.keyDown)
+		#expect(await Self.waitUntilConditionIsTrue(timeout: .milliseconds(300)) {
+			emissionCount >= 3
+		})
+
+		KeyboardShortcuts.setShortcut(updatedShortcut, for: name)
+
+		let emissionCountAfterShortcutUpdate = emissionCount
+		try? await Task.sleep(for: .milliseconds(120))
+		#expect(emissionCount == emissionCountAfterShortcutUpdate)
+	}
+
 	@Test("Hard-coded stream handlers keep shortcuts registered when removing name handlers")
 	func testHardCodedStreamHandlersKeepShortcutsRegisteredWhenRemovingNameHandlers() async {
 		let shortcut = KeyboardShortcuts.Shortcut(.f9, modifiers: [.command, .option, .shift, .control])

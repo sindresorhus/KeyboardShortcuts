@@ -159,6 +159,20 @@ Task {
 
 Prefer user-customizable shortcuts whenever possible.
 
+#### Repeat while held
+
+If you need repeated actions while the shortcut is held, use `repeatingKeyDownEvents(for:)`. It emits once on initial press, then repeats using the system key repeat settings. (macOS 13+)
+
+```swift
+import KeyboardShortcuts
+
+Task {
+	for await _ in KeyboardShortcuts.repeatingKeyDownEvents(for: .moveSelectionDown) {
+		// Move to the next item.
+	}
+}
+```
+
 #### Initial keyboard shortcuts
 
 Setting an initial keyboard shortcut can be useful if you're migrating from a different package or just making something for yourself. However, please do not set this for a publicly distributed app. Users find it annoying when random apps steal their existing keyboard shortcuts. It’s generally better to show a welcome screen on the first app launch that lets the user set the shortcut.

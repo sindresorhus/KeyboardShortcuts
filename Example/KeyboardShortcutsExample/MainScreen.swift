@@ -13,6 +13,9 @@ struct MainScreen: View {
 			Section("Dynamic Shortcut") {
 				DynamicShortcut()
 			}
+			Section("Repeating Key Down") {
+				RepeatingShortcut()
+			}
 		}
 		.formStyle(.grouped)
 		.fixedSize()
@@ -24,6 +27,48 @@ extension KeyboardShortcuts.Name {
 	static let testShortcut2 = Self("testShortcut2")
 	static let testShortcut3 = Self("testShortcut3")
 	static let testShortcut4 = Self("testShortcut4")
+	static let testShortcut5 = Self("testShortcut5")
+}
+
+@available(macOS 13, *)
+private struct RepeatingShortcut: View {
+	@State private var repeatCount = 0
+	@State private var isShortcutPressed = false
+	@State private var shouldIgnoreRepeatUntilKeyUp = false
+
+	var body: some View {
+		LabeledContent("Shortcut") {
+			VStack(alignment: .trailing) {
+				KeyboardShortcuts.Recorder(for: .testShortcut5)
+				Text(repeatCount, format: .number)
+					.monospacedDigit()
+				Button("Reset") {
+					repeatCount = 0
+					shouldIgnoreRepeatUntilKeyUp = isShortcutPressed
+				}
+			}
+		}
+		.task {
+			for await _ in KeyboardShortcuts.repeatingKeyDownEvents(for: .testShortcut5) {
+				guard !shouldIgnoreRepeatUntilKeyUp else {
+					continue
+				}
+
+				repeatCount += 1
+			}
+		}
+		.task {
+			for await eventType in KeyboardShortcuts.events(for: .testShortcut5) {
+				switch eventType {
+				case .keyDown:
+					isShortcutPressed = true
+				case .keyUp:
+					isShortcutPressed = false
+					shouldIgnoreRepeatUntilKeyUp = false
+				}
+			}
+		}
+	}
 }
 
 private struct DoubleShortcut: View {

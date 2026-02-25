@@ -106,7 +106,7 @@ private struct GlobalKeyboardShortcutViewModifier: ViewModifier {
 				triggerRefresh.toggle()
 			}
 			.onReceive(NotificationCenter.default.publisher(for: .recorderActiveStatusDidChange)) {
-				isRecorderActive = $0.recorderIsActive ?? false
+				isRecorderActive = $0.recorderIsActive
 			}
 	}
 }
