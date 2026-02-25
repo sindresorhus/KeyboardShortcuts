@@ -236,6 +236,8 @@ This package:
 - More mature.
 - More localizations.
 
+<!-- For migration recipes, see the [migration guide](Sources/KeyboardShortcuts/KeyboardShortcuts.docc/Migration.md). -->
+
 #### Why is this package importing `Carbon`? Isn't that deprecated?
 
 Most of the Carbon APIs were deprecated years ago, but there are some left that Apple never shipped modern replacements for. This includes registering global keyboard shortcuts. However, you should not need to worry about this. Apple will for sure ship new APIs before deprecating the Carbon APIs used here.
