@@ -246,9 +246,28 @@ Most of the Carbon APIs were deprecated years ago, but there are some left that 
 
 No.
 
-#### How can I add an app-specific keyboard shortcut that is only active when the app is?
+#### Can I use this for customizable in-app keyboard shortcuts?
 
-That is outside the scope of this package. You can either use [`NSEvent.addLocalMonitorForEvents`](https://developer.apple.com/documentation/appkit/nsevent/1534971-addlocalmonitorforevents), [`NSMenuItem` with keyboard shortcut](https://developer.apple.com/documentation/appkit/nsmenuitem/2880316-allowskeyequivalentwhenhidden) (it can even be hidden), or SwiftUI's [`View#keyboardShortcut()` modifier](https://developer.apple.com/documentation/swiftui/form/keyboardshortcut(_:)).
+Yes. Use `KeyboardShortcuts.Recorder` with a `Binding<KeyboardShortcuts.Shortcut?>` to let users record a shortcut without registering any global hotkey, then apply it with `.keyboardShortcut(shortcut?.toSwiftUI)`. The shortcut only fires when your app is focused. To persist it across launches, save it to `UserDefaults` or `@AppStorage` yourself.
+
+```swift
+import SwiftUI
+import KeyboardShortcuts
+
+struct ContentView: View {
+	@State private var shortcut: KeyboardShortcuts.Shortcut?
+
+	var body: some View {
+		VStack {
+			KeyboardShortcuts.Recorder("Record shortcut", shortcut: $shortcut)
+			Button("Perform Action") {
+				performAction()
+			}
+			.keyboardShortcut(shortcut?.toSwiftUI)
+		}
+	}
+}
+```
 
 #### Can I use custom storage for shortcuts?
 
