@@ -66,6 +66,11 @@ extension KeyboardShortcuts {
 		public var validateShortcut: ((_ shortcut: Shortcut) -> ValidationResult)?
 
 		/**
+		Controls how the recorder handles keyboard shortcut conflicts with menu items, system shortcuts, and disallowed shortcuts.
+		*/
+		public var conflictPolicy = ConflictPolicy.default
+
+		/**
 		The shortcut name for the recorder.
 
 		Can be dynamically changed at any time.
@@ -401,31 +406,22 @@ extension KeyboardShortcuts {
 				}
 
 				if let menuItem = shortcut.takenByMainMenu {
+					let title = String.localizedStringWithFormat("keyboard_shortcut_used_by_menu_item".localized, menuItem.title)
 					// TODO: Find a better way to make it possible to dismiss the alert by pressing "Enter". How can we make the input automatically temporarily lose focus while the alert is open?
-					showAlert(title: String.localizedStringWithFormat("keyboard_shortcut_used_by_menu_item".localized, menuItem.title))
-
-					return nil
+					guard handleConflict(conflictPolicy.menuItem, title: title) else {
+						return nil
+					}
 				}
 
 				// See: https://developer.apple.com/forums/thread/763878?answerId=804374022#804374022
-				if shortcut.isDisallowed {
+				if shortcut.isDisallowed, conflictPolicy.disallowed != .allow {
 					showAlert(title: "keyboard_shortcut_disallowed".localized)
 					return nil
 				}
 
+				// TODO: Add button to offer to open the relevant system settings pane for the user.
 				if shortcut.isTakenBySystem {
-					let modalResponse = showAlert(
-						title: "keyboard_shortcut_used_by_system".localized,
-						// TODO: Add button to offer to open the relevant system settings pane for the user.
-						message: "keyboard_shortcuts_can_be_changed".localized,
-						buttonTitles: [
-							"ok".localized,
-							"force_use_shortcut".localized
-						]
-					)
-
-					// If the user has selected "Use Anyway" in the dialog (the second option), we'll continue setting the keyboard shorcut even though it's reserved by the system.
-					guard modalResponse == .alertSecondButtonReturn else {
+					guard handleConflict(conflictPolicy.systemShortcut, title: "keyboard_shortcut_used_by_system".localized, message: "keyboard_shortcuts_can_be_changed".localized) else {
 						return nil
 					}
 				}
@@ -450,6 +446,22 @@ extension KeyboardShortcuts {
 		private func saveShortcut(_ shortcut: Shortcut?) {
 			storeShortcut(shortcut)
 			onChange?(shortcut)
+		}
+
+		/**
+		Returns `true` if the shortcut should be saved, `false` if it was blocked by the user or policy.
+		*/
+		private func handleConflict(_ behavior: ConflictBehavior, title: String, message: String? = nil) -> Bool {
+			switch behavior {
+			case .block:
+				showAlert(title: title, message: message)
+				return false
+			case .warn:
+				let response = showAlert(title: title, message: message, buttonTitles: ["ok".localized, "force_use_shortcut".localized])
+				return response == .alertSecondButtonReturn
+			case .allow:
+				return true
+			}
 		}
 
 		@discardableResult

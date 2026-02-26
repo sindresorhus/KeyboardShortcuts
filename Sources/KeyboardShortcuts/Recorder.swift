@@ -56,6 +56,7 @@ extension KeyboardShortcuts {
 			}
 
 			recorder.validateShortcut = validateShortcut
+			recorder.conflictPolicy = context.environment.keyboardShortcutsConflictPolicy
 
 			return recorder
 		}
@@ -64,6 +65,7 @@ extension KeyboardShortcuts {
 			let coordinator = context.coordinator
 			coordinator.onChange = onChange
 			nsView.validateShortcut = validateShortcut
+			nsView.conflictPolicy = context.environment.keyboardShortcutsConflictPolicy
 
 			switch source {
 			case .name(let name):
