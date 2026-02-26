@@ -79,8 +79,6 @@ extension View {
 	This is mostly useful to have the keyboard shortcut show for a `Button` in a `Menu` or `MenuBarExtra`.
 
 	It does not trigger the control's action.
-
-	- Important: Do not use it in a `CommandGroup` as the shortcut recorder will think the shortcut is already taken. It does remove the shortcut while the recorder is active, but because of a bug in macOS 15, the state is not reflected correctly in the underlying menu item.
 	*/
 	public func globalKeyboardShortcut(_ name: KeyboardShortcuts.Name) -> some View {
 		modifier(GlobalKeyboardShortcutViewModifier(name: name))
@@ -107,6 +105,7 @@ private struct GlobalKeyboardShortcutViewModifier: ViewModifier {
 			}
 			.onReceive(NotificationCenter.default.publisher(for: .recorderActiveStatusDidChange)) {
 				isRecorderActive = $0.recorderIsActive
+				triggerRefresh.toggle()
 			}
 	}
 }

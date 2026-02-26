@@ -16,19 +16,23 @@ struct AppMain: App {
 				Button("Shortcut 1") {
 					AppState.shared.alert(1)
 				}
-				.keyboardShortcut(menuShortcuts.shortcut1?.toSwiftUI)
+				.keyboardShortcut(menuShortcuts.shortcut1ForMenu?.toSwiftUI)
+				.id(menuShortcuts.refreshID)
 				Button("Shortcut 2") {
 					AppState.shared.alert(2)
 				}
-				.keyboardShortcut(menuShortcuts.shortcut2?.toSwiftUI)
+				.keyboardShortcut(menuShortcuts.shortcut2ForMenu?.toSwiftUI)
+				.id(menuShortcuts.refreshID)
 				Button("Shortcut 3") {
 					AppState.shared.alert(3)
 				}
-				.keyboardShortcut(menuShortcuts.shortcut3?.toSwiftUI)
+				.keyboardShortcut(menuShortcuts.shortcut3ForMenu?.toSwiftUI)
+				.id(menuShortcuts.refreshID)
 				Button("Shortcut 4") {
 					AppState.shared.alert(4)
 				}
-				.keyboardShortcut(menuShortcuts.shortcut4?.toSwiftUI)
+				.keyboardShortcut(menuShortcuts.shortcut4ForMenu?.toSwiftUI)
+				.id(menuShortcuts.refreshID)
 			}
 		}
 	}
@@ -41,11 +45,30 @@ final class TestMenuShortcuts {
 	var shortcut2 = KeyboardShortcuts.getShortcut(for: .testShortcut2)
 	var shortcut3 = KeyboardShortcuts.getShortcut(for: .testShortcut3)
 	var shortcut4 = KeyboardShortcuts.getShortcut(for: .testShortcut4)
+	var isRecorderActive = false
+	var refreshID = 0
 
-	private var observer: NSObjectProtocol?
+	var shortcut1ForMenu: KeyboardShortcuts.Shortcut? {
+		isRecorderActive ? nil : shortcut1
+	}
+
+	var shortcut2ForMenu: KeyboardShortcuts.Shortcut? {
+		isRecorderActive ? nil : shortcut2
+	}
+
+	var shortcut3ForMenu: KeyboardShortcuts.Shortcut? {
+		isRecorderActive ? nil : shortcut3
+	}
+
+	var shortcut4ForMenu: KeyboardShortcuts.Shortcut? {
+		isRecorderActive ? nil : shortcut4
+	}
+
+	private var shortcutObserver: NSObjectProtocol?
+	private var recorderActiveObserver: NSObjectProtocol?
 
 	init() {
-		observer = NotificationCenter.default.addObserver(forName: Notification.Name("KeyboardShortcuts_shortcutByNameDidChange"), object: nil, queue: .main) { [weak self] notification in
+		shortcutObserver = NotificationCenter.default.addObserver(forName: Notification.Name("KeyboardShortcuts_shortcutByNameDidChange"), object: nil, queue: .main) { [weak self] notification in
 			guard let self else {
 				return
 			}
@@ -67,17 +90,34 @@ final class TestMenuShortcuts {
 				case .testShortcut4:
 					shortcut4 = KeyboardShortcuts.getShortcut(for: .testShortcut4)
 				default:
-					break
+					return
 				}
+
+				refreshID += 1
+			}
+		}
+
+		recorderActiveObserver = NotificationCenter.default.addObserver(forName: Notification.Name("KeyboardShortcuts_recorderActiveStatusDidChange"), object: nil, queue: .main) { [weak self] notification in
+			guard let self else {
+				return
+			}
+
+			let isActive = (notification.userInfo?["isActive"] as? Bool) ?? false
+
+			Task { @MainActor in
+				isRecorderActive = isActive
+				refreshID += 1
 			}
 		}
 	}
 
 	isolated deinit {
-		guard let observer else {
-			return
+		if let shortcutObserver {
+			NotificationCenter.default.removeObserver(shortcutObserver)
 		}
 
-		NotificationCenter.default.removeObserver(observer)
+		if let recorderActiveObserver {
+			NotificationCenter.default.removeObserver(recorderActiveObserver)
+		}
 	}
 }

@@ -145,6 +145,16 @@ extension KeyboardShortcuts.Shortcut {
 	*/
 	@MainActor
 	func menuItemWithMatchingShortcut(in menu: NSMenu) -> NSMenuItem? {
+		menuItemsWithMatchingShortcut(in: menu).first
+	}
+
+	/**
+	Recursively finds all menu items in the given menu that have a matching key equivalent and modifier.
+	*/
+	@MainActor
+	func menuItemsWithMatchingShortcut(in menu: NSMenu) -> [NSMenuItem] {
+		var matchingMenuItems: [NSMenuItem] = []
+
 		for item in menu.items {
 			var keyEquivalent = item.keyEquivalent
 			var keyEquivalentModifierMask = item.keyEquivalentModifierMask
@@ -161,18 +171,17 @@ extension KeyboardShortcuts.Shortcut {
 				nsMenuItemKeyEquivalent == keyEquivalent, // Note `nil != ""`
 				modifiers == keyEquivalentModifierMask
 			{
-				return item
+				matchingMenuItems.append(item)
 			}
 
 			if
-				let submenu = item.submenu,
-				let menuItem = menuItemWithMatchingShortcut(in: submenu)
+				let submenu = item.submenu
 			{
-				return menuItem
+				matchingMenuItems.append(contentsOf: menuItemsWithMatchingShortcut(in: submenu))
 			}
 		}
 
-		return nil
+		return matchingMenuItems
 	}
 
 	/**
@@ -186,10 +195,22 @@ extension KeyboardShortcuts.Shortcut {
 
 		return menuItemWithMatchingShortcut(in: mainMenu)
 	}
+
+	/**
+	Returns all menu items in the app's main menu that have a matching key equivalent and modifier.
+	*/
+	@MainActor
+	var takenByMainMenuItems: [NSMenuItem] {
+		guard let mainMenu = NSApp.mainMenu else {
+			return []
+		}
+
+		return menuItemsWithMatchingShortcut(in: mainMenu)
+	}
 }
 
 /*
-An enumeration of special keys requiring specific handling when used with `RecorderCocoa`, AppKit’s `NSMenuItem`, and SwiftUI’s `.keyboardShortcut(_:modifiers:)`.  
+An enumeration of special keys requiring specific handling when used with `RecorderCocoa`, AppKit’s `NSMenuItem`, and SwiftUI’s `.keyboardShortcut(_:modifiers:)`.
 
 Using an enumeration ensures all cases are exhaustively addressed in all three contexts, providing compile-time safety and reducing the risk of unhandled keys.
 */

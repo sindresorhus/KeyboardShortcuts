@@ -1476,6 +1476,72 @@ struct KeyboardShortcutsTests {
 		KeyboardShortcuts.removeAllHandlers()
 	}
 
+	@Test("Recorder ignores unchanged conflicts for its own AppKit-bound menu item")
+	@MainActor
+	func testRecorderIgnoresUnchangedConflictsForOwnAppKitBoundMenuItem() {
+		let name = KeyboardShortcuts.Name("recorderOwnAppKitMenuItem")
+		let shortcut = KeyboardShortcuts.Shortcut(.t, modifiers: [.command])
+		KeyboardShortcuts.setShortcut(shortcut, for: name)
+
+		let ownMenuItem = NSMenuItem()
+		ownMenuItem.setShortcut(for: name)
+
+		let conflictingMenuItem = KeyboardShortcuts.RecorderCocoa.firstMenuItemRequiringConflictHandling(
+			matchingMenuItems: [ownMenuItem],
+			shortcut: shortcut,
+			shortcutBeforeRecording: shortcut,
+			shortcutName: name,
+			usesNamedStorage: true
+		)
+
+		#expect(conflictingMenuItem == nil)
+	}
+
+	@Test("Recorder preserves conflict checks for unchanged shortcuts when another menu item conflicts")
+	@MainActor
+	func testRecorderPreservesConflictChecksForUnchangedShortcutsWithRealMenuConflicts() {
+		let name = KeyboardShortcuts.Name("recorderRealMenuConflict")
+		let shortcut = KeyboardShortcuts.Shortcut(.t, modifiers: [.command])
+		KeyboardShortcuts.setShortcut(shortcut, for: name)
+
+		let ownMenuItem = NSMenuItem()
+		ownMenuItem.setShortcut(for: name)
+
+		let otherMenuItem = NSMenuItem()
+		otherMenuItem.keyEquivalent = "t"
+		otherMenuItem.keyEquivalentModifierMask = [.command]
+
+		let conflictingMenuItem = KeyboardShortcuts.RecorderCocoa.firstMenuItemRequiringConflictHandling(
+			matchingMenuItems: [ownMenuItem, otherMenuItem],
+			shortcut: shortcut,
+			shortcutBeforeRecording: shortcut,
+			shortcutName: name,
+			usesNamedStorage: true
+		)
+
+		#expect(conflictingMenuItem === otherMenuItem)
+	}
+
+	@Test("Recorder preserves conflict checks in binding mode for unchanged shortcuts")
+	@MainActor
+	func testRecorderPreservesConflictChecksInBindingModeForUnchangedShortcuts() {
+		let name = KeyboardShortcuts.Name("recorderBindingModeConflict")
+		let shortcut = KeyboardShortcuts.Shortcut(.t, modifiers: [.command])
+
+		let ownMenuItem = NSMenuItem()
+		ownMenuItem.setShortcut(for: name)
+
+		let conflictingMenuItem = KeyboardShortcuts.RecorderCocoa.firstMenuItemRequiringConflictHandling(
+			matchingMenuItems: [ownMenuItem],
+			shortcut: shortcut,
+			shortcutBeforeRecording: shortcut,
+			shortcutName: name,
+			usesNamedStorage: false
+		)
+
+		#expect(conflictingMenuItem === ownMenuItem)
+	}
+
 	@Test("NSMenuItem preserves original key equivalent when no global shortcut is set")
 	@MainActor
 	func testNSMenuItemPreservesOriginalKeyEquivalentWhenNoShortcut() {
@@ -1563,6 +1629,67 @@ struct KeyboardShortcutsTests {
 
 		#expect(restored)
 		#expect(menuItem.keyEquivalentModifierMask == .command)
+	}
+
+	@Test("NSMenuItem keeps updating for multiple non-nil shortcut changes")
+	@MainActor
+	func testNSMenuItemKeepsUpdatingForMultipleNonNilShortcutChanges() async {
+		let name = KeyboardShortcuts.Name("menuItemMultipleNonNilUpdates")
+		let shortcut1 = KeyboardShortcuts.Shortcut(.a, modifiers: [.command])
+		let shortcut2 = KeyboardShortcuts.Shortcut(.b, modifiers: [.shift])
+		let shortcut3 = KeyboardShortcuts.Shortcut(.c, modifiers: [.option])
+
+		KeyboardShortcuts.setShortcut(shortcut1, for: name)
+
+		let menuItem = NSMenuItem()
+		menuItem.setShortcut(for: name)
+		#expect(menuItem.keyEquivalent == "a")
+		#expect(menuItem.keyEquivalentModifierMask == .command)
+
+		KeyboardShortcuts.setShortcut(shortcut2, for: name)
+
+		let secondShortcutApplied = await Self.waitUntilConditionIsTrue {
+			menuItem.keyEquivalent == "b"
+		}
+
+		#expect(secondShortcutApplied)
+		#expect(menuItem.keyEquivalentModifierMask == .shift)
+
+		KeyboardShortcuts.setShortcut(shortcut3, for: name)
+
+		let thirdShortcutApplied = await Self.waitUntilConditionIsTrue {
+			menuItem.keyEquivalent == "c"
+		}
+
+		#expect(thirdShortcutApplied)
+		#expect(menuItem.keyEquivalentModifierMask == .option)
+	}
+
+	@Test("NSMenuItem dynamic shortcut detaches existing name binding observer")
+	@MainActor
+	func testNSMenuItemDynamicShortcutDetachesExistingNameBindingObserver() async {
+		let name = KeyboardShortcuts.Name("menuItemDetachesNameBindingObserver")
+		let shortcut1 = KeyboardShortcuts.Shortcut(.a, modifiers: [.command])
+		let shortcut2 = KeyboardShortcuts.Shortcut(.b, modifiers: [.command])
+		let dynamicShortcut = KeyboardShortcuts.Shortcut(.z, modifiers: [.shift])
+
+		KeyboardShortcuts.setShortcut(shortcut1, for: name)
+
+		let menuItem = NSMenuItem()
+		menuItem.setShortcut(for: name)
+		#expect(menuItem.keyEquivalent == "a")
+		#expect(menuItem.keyEquivalentModifierMask == .command)
+
+		menuItem.setShortcut(dynamicShortcut)
+		#expect(menuItem.keyEquivalent == "z")
+		#expect(menuItem.keyEquivalentModifierMask == .shift)
+
+		KeyboardShortcuts.setShortcut(shortcut2, for: name)
+
+		try? await Task.sleep(for: .milliseconds(50))
+
+		#expect(menuItem.keyEquivalent == "z")
+		#expect(menuItem.keyEquivalentModifierMask == .shift)
 	}
 
 	@Test("Localization files are valid")
