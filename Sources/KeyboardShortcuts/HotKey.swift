@@ -117,6 +117,8 @@ final class HotKeyCenter {
 		return nil
 	}
 
+	private var globalEventMonitor: AnyObject?
+
 	var mode: Mode = .normal {
 		didSet {
 			guard mode != oldValue else {
@@ -219,6 +221,7 @@ final class HotKeyCenter {
 		}
 
 		hotKeys.removeValue(forKey: hotKey.id)
+		updateEventHandler()
 	}
 
 	private func pause(_ hotKey: HotKey) {
@@ -324,6 +327,38 @@ final class HotKeyCenter {
 
 		setHotKeyEventHandlingEnabled(shouldHandleHotKeys)
 		setRawKeyEventHandlingEnabled(shouldHandleRawKeys)
+		setGlobalOptionKeyMonitorEnabled(mode == .normal && hasOptionOnlyShortcuts)
+	}
+
+	/**
+	Returns true if any registered shortcut uses Option as the only modifier (no Command or Control).
+	Such shortcuts are prone to being intercepted by the IME layer before Carbon receives them.
+	*/
+	private var hasOptionOnlyShortcuts: Bool {
+		hotKeys.values.compactMap(\.value).contains { hotKey in
+			let modifiers = NSEvent.ModifierFlags(carbon: hotKey.carbonModifiers)
+			return modifiers.contains(.option)
+				&& !modifiers.contains(.command)
+				&& !modifiers.contains(.control)
+		}
+	}
+
+	private func setGlobalOptionKeyMonitorEnabled(_ isEnabled: Bool) {
+		if isEnabled, globalEventMonitor == nil {
+			globalEventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.keyDown, .keyUp]) { [weak self] event in
+				guard
+					let self,
+					let eventRef = OpaquePointer(event.eventRef)
+				else {
+					return
+				}
+
+				_ = handleRawKeyEvent(eventRef)
+			}
+		} else if !isEnabled, let monitor = globalEventMonitor {
+			NSEvent.removeMonitor(monitor)
+			globalEventMonitor = nil
+		}
 	}
 
 	private func setHotKeyEventHandlingEnabled(_ isEnabled: Bool) {
