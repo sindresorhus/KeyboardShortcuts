@@ -337,9 +337,7 @@ final class HotKeyCenter {
 	private var hasOptionOnlyShortcuts: Bool {
 		hotKeys.values.compactMap(\.value).contains { hotKey in
 			let modifiers = NSEvent.ModifierFlags(carbon: hotKey.carbonModifiers)
-			return modifiers.contains(.option)
-				&& !modifiers.contains(.command)
-				&& !modifiers.contains(.control)
+			return modifiers == [.option]
 		}
 	}
 
