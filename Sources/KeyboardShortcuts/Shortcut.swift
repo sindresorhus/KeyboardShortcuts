@@ -137,6 +137,13 @@ extension KeyboardShortcuts.Shortcut {
 
 		return Self.system.contains(self)
 	}
+	
+	/**
+	Check whether the keyboard shortcut is already taken by main menu.
+	*/
+	public var isTakenByMainMenu: Bool {
+		return self.takenByMainMenu != nil
+	}
 }
 
 extension KeyboardShortcuts.Shortcut {
