@@ -1,15 +1,18 @@
 #if os(macOS)
 import AppKit
 
-extension NSMenuItem {
-	private final class WeakReference<T: AnyObject>: @unchecked Sendable {
-		weak var value: T?
+// Workaround for a Swift 6.3 compiler crash (SR/rdar) where the optimizer crashes on deinit of a
+// generic class nested inside an extension. Using a concrete non-generic class avoids the bug.
+// https://github.com/sindresorhus/KeyboardShortcuts/issues/240
+private final class WeakMenuItem: @unchecked Sendable {
+	weak var value: NSMenuItem?
 
-		init(_ value: T) {
-			self.value = value
-		}
+	init(_ value: NSMenuItem) {
+		self.value = value
 	}
+}
 
+extension NSMenuItem {
 	private struct FallbackShortcut: Sendable {
 		let keyEquivalent: String
 		let modifierMask: NSEvent.ModifierFlags
@@ -128,7 +131,7 @@ extension NSMenuItem {
 		}
 
 		AssociatedKeys.boundName[self] = name
-		let menuItemReference = WeakReference(self)
+		let menuItemReference = WeakMenuItem(self)
 
 		// TODO: Use AsyncStream when targeting macOS 15.
 		AssociatedKeys.observer[self] = NotificationCenter.default.addObserver(forName: .shortcutByNameDidChange, object: nil, queue: .main) { notification in
