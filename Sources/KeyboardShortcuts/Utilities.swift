@@ -92,6 +92,7 @@ final class LocalEventMonitor {
 		}
 
 		NSEvent.removeMonitor(monitor)
+		self.monitor = nil
 	}
 }
 
@@ -100,6 +101,7 @@ final class RunLoopLocalEventMonitor {
 	private let runLoopMode: RunLoop.Mode
 	private let callback: (NSEvent) -> NSEvent?
 	private let observer: CFRunLoopObserver
+	private var isStarted = false
 
 	init(
 		events: NSEvent.EventTypeMask,
@@ -108,26 +110,25 @@ final class RunLoopLocalEventMonitor {
 	) {
 		self.runLoopMode = runLoopMode
 		self.callback = callback
+		let handledEventTypes = events.rawValue
+		var pendingEvents = [NSEvent]()
 
 		self.observer = CFRunLoopObserverCreateWithHandler(nil, CFRunLoopActivity.beforeSources.rawValue, true, 0) { _, _ in
 			// Pull all events from the queue and handle the ones matching the given types.
 			// Non-matching events are left untouched, maintaining their order in the queue.
-
-			var eventsToHandle = [NSEvent]()
+			pendingEvents.removeAll(keepingCapacity: true)
 
 			// Retrieve all events from the event queue to preserve their order (instead of using the `matching` parameter).
-			while let eventToHandle = NSApp.nextEvent(matching: .any, until: nil, inMode: runLoopMode, dequeue: true) {
-				eventsToHandle.append(eventToHandle)
+			while let event = NSApp.nextEvent(matching: .any, until: nil, inMode: runLoopMode, dequeue: true) {
+				pendingEvents.append(event)
 			}
 
 			// Iterate over the gathered events, instead of doing it directly in the `while` loop, to avoid potential infinite loops caused by re-retrieving undiscarded events.
-			for eventToHandle in eventsToHandle {
-				var handledEvent: NSEvent?
-
-				if !events.contains(NSEvent.EventTypeMask(rawValue: 1 << eventToHandle.type.rawValue)) {
-					handledEvent = eventToHandle
-				} else if let callbackEvent = callback(eventToHandle) {
-					handledEvent = callbackEvent
+			for eventToHandle in pendingEvents {
+				let handledEvent = if handledEventTypes & (1 << eventToHandle.type.rawValue) == 0 {
+					eventToHandle
+				} else {
+					callback(eventToHandle)
 				}
 
 				guard let handledEvent else {
@@ -145,11 +146,21 @@ final class RunLoopLocalEventMonitor {
 
 	@discardableResult
 	func start() -> Self {
+		guard !isStarted else {
+			return self
+		}
+
+		isStarted = true
 		CFRunLoopAddObserver(RunLoop.current.getCFRunLoop(), observer, CFRunLoopMode(runLoopMode.rawValue as CFString))
 		return self
 	}
 
 	func stop() {
+		guard isStarted else {
+			return
+		}
+
+		isStarted = false
 		CFRunLoopRemoveObserver(RunLoop.current.getCFRunLoop(), observer, CFRunLoopMode(runLoopMode.rawValue as CFString))
 	}
 }

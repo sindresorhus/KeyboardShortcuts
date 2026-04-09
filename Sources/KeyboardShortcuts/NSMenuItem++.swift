@@ -172,6 +172,7 @@ extension NSMenuItem {
 	public func setShortcut(_ shortcut: KeyboardShortcuts.Shortcut?) {
 		removeShortcutObserver()
 		AssociatedKeys.boundName[self] = nil
+		AssociatedKeys.fallback[self] = nil
 		applyShortcut(shortcut)
 	}
 }

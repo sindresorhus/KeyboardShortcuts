@@ -89,7 +89,17 @@ final class HotKeyCenter {
 	private var openMenuObserver: NSObjectProtocol?
 	private var closeMenuObserver: NSObjectProtocol?
 	private var isEnabled = true
-	private(set) var isMenuOpen = false
+	private var isMenuOpen = false {
+		didSet {
+			guard isMenuOpen != oldValue else {
+				return
+			}
+
+			updateMode()
+		}
+	}
+	private var isHotKeyEventHandlingEnabled = false
+	private var isRawKeyEventHandlingEnabled = false
 
 	// `SSKS` is short for `Sindre Sorhus Keyboard Shortcuts`.
 	// swiftlint:disable:next number_separator
@@ -108,8 +118,12 @@ final class HotKeyCenter {
 	private lazy var keyEventMonitor = RunLoopLocalEventMonitor(events: [.keyDown, .keyUp], runLoopMode: .eventTracking) { [weak self] event in
 		guard
 			let self,
-			let eventRef = OpaquePointer(event.eventRef),
-			handleRawKeyEvent(eventRef) == noErr
+			handleRawKeyEvent(
+				keyCode: Int(event.keyCode),
+				modifiers: event.modifiers.carbon,
+				isRepeat: event.isARepeat,
+				eventKind: event.type == .keyDown ? kEventRawKeyDown : kEventRawKeyUp
+			) == noErr
 		else {
 			return event
 		}
@@ -117,7 +131,7 @@ final class HotKeyCenter {
 		return nil
 	}
 
-	var mode: Mode = .normal {
+	private(set) var mode: Mode = .normal {
 		didSet {
 			guard mode != oldValue else {
 				return
@@ -154,40 +168,40 @@ final class HotKeyCenter {
 			return
 		}
 
+		/* Manual testing only showed these notifications for the top-level tracked menu, so a boolean is enough here. */
 		openMenuObserver = NotificationCenter.default.addObserver(forName: NSMenu.didBeginTrackingNotification, object: nil, queue: nil) { [weak self] _ in
 			if Thread.isMainThread {
 				MainActor.assumeIsolated {
-					self?.setMenuOpen(true)
+					self?.menuDidBeginTracking()
 				}
 				return
 			}
 
 			Task { @MainActor [weak self] in
-				self?.setMenuOpen(true)
+				self?.menuDidBeginTracking()
 			}
 		}
 
 		closeMenuObserver = NotificationCenter.default.addObserver(forName: NSMenu.didEndTrackingNotification, object: nil, queue: nil) { [weak self] _ in
 			if Thread.isMainThread {
 				MainActor.assumeIsolated {
-					self?.setMenuOpen(false)
+					self?.menuDidEndTracking()
 				}
 				return
 			}
 
 			Task { @MainActor [weak self] in
-				self?.setMenuOpen(false)
+				self?.menuDidEndTracking()
 			}
 		}
 	}
 
-	private func setMenuOpen(_ isMenuOpen: Bool) {
-		guard self.isMenuOpen != isMenuOpen else {
-			return
-		}
+	private func menuDidBeginTracking() {
+		isMenuOpen = true
+	}
 
-		self.isMenuOpen = isMenuOpen
-		updateMode()
+	private func menuDidEndTracking() {
+		isMenuOpen = false
 	}
 
 	private func updateMode() {
@@ -327,6 +341,12 @@ final class HotKeyCenter {
 	}
 
 	private func setHotKeyEventHandlingEnabled(_ isEnabled: Bool) {
+		guard isHotKeyEventHandlingEnabled != isEnabled else {
+			return
+		}
+
+		isHotKeyEventHandlingEnabled = isEnabled
+
 		if isEnabled {
 			AddEventTypesToHandler(eventHandler, hotKeyEventTypes.count, hotKeyEventTypes)
 		} else {
@@ -335,6 +355,12 @@ final class HotKeyCenter {
 	}
 
 	private func setRawKeyEventHandlingEnabled(_ isEnabled: Bool) {
+		guard isRawKeyEventHandlingEnabled != isEnabled else {
+			return
+		}
+
+		isRawKeyEventHandlingEnabled = isEnabled
+
 		if #available(macOS 14, *) {
 			if isEnabled {
 				keyEventMonitor.start()
@@ -399,6 +425,8 @@ final class HotKeyCenter {
 	}
 
 	private func handleRawKeyEvent(_ event: EventRef) -> OSStatus {
+		let eventKind = Int(GetEventKind(event))
+
 		var eventKeyCode = UInt32()
 		let keyCodeError = GetEventParameter(
 			event,
@@ -429,16 +457,33 @@ final class HotKeyCenter {
 			return keyModifiersError
 		}
 
-		let normalizedEventModifiers = normalizeModifiers(Int(eventKeyModifiers))
+		return handleRawKeyEvent(
+			keyCode: Int(eventKeyCode),
+			modifiers: Int(eventKeyModifiers),
+			isRepeat: false,
+			eventKind: eventKind
+		)
+	}
 
-		// Find a hotkey matching this key combination
+	func handleRawKeyEvent(
+		keyCode: Int,
+		modifiers: Int,
+		isRepeat: Bool,
+		eventKind: Int
+	) -> OSStatus {
+		if eventKind == kEventRawKeyDown, isRepeat {
+			return OSStatus(eventNotHandledErr)
+		}
+
+		let normalizedEventModifiers = normalizeModifiers(modifiers)
+
 		guard let hotKey = hotKeys.values.lazy.compactMap(\.value).first(where: {
-			$0.carbonKeyCode == Int(eventKeyCode) && normalizeModifiers($0.carbonModifiers) == normalizedEventModifiers
+			$0.carbonKeyCode == keyCode && normalizeModifiers($0.carbonModifiers) == normalizedEventModifiers
 		}) else {
 			return OSStatus(eventNotHandledErr)
 		}
 
-		switch Int(GetEventKind(event)) {
+		switch eventKind {
 		case kEventRawKeyDown:
 			hotKey.onKeyDown()
 			return noErr

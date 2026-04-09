@@ -79,7 +79,7 @@ func migrateMASShortcutValue(oldDefaultsKey: String, newName: KeyboardShortcuts.
 	KeyboardShortcuts.setShortcut(
 		.init(
 			carbonKeyCode: Int(legacyShortcut.keyCode),
-			carbonModifiers: Int(legacyShortcut.modifierFlags)
+			carbonModifiers: Int(legacyShortcut.carbonFlags)
 		),
 		for: newName
 	)

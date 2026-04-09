@@ -365,7 +365,7 @@ public enum KeyboardShortcuts {
 	/**
 	Reset the keyboard shortcut for one or more names.
 
-	If the `Name` has a default shortcut, it will reset to that.
+	If the `Name` has an initial shortcut, it will reset to that.
 
 	- Note: This overload exists as Swift doesn't support splatting.
 
@@ -394,7 +394,7 @@ public enum KeyboardShortcuts {
 	/**
 	Reset the keyboard shortcut for one or more names.
 
-	If the `Name` has a default shortcut, it will reset to that.
+	If the `Name` has an initial shortcut, it will reset to that.
 
 	```swift
 	import SwiftUI
@@ -419,7 +419,7 @@ public enum KeyboardShortcuts {
 	/**
 	Reset the keyboard shortcut for all the names.
 
-	Unlike `reset(…)`, this resets all the shortcuts to `nil`, not the `defaultValue`.
+	Unlike `reset(…)`, this resets all the shortcuts to `nil`, not the `initialShortcut`.
 
 	```swift
 	import SwiftUI
@@ -446,7 +446,7 @@ public enum KeyboardShortcuts {
 	/**
 	Set the keyboard shortcut for a name.
 
-	Setting it to `nil` removes the shortcut, even if the `Name` has a default shortcut defined. Use `.reset()` if you want it to respect the default shortcut.
+	Setting it to `nil` removes the shortcut, even if the `Name` has an initial shortcut defined. Use `.reset()` if you want it to respect the initial shortcut.
 
 	You would usually not need this as the user would be the one setting the shortcut in a settings user-interface, but it can be useful when, for example, migrating from a different keyboard shortcuts package.
 	*/

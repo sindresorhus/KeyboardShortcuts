@@ -625,15 +625,15 @@ struct KeyboardShortcutsTests {
 	func testDisableAndEnableWithStreamOnlyHandlers() async {
 		let shortcut = KeyboardShortcuts.Shortcut(.f12, modifiers: [.command, .option, .shift, .control])
 		let name = KeyboardShortcuts.Name("streamDisableEnable", initial: shortcut)
-		var stream: AsyncStream<KeyboardShortcuts.EventType>? = KeyboardShortcuts.events(for: name)
-		var iterator: AsyncStream<KeyboardShortcuts.EventType>.AsyncIterator? = stream?.makeAsyncIterator()
-		var waitingForEventTask: Task<Void, Never>? = Task {
-			_ = await iterator?.next()
+		let stream = KeyboardShortcuts.events(for: name)
+		let waitingForEventTask = Task {
+			for await _ in stream {
+				break
+			}
 		}
-		#expect(iterator != nil)
 
 		defer {
-			waitingForEventTask?.cancel()
+			waitingForEventTask.cancel()
 		}
 
 		#expect(await Self.waitUntilConditionIsTrue {
@@ -651,10 +651,7 @@ struct KeyboardShortcutsTests {
 		})
 		#expect(!Self.canRegisterHotKey(for: shortcut))
 
-		iterator = nil
-		stream = nil
-		waitingForEventTask?.cancel()
-		waitingForEventTask = nil
+		waitingForEventTask.cancel()
 
 		#expect(await Self.waitUntilConditionIsTrue {
 			Self.canRegisterHotKey(for: shortcut)
@@ -1435,6 +1432,53 @@ struct KeyboardShortcutsTests {
 		#expect(await Self.waitUntilConditionIsTrue {
 			Self.canRegisterHotKey(for: updatedShortcut)
 		})
+	}
+
+	@Test("Repeated raw key down events are ignored")
+	func testRepeatedRawKeyDownEventsAreIgnored() {
+		let shortcut = KeyboardShortcuts.Shortcut(.f17, modifiers: [.command, .option, .shift, .control])
+		var keyDownCount = 0
+		var keyUpCount = 0
+
+		let hotKey = HotKey(
+			carbonKeyCode: shortcut.carbonKeyCode,
+			carbonModifiers: shortcut.carbonModifiers,
+			onKeyDown: {
+				keyDownCount += 1
+			},
+			onKeyUp: {
+				keyUpCount += 1
+			}
+		)
+
+		#expect(hotKey != nil)
+
+		let firstKeyDownStatus = HotKeyCenter.shared.handleRawKeyEvent(
+			keyCode: shortcut.carbonKeyCode,
+			modifiers: shortcut.carbonModifiers,
+			isRepeat: false,
+			eventKind: kEventRawKeyDown
+		)
+		let repeatedKeyDownStatus = HotKeyCenter.shared.handleRawKeyEvent(
+			keyCode: shortcut.carbonKeyCode,
+			modifiers: shortcut.carbonModifiers,
+			isRepeat: true,
+			eventKind: kEventRawKeyDown
+		)
+		let keyUpStatus = HotKeyCenter.shared.handleRawKeyEvent(
+			keyCode: shortcut.carbonKeyCode,
+			modifiers: shortcut.carbonModifiers,
+			isRepeat: false,
+			eventKind: kEventRawKeyUp
+		)
+
+		#expect(firstKeyDownStatus == noErr)
+		#expect(repeatedKeyDownStatus == OSStatus(eventNotHandledErr))
+		#expect(keyUpStatus == noErr)
+		#expect(keyDownCount == 1)
+		#expect(keyUpCount == 1)
+
+		_ = hotKey
 	}
 
 	@Test("Shortcut can be re-registered after clearing")
