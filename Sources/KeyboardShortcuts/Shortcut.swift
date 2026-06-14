@@ -104,6 +104,7 @@ extension KeyboardShortcuts.Shortcut {
 		}
 	}
 
+	// TODO: Remove this when targeting macOS 15.2. It only handles a bug present in sandboxed apps on macOS 15.0 and 15.1.
 	/**
 	Check whether the keyboard shortcut is disallowed.
 	*/
@@ -128,9 +129,13 @@ extension KeyboardShortcuts.Shortcut {
 	}
 
 	/**
-	Check whether the keyboard shortcut is already taken by the system.
+	Whether the keyboard shortcut is already taken by a system-wide shortcut.
+
+	This checks against the currently enabled system shortcuts (for example, Spotlight or Mission Control). The user can free up a conflicting shortcut by changing it in “System Settings › Keyboard › Keyboard Shortcuts”. The bare `F12` key is intentionally not considered taken.
+
+	Useful when building a custom recorder UI to match the validation `KeyboardShortcuts.Recorder` performs.
 	*/
-	var isTakenBySystem: Bool {
+	public var isTakenBySystem: Bool {
 		guard self != Self(.f12, modifiers: []) else {
 			return false
 		}
