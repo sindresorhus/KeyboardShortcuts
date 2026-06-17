@@ -496,7 +496,16 @@ enum AssociationPolicy {
 	}
 }
 
-final class ObjectAssociation<T> {
+// Workaround for a Swift compiler crash where the optimizer (`EarlyPerfInliner`) crashes on the
+// isolated `deinit` of a generic `@MainActor` class when the deployment target is below the
+// isolated-deinit availability floor. Making `ObjectAssociation` a struct (no deinit) and using a
+// concrete non-generic class for the association key avoids the bug.
+// https://github.com/sindresorhus/KeyboardShortcuts/issues/240
+// https://github.com/swiftlang/swift/issues/89896
+private final class ObjectAssociationKey {}
+
+struct ObjectAssociation<T> {
+	private let key = ObjectAssociationKey()
 	private let policy: AssociationPolicy
 
 	init(policy: AssociationPolicy = .retainNonatomic) {
@@ -507,10 +516,10 @@ final class ObjectAssociation<T> {
 		get {
 			// Force-cast is fine here as we want it to fail loudly if we don't use the correct type.
 			// swiftlint:disable:next force_cast
-			objc_getAssociatedObject(index, Unmanaged.passUnretained(self).toOpaque()) as! T?
+			objc_getAssociatedObject(index, Unmanaged.passUnretained(key).toOpaque()) as! T?
 		}
-		set {
-			objc_setAssociatedObject(index, Unmanaged.passUnretained(self).toOpaque(), newValue, policy.rawValue)
+		nonmutating set {
+			objc_setAssociatedObject(index, Unmanaged.passUnretained(key).toOpaque(), newValue, policy.rawValue)
 		}
 	}
 }
